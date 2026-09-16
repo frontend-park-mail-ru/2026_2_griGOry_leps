@@ -4,8 +4,8 @@
 ### Участники команды
  1. [Ведмецкий Тимур](https://github.com/timur3199)
  2. [Юнцевич Александр](https://github.com/impduckzzz)
- 3. [Никитина Алиса]()
- 4. [Полтинин Максим]()
+ 3. [Никитина Алиса](https://github.com/AlisaNikitinaa)
+ 4. [Полтинин Максим](https://github.com/reynyng)
 
 ### Внешние ссылки
  - [Figma]()
