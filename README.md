@@ -6,13 +6,13 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 
 - [Доска задач (YouGile)](https://ru.yougile.com/team/82999ec3673c/GOSH4LEEPS)
 - [Репозиторий бэкенда](https://github.com/go-park-mail-ru/2026_2_griGOry_leps)
-- [Макеты в Figma]()
+- [Макеты в Figma](https://www.figma.com/design/azXAN6gTvGAovlElu3VP3b/GoGET-%25E2%2580%2594-Team-Workspace?node-id=0-1&p=f&t=7sQMYz0HqS3QT7iN-0)
 - [Deploy]()
 
 ## Участники команды
 
 1. [Тимур Ведмецкий](https://github.com/v0rdYT)
-2. [Юнцевич Александр](https://github.com/impduckzzz)
+2. [Александр Юнцевич](https://github.com/impduckzzz)
 3. [Алиса Никитина](https://github.com/AlisaNikitinaa)
 4. [Максим Полтинин](https://github.com/reynyng)
 
