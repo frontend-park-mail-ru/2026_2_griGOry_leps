@@ -1,59 +1,55 @@
 import { getUser } from '../store.js';
 
-/** @typedef {() => void} RouteHandler */
-
-/** @type {Record<string, RouteHandler>} */
+/** @type {Record<string, { handler: () => void, isProtected: boolean }>} */
 const routes = {};
 
-// Маршруты, которые требуют авторизации.
-const protectedRoutes = ['/favorites', '/profile'];
-
-/**
- * Регистрирует новый маршрут
- * @param {string} path
- * @param {RouteHandler} handler
- */
-export function registerRoute(path, handler) {
-  routes[path] = handler;
+export function registerRoute(path, handler, options = {}) {
+  routes[path] = {
+    handler,
+    isProtected: options.protected ?? false,
+  };
 }
 
-/** 
- * Переходит по указанному пути без перезагрузки
- * @param {string} path 
- */
+function isProtectedPath(pathname) {
+  return Object.entries(routes).some(([routePath, config]) => {
+    if (!config.isProtected) return false;
+    const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^${escaped}(/.*)?$`).test(pathname);
+  });
+}
+
 export function navigate(path) {
-  history.pushState({}, "", path);
+  history.pushState({}, '', path);
   resolveRoute();
 }
 
-/**
- * Определяет текущий маршрут и вызывает его обработчик
- */
-export function resolveRoute() {
-  const path = location.pathname;
-  if (protectedRoutes.includes(path) && !getUser()) {
-    console.warn(`[Router] Доступ к ${path} запрещен. Перенаправление на /login`);
-    navigate('/login');
-    return;
-  }
-  const handler = routes[path] ?? routes["/404"];
-  handler?.();
+export function redirect(path) {
+  history.replaceState({}, '', path);
+  resolveRoute();
 }
 
-/**
- * Инициализирует роутер: слушает клики по ссылкам и переходы назад/вперед
- */
+export function resolveRoute() {
+  const path = location.pathname;
+
+  if (isProtectedPath(path) && !getUser()) {
+    redirect('/login');
+    return;
+  }
+
+  const config = routes[path] ?? routes['/404'];
+  config?.handler();
+}
+
 export function initRouter() {
-  document.body.addEventListener("click", (e) => {
+  document.body.addEventListener('click', (e) => {
     const target = /** @type {HTMLElement} */ (e.target);
-    const link = target.closest("a[data-link]");
-    
+    const link = target.closest('a[data-link]');
     if (link instanceof HTMLAnchorElement) {
       e.preventDefault();
-      navigate(link.getAttribute("href") ?? "/");
+      navigate(link.getAttribute('href') ?? '/');
     }
   });
 
-  window.addEventListener("popstate", resolveRoute);
+  window.addEventListener('popstate', resolveRoute);
   resolveRoute();
 }

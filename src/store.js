@@ -6,6 +6,10 @@ export function setUser(user) {
   listeners.forEach((fn) => fn(user));
 }
 
+export function clearUser() {
+  setUser(null);
+}
+
 export function getUser() {
   return currentUser;
 }

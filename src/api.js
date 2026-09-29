@@ -1,16 +1,17 @@
 const BASE_URL = '/api';
 
 export async function request(endpoint, options = {}) {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+  const headers = { ...options.headers };
 
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  return fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
     credentials: 'include',
   });
-  return response;
 }
 
 export async function getMe() {
@@ -26,11 +27,14 @@ export async function login({ login, password }) {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || 'Неверный логин или пароль');
+    throw new Error('Неверный логин или пароль');
   }
 
-  return await getMe();
+  const user = await getMe();
+  if (!user) {
+    throw new Error('Не удалось получить данные пользователя');
+  }
+  return user;
 }
 
 export async function register(data) {
@@ -46,8 +50,7 @@ export async function register(data) {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || 'Ошибка регистрации');
+    throw new Error('Ошибка регистрации');
   }
 
   return await login({ login: data.email, password: data.password });
