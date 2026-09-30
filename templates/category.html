@@ -1,0 +1,201 @@
+{{define "categories.html"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs-sep">/</span>
+    <span>Все категории</span>
+</nav>
+
+<section class="section categories-page">
+    <div class="section-head">
+        <h2>Все категории <span class="section-count">24 категории</span></h2>
+    </div>
+
+    <div class="category-cards">
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-auto.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Авто</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Легковые автомобили</a></li>
+                <li><a href="#">Мотоциклы и мототехника</a></li>
+                <li><a href="#">Грузовики и спецтехника</a></li>
+                <li><a href="#">Водный транспорт</a></li>
+                <li><a href="#">Шины и диски</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-realty.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Недвижимость</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Квартиры</a></li>
+                <li><a href="#">Комнаты</a></li>
+                <li><a href="#">Дома и дачи</a></li>
+                <li><a href="#">Земельные участки</a></li>
+                <li><a href="#">Коммерческая недвижимость</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-rent.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Жильё для путешествий</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Квартиры посуточно</a></li>
+                <li><a href="#">Дома и коттеджи</a></li>
+                <li><a href="#">Гостиницы</a></li>
+                <li><a href="#">Хостелы</a></li>
+                <li><a href="#">Глэмпинги</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-home.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Для дома и дачи</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Мебель</a></li>
+                <li><a href="#">Бытовая техника</a></li>
+                <li><a href="#">Посуда и кухня</a></li>
+                <li><a href="#">Ремонт и строительство</a></li>
+                <li><a href="#">Растения</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-parts.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Запчасти</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Для автомобилей</a></li>
+                <li><a href="#">Для мототехники</a></li>
+                <li><a href="#">Масла и автохимия</a></li>
+                <li><a href="#">Аккумуляторы</a></li>
+                <li><a href="#">Инструменты</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-services.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Услуги</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Ремонт и отделка</a></li>
+                <li><a href="#">Перевозки и грузчики</a></li>
+                <li><a href="#">Обучение и курсы</a></li>
+                <li><a href="#">Красота</a></li>
+                <li><a href="#">Уборка</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-electronics.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Электроника</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Телефоны</a></li>
+                <li><a href="#">Ноутбуки</a></li>
+                <li><a href="#">Аудио и видео</a></li>
+                <li><a href="#">Игры и приставки</a></li>
+                <li><a href="#">Фототехника</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-jobs.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Работа и подработка</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Вакансии</a></li>
+                <li><a href="#">Резюме</a></li>
+                <li><a href="#">Подработка</a></li>
+                <li><a href="#">Удалённая работа</a></li>
+                <li><a href="#">Стажировки</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-biznes.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Бизнес 360</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Готовый бизнес</a></li>
+                <li><a href="#">Оборудование</a></li>
+                <li><a href="#">Франшизы</a></li>
+                <li><a href="#">Помещения</a></li>
+                <li><a href="#">Инвестиции</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-clothes.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Одежда, обувь, аксессуары</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Женская одежда</a></li>
+                <li><a href="#">Мужская одежда</a></li>
+                <li><a href="#">Обувь</a></li>
+                <li><a href="#">Сумки и рюкзаки</a></li>
+                <li><a href="#">Украшения</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-pets.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Животные</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Собаки</a></li>
+                <li><a href="#">Кошки</a></li>
+                <li><a href="#">Птицы</a></li>
+                <li><a href="#">Аквариум</a></li>
+                <li><a href="#">Товары для питомцев</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+        <article class="category-card">
+            <header class="category-card-head">
+                <div class="category-card-icon"><img src="/static/img/cat-kids.jpg" alt="" onerror="this.remove()"></div>
+                <h3>Детские товары</h3>
+            </header>
+            <ul class="category-card-list">
+                <li><a href="#">Детская одежда</a></li>
+                <li><a href="#">Игрушки</a></li>
+                <li><a href="#">Коляски</a></li>
+                <li><a href="#">Автокресла</a></li>
+                <li><a href="#">Питание</a></li>
+            </ul>
+            <a href="#" class="category-card-all">Все объявления →</a>
+        </article>
+
+    </div>
+</section>
+
+{{end}}
