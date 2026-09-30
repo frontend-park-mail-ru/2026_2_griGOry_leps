@@ -1,6 +1,15 @@
-import { login } from '../api.js';
-import { setUser } from '../store.js';
-import { redirect } from '../router/router.js';
+import { login } from '../../api.js';
+import { setUser } from '../../store.js';
+import { redirect } from '../../router/router.js';
+import { compileTemplate } from '../../core/template.js';
+import '../../components/auth-layout/auth-layout.js';
+import '../../components/auth-card/auth-card.js';
+import '../../components/auth-form/auth-form.js';
+import { getAuthTabs } from '../../components/tabs/tabs.js';
+import { initFormFields, setFieldError } from '../../components/form-field/form-field.js';
+import source from './login.hbs?raw';
+
+const render = compileTemplate(source);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PHONE_DIGITS = 10;
@@ -40,9 +49,9 @@ export function validateLoginForm({ login: loginValue, password }) {
   if (!value) {
     errors.login = 'Введите телефон или email';
   } else if (value.includes('@')) {
-    if (!EMAIL_RE.test(value)) errors.login = 'Введите корректный email';
+    if (!EMAIL_RE.test(value)) errors.login = 'Введите корректный email, например name@mail.ru';
   } else if (!isValidPhone(value)) {
-    errors.login = 'Введите корректный номер телефона';
+    errors.login = 'Номер указан не полностью — введите 10 цифр после +7';
   }
 
   if (!password) {
@@ -76,23 +85,8 @@ export function getLoginErrorMessage(err) {
  * @returns {void}
  */
 export function renderLoginPage(root) {
-  root.innerHTML = `
-    <h1>Вход в GO&GET</h1>
-    <form id="login-form" novalidate>
-      <div>
-        <label for="login-input">Телефон или Email</label>
-        <input id="login-input" type="text" name="login" autocomplete="username" />
-        <p class="form-error" data-error-for="login"></p>
-      </div>
-      <div>
-        <label for="password-input">Пароль</label>
-        <input id="password-input" type="password" name="password" autocomplete="current-password" />
-        <p class="form-error" data-error-for="password"></p>
-      </div>
-      <button type="submit">Войти</button>
-      <p class="form-error" id="form-error" role="alert"></p>
-    </form>
-  `;
+  root.innerHTML = render({ tabs: getAuthTabs('login') });
+  initFormFields(root);
 
   const form = /** @type {HTMLFormElement} */ (root.querySelector('#login-form'));
   const formError = /** @type {HTMLElement} */ (root.querySelector('#form-error'));
@@ -103,8 +97,7 @@ export function renderLoginPage(root) {
   /** @param {LoginFormErrors} errors */
   function showFieldErrors(errors) {
     for (const name of /** @type {const} */ (['login', 'password'])) {
-      const el = form.querySelector(`[data-error-for="${name}"]`);
-      if (el) el.textContent = errors[name] ?? '';
+      setFieldError(form, name, errors[name]);
     }
   }
 

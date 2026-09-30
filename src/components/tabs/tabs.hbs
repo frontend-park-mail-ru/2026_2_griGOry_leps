@@ -1,0 +1,5 @@
+<nav class="tabs" aria-label="Вход и регистрация">
+  {{#each items}}
+    <a class="tabs__item{{#if active}} tabs__item--active{{/if}}" href="{{href}}" data-link{{#if active}} aria-current="page"{{/if}}>{{label}}</a>
+  {{/each}}
+</nav>

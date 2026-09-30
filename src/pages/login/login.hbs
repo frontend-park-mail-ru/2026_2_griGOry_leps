@@ -1,0 +1,15 @@
+{{#> auth-layout}}
+  {{#> auth-card title="Вход в GoGET" subtitle="Войдите, чтобы размещать объявления и писать продавцам"}}
+    {{> tabs items=tabs}}
+    {{#> auth-form id="login-form"}}
+      <div class="auth-form__fields">
+        {{> form-field id="login-input" name="login" label="Телефон или email" placeholder="+7 900 000-00-00" autocomplete="username"}}
+        {{> form-field id="password-input" name="password" label="Пароль" placeholder="Введите пароль" autocomplete="current-password" password=true}}
+      </div>
+      <div>{{> link href="/forgot-password" text="Забыли пароль?" spa=true}}</div>
+      <p class="form-error" id="form-error" role="alert"></p>
+      {{> button text="Войти" type="submit" block=true}}
+      {{#> form-note}}Нет аккаунта? {{> link href="/register" text="Зарегистрироваться" spa=true}}{{/form-note}}
+    {{/auth-form}}
+  {{/auth-card}}
+{{/auth-layout}}

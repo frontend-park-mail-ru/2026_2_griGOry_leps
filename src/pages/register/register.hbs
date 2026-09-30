@@ -1,0 +1,17 @@
+{{#> auth-layout}}
+  {{#> auth-card title="Регистрация в GoGET" subtitle="Создайте аккаунт — это займёт меньше минуты"}}
+    {{> tabs items=tabs}}
+    {{#> auth-form id="register-form"}}
+      <div class="auth-form__fields">
+        {{> form-field id="name-input" name="name" label="Имя" placeholder="Как к вам обращаться" autocomplete="given-name" hint="Видно только вам — в профиле"}}
+        {{> form-field id="nickname-input" name="nickname" label="Никнейм" placeholder="Например, ivan_bike" autocomplete="nickname" hint="Его увидят покупатели и продавцы"}}
+        {{> form-field id="phone-input" name="phone" label="Телефон" type="tel" placeholder="+7 900 000-00-00" autocomplete="tel" hint="Покупатели смогут вам позвонить"}}
+        {{> form-field id="email-input" name="email" label="Email" type="email" placeholder="name@mail.ru" autocomplete="email" hint="Для связи, если скроете телефон в объявлении"}}
+        {{> form-field id="password-input" name="password" label="Пароль" placeholder="Придумайте пароль" autocomplete="new-password" password=true rules=passwordRules}}
+        {{> form-field id="password-repeat-input" name="passwordRepeat" label="Повторите пароль" placeholder="Ещё раз пароль" autocomplete="new-password" password=true}}
+      </div>
+      {{> button text="Зарегистрироваться" type="submit" block=true}}
+      {{#> form-note}}Нажимая «Зарегистрироваться», вы соглашаетесь с {{> link href="/terms" text="условиями использования" strong=true}}{{/form-note}}
+    {{/auth-form}}
+  {{/auth-card}}
+{{/auth-layout}}

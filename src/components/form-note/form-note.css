@@ -1,0 +1,15 @@
+.form-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.form-note--dark {
+  color: var(--color-black);
+}
+
+.form-note .link {
+  font-weight: 500;
+}

@@ -1,0 +1,21 @@
+.link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link--strong {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.link--button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}

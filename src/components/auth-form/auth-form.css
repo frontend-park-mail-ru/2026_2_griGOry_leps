@@ -1,0 +1,11 @@
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

@@ -5,8 +5,10 @@
  */
 export function renderAboutPage(root) {
   root.innerHTML = `
-    <h1>О проекте</h1>
-    <p>Это вторая страница, адрес сменился без reload.</p>
-    <a href="/" data-link>На главную</a>
+    <div class="page-narrow">
+      <h1>О проекте</h1>
+      <p>Это вторая страница, адрес сменился без reload.</p>
+      <a href="/" data-link>На главную</a>
+    </div>
   `;
 }
