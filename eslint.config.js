@@ -11,6 +11,8 @@ export default [
         document: "readonly",
         history: "readonly",
         location: "readonly",
+        fetch: "readonly",
+        FormData: "readonly",
         HTMLElement: "readonly",
         HTMLAnchorElement: "readonly",
       },
