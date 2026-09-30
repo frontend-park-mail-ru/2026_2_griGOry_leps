@@ -1,0 +1,147 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: $surface-0;
+    border-bottom: 1px solid $gray-200;
+
+    &__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 32px;
+    width: 100%;
+    }
+
+    &__logo {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 0.25rem;
+    }
+
+    &__logo-img {
+        height: 30px;
+        width: auto;
+        display: block;
+    }
+
+    &__category,
+    &__city {
+        @include typo-p;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 0.875rem;
+        background-color: $surface-0;
+        border: 1px solid $gray-200;
+        border-radius: $radius-md;
+        white-space: nowrap;
+        transition: background-color $timing-animation-short;
+
+        &:hover {
+            background-color: $surface-1;
+        }
+    }
+
+    &__icon {
+        width: 16px;
+        height: 16px;
+        display: block;
+        flex-shrink: 0;
+    }
+
+    &__chevron {
+        font-size: 0.625rem;
+        color: $color-text-muted;
+        line-height: 1;
+    }
+
+    &__search {
+        flex: 1;
+    }
+
+    &__user {
+        @include typo-p;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.875rem 0.375rem 0.375rem;
+        background-color: $surface-0;
+        border: 1px solid $gray-200;
+        border-radius: $radius-pill;
+        white-space: nowrap;
+        transition: background-color $timing-animation-short;
+
+        &:hover {
+            background-color: $surface-1;
+        }
+    }
+
+    &__avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background-color: $goget-primary;
+        color: $white;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    &__user-name {
+        font-weight: 500;
+    }
+
+    &__signup {
+        @include button-primary;
+    }
+
+    &__login,
+    &__logout {
+        @include button-secondary;
+    }
+}
+
+.search {
+    position: relative;
+    display: flex;
+
+    &__input {
+        @include form-field;
+        padding-right: 2.75rem;
+    }
+
+    &__btn {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: $radius-sm;
+        transition: background-color $timing-animation-short;
+
+        &:hover {
+            background-color: $surface-1;
+        }
+    }
+
+    &__icon {
+        width: 18px;
+        height: 18px;
+        display: block;
+        pointer-events: none;
+    }
+}

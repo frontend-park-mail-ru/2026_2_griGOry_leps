@@ -1,0 +1,86 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.footer {
+    margin-top: 4rem;
+    padding: 3rem 0 1.5rem;
+    background-color: $surface-1;
+    color: $color-text-main;
+
+    &__inner {
+        @include container;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 3rem;
+    }
+
+    &__brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    &__logo-img {
+        height: 30px;
+        width: auto;
+        display: block;
+    }
+
+    &__tagline {
+        @include typo-small;
+        max-width: 280px;
+    }
+
+    &__cols {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    &__col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h4 {
+            @include typo-h5;
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            @include typo-small;
+            color: $color-text-muted;
+            transition: color $timing-animation-short;
+
+            &:hover {
+                color: $color-text-main;
+            }
+        }
+    }
+
+    &__bottom {
+        @include container;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid $gray-200;
+        font-size: 0.75rem;
+        color: $color-text-muted;
+    }
+
+    &__legal {
+        display: flex;
+        gap: 1rem;
+
+        a {
+            color: inherit;
+            transition: color $timing-animation-short;
+
+            &:hover {
+                color: $color-text-main;
+            }
+        }
+    }
+}

@@ -1,117 +1,64 @@
-import { getUser } from '../store.js';
+/** @typedef {(params: Record<string, string>) => void | Promise<void>} RouteHandler */
 
-/**
- * @typedef {Object} Route
- * @property {() => void} handler функция, рисующая страницу
- * @property {boolean} isProtected требует ли маршрут авторизации
- */
+/** @type {{ pattern: RegExp, keys: string[], handler: RouteHandler }[]} */
+const routes = [];
 
-/**
- * @typedef {Object} RouteOptions
- * @property {boolean} [protected] если true — гостей редиректит на /login
- */
+let notFoundHandler = null;
 
-/** @type {Record<string, Route>} */
-const routes = {};
-
-/** @type {Promise<void>} */
-let authReady = Promise.resolve();
-
-/**
- * Задаёт промис первичной проверки сессии. Защищённые маршруты
- * дожидаются его, прежде чем решать, пускать ли пользователя.
- * @param {Promise<void>} promise
- * @returns {void}
- */
-export function setAuthReady(promise) {
-  authReady = promise;
+export function registerRoute(path, handler) {
+    const keys = [];
+    const pattern = new RegExp(
+        '^' + path
+            .replace(/\/:([^/]+)/g, (_, key) => {
+                keys.push(key);
+                return '/([^/]+)';
+            })
+            .replace(/\//g, '\\/') + '$'
+    );
+    routes.push({ pattern, keys, handler });
 }
 
-/**
- * Регистрирует маршрут.
- * @param {string} path путь, например '/about'
- * @param {() => void} handler функция, рисующая страницу
- * @param {RouteOptions} [options]
- * @returns {void}
- */
-export function registerRoute(path, handler, options = {}) {
-  routes[path] = {
-    handler,
-    isProtected: options.protected ?? false,
-  };
+export function registerNotFound(handler) {
+    notFoundHandler = handler;
 }
 
-/**
- * Проверяет, попадает ли путь под защищённый маршрут
- * (сам маршрут или любой вложенный путь).
- * @param {string} pathname
- * @returns {boolean}
- */
-function isProtectedPath(pathname) {
-  return Object.entries(routes).some(([routePath, config]) => {
-    if (!config.isProtected) return false;
-    const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^${escaped}(/.*)?$`).test(pathname);
-  });
-}
-
-/**
- * Переходит на путь, добавляя запись в историю браузера.
- * @param {string} path
- * @returns {void}
- */
 export function navigate(path) {
-  history.pushState({}, '', path);
-  resolveRoute();
+    history.pushState({}, '', path);
+    resolveRoute();
 }
 
-/**
- * Переходит на путь, заменяя текущую запись в истории
- * (кнопка «Назад» не вернёт на прежний адрес).
- * @param {string} path
- * @returns {void}
- */
-export function redirect(path) {
-  history.replaceState({}, '', path);
-  resolveRoute();
-}
+export function resolveRoute() {
+    const path = location.pathname;
 
-/**
- * Находит обработчик для текущего адреса и вызывает его.
- * Для защищённых маршрутов ждёт проверки сессии и при отсутствии
- * пользователя перенаправляет на /login. Неизвестные пути идут на /404.
- * @returns {Promise<void>}
- */
-export async function resolveRoute() {
-  const path = location.pathname;
-  const config = routes[path] ?? routes['/404'];
-
-  if (isProtectedPath(path)) {
-    await authReady;
-    if (!getUser()) {
-      redirect('/login');
-      return;
+    for (const { pattern, keys, handler } of routes) {
+        const match = path.match(pattern);
+        if (match) {
+            const params = {};
+            keys.forEach((key, i) => {
+                params[key] = decodeURIComponent(match[i + 1]);
+            });
+            Promise.resolve(handler(params)).catch((err) => {
+                console.error('Ошибка роута', path, err);
+            });
+            return;
+        }
     }
-  }
 
-  config?.handler();
+    Promise.resolve(notFoundHandler?.()).catch((err) => {
+        console.error('Ошибка 404-роута', path, err);
+    });
 }
 
-/**
- * Подписывается на клики по ссылкам `a[data-link]` и на кнопки
- * «Назад»/«Вперёд», затем отрисовывает текущий маршрут.
- * @returns {void}
- */
 export function initRouter() {
-  document.body.addEventListener('click', (e) => {
-    const target = /** @type {HTMLElement} */ (e.target);
-    const link = target.closest('a[data-link]');
-    if (link instanceof HTMLAnchorElement) {
-      e.preventDefault();
-      navigate(link.getAttribute('href') ?? '/');
-    }
-  });
+    document.body.addEventListener('click', (e) => {
+        const target = /** @type {HTMLElement} */ (e.target);
+        const link = target.closest('a[data-link]');
+        if (link instanceof HTMLAnchorElement) {
+            e.preventDefault();
+            navigate(link.getAttribute('href') ?? '/');
+        }
+    });
 
-  window.addEventListener('popstate', resolveRoute);
-  resolveRoute();
+    window.addEventListener('popstate', resolveRoute);
+    resolveRoute();
 }

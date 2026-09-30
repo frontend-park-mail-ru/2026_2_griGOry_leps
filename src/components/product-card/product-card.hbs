@@ -1,0 +1,22 @@
+<article class="product-card">
+    <div class="product-card__img">
+        <img src="{{image}}" alt="{{title}}" loading="lazy" onerror="this.remove()">
+    </div>
+    <div class="product-card__body">
+        <div class="product-card__price">
+            {{price}} <span class="product-card__currency">₽</span>
+            {{#if delivery}}<span class="product-card__badge">Доставка</span>{{/if}}
+        </div>
+        <h3 class="product-card__title">{{title}}</h3>
+        <div class="product-card__meta">
+            <span class="product-card__rating">
+                <img src="/src/img/star.svg" alt="" class="product-card__meta-icon" aria-hidden="true">
+                {{rating}}
+            </span>
+            <span class="product-card__reviews">
+                <img src="/src/img/view_icon.svg" alt="" class="product-card__meta-icon" aria-hidden="true">
+                {{reviews}}
+            </span>
+        </div>
+    </div>
+</article>

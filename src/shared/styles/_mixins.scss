@@ -1,0 +1,139 @@
+@use './variables' as *;
+
+@mixin typo-h1 {
+    color: $color-text-main;
+    font-weight: 700;
+    font-size: 2.5rem;
+    font-family: $font-header;
+    line-height: 1.2;
+}
+
+@mixin typo-h2 {
+    color: $color-text-main;
+    font-weight: 700;
+    font-size: 1.75rem;
+    font-family: $font-header;
+}
+
+@mixin typo-h3 {
+    color: $color-text-main;
+    font-weight: 600;
+    font-size: 1.25rem;
+    font-family: $font-body;
+}
+
+@mixin typo-h4 {
+    color: $color-text-main;
+    font-weight: 700;
+    font-size: 1.125rem;
+    font-family: $font-body;
+}
+
+@mixin typo-h5 {
+    color: $color-text-main;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: $font-body;
+}
+
+@mixin typo-h6 {
+    color: $color-text-muted;
+    font-weight: 400;
+    font-size: 0.75rem;
+    font-family: $font-body;
+}
+
+@mixin container {
+    max-width: $container-max-width;
+    margin: 0 auto;
+    padding: 0 $container-padding;
+}
+
+@mixin typo-p {
+    color: $color-text-main;
+    font-size: 0.875rem;
+    font-family: $font-body;
+    line-height: 1.5;
+}
+
+@mixin typo-small {
+    color: $color-text-muted;
+    font-size: 0.75rem;
+    font-family: $font-body;
+}
+
+@mixin button-primary {
+    @include typo-p;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    color: $white;
+    background-color: $goget-primary;
+    border: none;
+    border-radius: $radius-md;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color $timing-animation-short;
+
+    &:hover {
+        background-color: $goget-primary-hover;
+    }
+}
+
+@mixin button-accent {
+    @include typo-p;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    color: $white;
+    background-color: $goget-accent;
+    border: none;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color $timing-animation-short;
+
+    &:hover {
+        background-color: #d97706;
+    }
+}
+
+@mixin button-secondary {
+    @include typo-p;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    color: $color-text-main;
+    background-color: transparent;
+    border: 1px solid $gray-200;
+    border-radius: $radius-md;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color $timing-animation-short;
+
+    &:hover {
+        background-color: $surface-1;
+    }
+}
+
+@mixin form-field {
+    @include typo-p;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: $white;
+    border: 1px solid $gray-200;
+    border-radius: $radius-md;
+    outline: none;
+    transition: border-color $timing-animation-short;
+
+    &::placeholder {
+        color: $color-text-muted;
+    }
+
+    &:focus {
+        border-color: $goget-primary;
+    }
+}

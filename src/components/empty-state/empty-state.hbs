@@ -1,0 +1,10 @@
+<div class="empty-state">
+    <div class="empty-state__icon" aria-hidden="true">
+        <img src="/src/img/Sparkles.svg" alt="">
+    </div>
+    <h2 class="empty-state__title">{{title}}</h2>
+    <p class="empty-state__text">{{{text}}}</p>
+    {{#if action}}
+        <a href="{{action.href}}" data-link class="empty-state__action">{{action.label}}</a>
+    {{/if}}
+</div>

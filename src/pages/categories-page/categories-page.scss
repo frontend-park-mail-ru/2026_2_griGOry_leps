@@ -1,0 +1,47 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 0 0;
+    font-size: 0.8125rem;
+    color: $color-text-muted;
+
+    a {
+        color: $color-text-muted;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-main;
+        }
+    }
+
+    &__sep {
+        color: $gray-200;
+    }
+}
+
+.categories-page {
+    width: 100%;
+    padding: 0 32px;
+
+    &__head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    &__count {
+        @include typo-p;
+        color: $color-text-muted;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+}
