@@ -1,0 +1,180 @@
+{{define "index.html"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+
+<section class="section" aria-labelledby="categories-title">
+    <div class="section-head">
+        <h2 id="categories-title">Выберите категорию</h2>
+        <div class="arrows">
+            <button type="button" class="arrow" aria-label="Назад">‹</button>
+            <button type="button" class="arrow" aria-label="Вперёд">›</button>
+        </div>
+    </div>
+
+    <div class="categories">
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-auto.jpg" alt="Авто"></div>
+            <span>Авто</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-realty.jpg" alt="Недвижимость"></div>
+            <span>Недвижимость</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-rent.jpg" alt="Жильё"></div>
+            <span>Жильё для путешествий</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-home.jpg" alt="Для дома"></div>
+            <span>Для дома и дачи</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-parts.jpg" alt="Запчасти"></div>
+            <span>Запчасти</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-services.jpg" alt="Услуги"></div>
+            <span>Услуги</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-electronics.jpg" alt="Электроника"></div>
+            <span>Электроника</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-jobs.jpg" alt="Работа"></div>
+            <span>Работа и подработка</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-biznes.jpg" alt="Бизнес"></div>
+            <span>Бизнес 360</span>
+        </a>
+        <a class="category" href="#">
+            <div class="category-img"><img src="/static/img/cat-clothes.jpg" alt="Одежда"></div>
+            <span>Одежда, обувь</span>
+        </a>
+    </div>
+</section>
+
+<section class="promo" aria-label="Промо-подборки">
+    <a class="promo-card" href="#">
+        <div class="promo-text">
+            <h3>Идём в школу</h3>
+            <p>рюкзаки, канцтовары</p>
+        </div>
+        <img src="/static/img/promo-school.jpg" alt="Идём в школу">
+    </a>
+    <a class="promo-card" href="#">
+        <div class="promo-text">
+            <h3>Подарок за визит</h3>
+            <p>заберите в течение суток</p>
+        </div>
+        <img src="/static/img/promo-gift.jpg" alt="Подарок за визит">
+    </a>
+    <a class="promo-card" href="#">
+        <div class="promo-text">
+            <h3>Сезон велосипедов</h3>
+            <p>подборка для города и гор</p>
+        </div>
+        <img src="/static/img/promo-bike.jpg" alt="Сезон велосипедов">
+    </a>
+</section>
+
+<section class="section" aria-labelledby="recommend-empty-title">
+    <div class="empty-state">
+        <div class="empty-state-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="none">
+                <path d="M24 6l4 10 10 4-10 4-4 10-4-10-10-4 10-4 4-10z"
+                      stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/>
+                <circle cx="36" cy="34" r="2" fill="#2563eb"/>
+                <circle cx="14" cy="32" r="1.5" fill="#2563eb"/>
+            </svg>
+        </div>
+        <h2 class="empty-state-title" id="recommend-empty-title">Пока нет рекомендаций для вас</h2>
+        <p class="empty-state-text">
+            Разместите первое объявление или загляните позже —<br>
+            мы подберём то, что вам может понравиться
+        </p>
+        <a href="#" class="btn btn-accent">Разместить объявление</a>
+    </div>
+</section>
+
+<section class="section" aria-labelledby="popular-title">
+    <div class="section-head">
+        <h2 id="popular-title">Популярное сейчас</h2>
+        <div class="arrows">
+            <button type="button" class="arrow" aria-label="Назад"><</button>
+            <button type="button" class="arrow" aria-label="Вперёд">></button>
+        </div>
+    </div>
+
+    <div class="products">
+        <article class="product">
+            <div class="product-img"><img src="/static/img/p1.jpg" alt="Велосипед горный"></div>
+            <div class="product-body">
+                <div class="product-price">15 000 <span class="currency">₽</span></div>
+                <h3 class="product-title">Велосипед горный, состояние отличное</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/src/img/star.svg" alt="" class="meta-icon">4,9</span>
+                    <span class="reviews"><img src="/src/img/view_icon.svg" alt="" class="meta-icon">296</span>
+                </div>
+            </div>
+        </article>
+        <article class="product">
+            <div class="product-img"><img src="/src/img/p2.jpg" alt="Велосипед шоссейный"></div>
+            <div class="product-body">
+                <div class="product-price">45 000 <span class="currency">₽</span></div>
+                <h3 class="product-title">Велосипед шоссейный, б/у</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/src/img/star.svg" alt="" class="meta-icon">4,7</span>
+                    <span class="reviews"><img src="/src/img/view_icon.svg" alt="" class="meta-icon">143</span>
+                </div>
+            </div>
+        </article>
+        <article class="product">
+            <div class="product-img"><img src="/src/img/p3.jpg" alt="Рюкзак школьный"></div>
+            <div class="product-body">
+                <div class="product-price">3 200 <span class="currency">₽</span><span class="badge-delivery">Доставка</span></div>
+                <h3 class="product-title">Рюкзак школьный ортопедический</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/src/img/star.svg" alt="" class="meta-icon">4,4</span>
+                    <span class="reviews"><img src="/src/img/view_icon.svg" alt="" class="meta-icon">97</span>
+                </div>
+            </div>
+        </article>
+        <article class="product">
+            <div class="product-img"><img src="/src/img/p4.jpg" alt="Диван раскладной"></div>
+            <div class="product-body">
+                <div class="product-price">48 000 <span class="currency">₽</span><span class="badge-delivery">Доставка</span></div>
+                <h3 class="product-title">Диван раскладной, доставка</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/src/img/star.svg" alt="" class="meta-icon">4,6</span>
+                    <span class="reviews"><img src="/src/img/view_icon.svg" alt="" class="meta-icon">412</span>
+                </div>
+            </div>
+        </article>
+        <article class="product">
+            <div class="product-img"><img src="src/img/p5.jpg" alt="Комплект книг"></div>
+            <div class="product-body">
+                <div class="product-price">1 500 <span class="currency">₽</span><span class="badge-delivery">Доставка</span></div>
+                <h3 class="product-title">Комплект книг для 5 класса</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/src/img/star.svg" alt="" class="meta-icon">5,0</span>
+                    <span class="reviews"><img src="/src/img/view_icon.svg" alt="" class="meta-icon">58</span>
+                </div>
+            </div>
+        </article>
+        <article class="product">
+            <div class="product-img"><img src="/src/img/p6.jpg" alt="Ноутбук игровой"></div>
+            <div class="product-body">
+                <div class="product-price">62 000 <span class="currency">₽</span><span class="badge-delivery">Доставка</span></div>
+                <h3 class="product-title">Ноутбук игровой, гарантия</h3>
+                <div class="product-meta">
+                    <span class="rating"><img src="/static/img/star.svg" alt="" class="meta-icon">4,8</span>
+                    <span class="reviews"><img src="/static/img/view_icon.svg" alt="" class="meta-icon">530</span>
+                </div>
+            </div>
+        </article>
+    </div>
+</section>
+
+{{end}}

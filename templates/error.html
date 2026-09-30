@@ -1,0 +1,6 @@
+{{define "error.html"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<p>{{if .Error}}{{.Error}}{{else}}Что-то пошло не так.{{end}}</p>
+<p><a href="/"><- На главную</a></p>
+{{end}}

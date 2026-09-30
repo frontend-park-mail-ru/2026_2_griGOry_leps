@@ -1,0 +1,38 @@
+{{define "content"}}
+<h1 class="auth-title">Вход в GoGET</h1>
+<p class="auth-subtitle">Войдите, чтобы размещать объявления и писать продавцам</p>
+
+<div class="auth-tabs" role="tablist">
+    <a href="/login" class="auth-tab auth-tab--active" role="tab">Вход</a>
+    <a href="/register" class="auth-tab" role="tab">Регистрация</a>
+</div>
+
+<form id="login-form" novalidate>
+    <label class="auth-field">
+        <span class="auth-label">Телефон или email</span>
+        <input type="text" name="login" placeholder="+7 900 000-00-00" autocomplete="username">
+    </label>
+
+    <label class="auth-field">
+        <span class="auth-label">Пароль</span>
+        <span class="auth-input-wrap">
+            <input type="password" name="password" placeholder="Введите пароль" autocomplete="current-password">
+            <button type="button" class="auth-eye" aria-label="Показать пароль">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"
+                          stroke="currentColor" stroke-width="1.6"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/>
+                </svg>
+            </button>
+        </span>
+    </label>
+
+    <a href="/forgot_password" class="auth-link">Забыли пароль?</a>
+
+    <button type="submit" class="btn btn-primary btn-block">Войти</button>
+
+    <p class="auth-footer-hint">
+        Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+    </p>
+</form>
+{{end}}

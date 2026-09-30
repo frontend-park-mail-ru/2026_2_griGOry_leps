@@ -1,0 +1,30 @@
+{{define "auth-layout"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.Title}} — GoGet</title>
+    <link rel="icon" type="image/svg+xml" href="/src/img/goget.svg">
+    <link rel="stylesheet" href="/src/styles/style.css">
+</head>
+<body class="auth-body">
+
+<header class="auth-header">
+    <div class="container auth-header-inner">
+        <a href="/" class="logo" aria-label="GoGet — на главную">
+            <img src="/src/img/goget.png" alt="GoGet" class="logo-icon">
+        </a>
+        <a href="/" class="auth-back">← Вернуться на главную</a>
+    </div>
+</header>
+
+<main class="auth-main">
+    <div class="auth-card">
+        {{block "content" .}}{{end}}
+    </div>
+</main>
+
+</body>
+</html>
+{{end}}
