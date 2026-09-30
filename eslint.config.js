@@ -13,6 +13,7 @@ export default [
         location: "readonly",
         fetch: "readonly",
         FormData: "readonly",
+        Headers: "readonly",
         HTMLElement: "readonly",
         HTMLAnchorElement: "readonly",
       },

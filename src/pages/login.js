@@ -1,6 +1,6 @@
 import { login } from '../api.js';
 import { setUser } from '../store.js';
-import { navigate } from '../router/router.js';
+import { redirect } from '../router/router.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PHONE_DIGITS = 10;
@@ -129,7 +129,7 @@ export function renderLoginPage(root) {
         password: values.password,
       });
       setUser(user);
-      navigate('/');
+      redirect('/');
     } catch (err) {
       formError.textContent = getLoginErrorMessage(err);
     } finally {

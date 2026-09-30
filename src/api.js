@@ -26,10 +26,10 @@ export class ApiError extends Error {
  * @throws {ApiError} при сетевой ошибке (status = 0, network = true)
  */
 export async function request(endpoint, options = {}) {
-  const headers = { ...options.headers };
+  const headers = new Headers(options.headers);
 
-  if (options.body) {
-    headers['Content-Type'] = 'application/json';
+  if (options.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
   }
 
   try {
@@ -62,7 +62,6 @@ function assertOk(response) {
 export async function getMe() {
   const response = await request('/me');
 
-  // 4xx (в первую очередь 401) — пользователь не авторизован, это штатная ситуация.
   if (response.status >= 400 && response.status < 500) {
     return null;
   }
@@ -113,8 +112,10 @@ export async function register(data) {
 /**
  * Завершает текущую сессию.
  * @returns {Promise<void>}
- * @throws {ApiError} при сетевой ошибке
+ * @throws {ApiError} при сетевой ошибке или неуспешном ответе
  */
 export async function logout() {
-  await request('/logout', { method: 'POST' });
+  const response = await request('/logout', { method: 'POST' });
+
+  assertOk(response);
 }
