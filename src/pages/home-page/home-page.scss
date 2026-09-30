@@ -41,7 +41,7 @@
 }
 
 .home-section {
-    padding: 2rem 0;
+    padding: 1rem 0;
 
     &__head {
         display: flex;
@@ -88,7 +88,7 @@
 .home-products {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: 140px;  
+    grid-auto-columns: 350px;  
     gap: 1rem;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
@@ -105,7 +105,7 @@
 }
 
 .home-products {
-    grid-auto-columns: 200px;   
+    grid-auto-columns: 300px;   
 }
 
 .home-promo {

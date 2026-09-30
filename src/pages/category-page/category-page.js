@@ -1,3 +1,4 @@
+import template from './category-page.hbs';
 import './category-page.scss';
 
 const categoryNames = {
@@ -16,20 +17,5 @@ const categoryNames = {
 export const CategoryPage = (root) => (params) => {
     const name = categoryNames[params.slug] ?? 'Неизвестная категория';
 
-    root.innerHTML = `
-        <div class="category-page">
-            <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                <a href="/" data-link>Главная</a>
-                <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                <a href="/categories" data-link>Все категории</a>
-                <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                <span>${name}</span>
-            </nav>
-
-            <section class="section">
-                <h1>${name}</h1>
-                <p>Здесь будут объявления категории «${name}».</p>
-            </section>
-        </div>
-    `;
+    root.innerHTML = template({ name });
 };
