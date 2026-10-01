@@ -1,15 +1,35 @@
-{{#> auth-layout}}
-  {{#> auth-card title="Вход в GoGET" subtitle="Войдите, чтобы размещать объявления и писать продавцам"}}
-    {{> tabs items=tabs}}
-    {{#> auth-form id="login-form"}}
-      <div class="auth-form__fields">
-        {{> form-field id="login-input" name="login" label="Телефон или email" placeholder="+7 900 000-00-00" autocomplete="username"}}
-        {{> form-field id="password-input" name="password" label="Пароль" placeholder="Введите пароль" autocomplete="current-password" password=true}}
-      </div>
-      <div>{{> link href="/forgot-password" text="Забыли пароль?" spa=true}}</div>
-      <p class="form-error" id="form-error" role="alert"></p>
-      {{> button text="Войти" type="submit" block=true}}
-      {{#> form-note}}Нет аккаунта? {{> link href="/register" text="Зарегистрироваться" spa=true}}{{/form-note}}
-    {{/auth-form}}
-  {{/auth-card}}
-{{/auth-layout}}
+<div class="auth-page">
+    <header class="auth-header">
+        <a class="auth-header__logo" href="/" data-link aria-label="GoGet — на главную">
+            <img src="/src/img/goget.png" alt="GoGet" class="auth-header__logo-img" onerror="this.remove()">
+        </a>
+        <a class="auth-header__back" href="/" data-link>← Вернуться на главную</a>
+    </header>
+
+    <main class="auth-page__content">
+        <section class="auth-card">
+            <header class="auth-card__heading">
+                <h1 class="auth-card__title">Вход в GoGET</h1>
+                <p class="auth-card__subtitle">Войдите, чтобы размещать объявления и писать продавцам</p>
+            </header>
+
+            {{{tabsHtml}}}
+
+            <form class="auth-form" id="login-form" novalidate>
+                <div class="auth-form__fields">{{{fieldsHtml}}}</div>
+
+                <div>
+                    <a href="/forgot-password" class="link" data-link>Забыли пароль?</a>
+                </div>
+
+                <p class="form-error" id="form-error" role="alert"></p>
+
+                <button type="submit" class="btn btn-primary btn-block">Войти</button>
+
+                <p class="form-note">
+                    Нет аккаунта? <a href="/register" class="link" data-link>Зарегистрироваться</a>
+                </p>
+            </form>
+        </section>
+    </main>
+</div>

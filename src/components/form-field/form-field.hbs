@@ -1,28 +1,39 @@
 <div class="form-field{{#if error}} form-field--error{{/if}}">
-  <label class="form-field__label" for="{{id}}">{{label}}</label>
-  <div class="form-field__control">
-    <input
-      class="form-field__input"
-      id="{{id}}"
-      name="{{name}}"
-      type="{{#if password}}password{{else}}{{#if type}}{{type}}{{else}}text{{/if}}{{/if}}"
-      placeholder="{{placeholder}}"
-      {{#if autocomplete}}autocomplete="{{autocomplete}}"{{/if}}
-      {{#if inputmode}}inputmode="{{inputmode}}"{{/if}}
-      {{#if value}}value="{{value}}"{{/if}}
-      aria-invalid="{{#if error}}true{{else}}false{{/if}}"
-    />
-    {{#if password}}
-      <button class="form-field__toggle" type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false">
-        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M1.5 10S4.5 4.5 10 4.5 18.5 10 18.5 10 15.5 15.5 10 15.5 1.5 10 1.5 10Z"/>
-          <circle cx="10" cy="10" r="2.5"/>
-          <path class="form-field__toggle-slash" d="M3 3L17 17"/>
-        </svg>
-      </button>
-    {{/if}}
-  </div>
-  {{#if rules}}{{> password-rules rules=rules}}{{/if}}
-  {{#if hint}}<p class="form-field__hint">{{hint}}</p>{{/if}}
-  <p class="form-field__error" data-error-for="{{name}}">{{error}}</p>
+    <label class="form-field__label" for="{{id}}">{{label}}</label>
+
+    <div class="form-field__control">
+        <input
+            class="form-field__input"
+            id="{{id}}"
+            name="{{name}}"
+            type="{{#if password}}password{{else}}{{#if type}}{{type}}{{else}}text{{/if}}{{/if}}"
+            placeholder="{{placeholder}}"
+            {{#if autocomplete}}autocomplete="{{autocomplete}}"{{/if}}
+            {{#if inputmode}}inputmode="{{inputmode}}"{{/if}}
+            {{#if value}}value="{{value}}"{{/if}}
+            aria-invalid="{{#if error}}true{{else}}false{{/if}}"
+        >
+
+        {{#if password}}
+            <button
+                class="form-field__toggle"
+                type="button"
+                data-password-toggle
+                aria-label="Показать пароль"
+                aria-pressed="false"
+            >
+                <svg viewBox="0 0 20 20" width="20" height="20" fill="none"
+                     stroke="currentColor" stroke-width="1.6"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1.5 10S4.5 4.5 10 4.5 18.5 10 18.5 10 15.5 15.5 10 15.5 1.5 10 1.5 10Z"/>
+                    <circle cx="10" cy="10" r="2.5"/>
+                    <path class="form-field__toggle-slash" d="M3 3L17 17"/>
+                </svg>
+            </button>
+        {{/if}}
+    </div>
+
+    {{#if rulesHtml}}{{{rulesHtml}}}{{/if}}
+    {{#if hint}}<p class="form-field__hint">{{hint}}</p>{{/if}}
+    <p class="form-field__error" data-error-for="{{name}}">{{error}}</p>
 </div>

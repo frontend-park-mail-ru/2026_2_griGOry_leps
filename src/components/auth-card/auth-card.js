@@ -1,5 +1,4 @@
-import { registerComponent } from '../../core/template.js';
-import source from './auth-card.hbs?raw';
-import './auth-card.css';
+import template from './auth-card.hbs';
+import './auth-card.scss';
 
-export const renderAuthCard = registerComponent('auth-card', source);
+export const AuthCard = (props) => template(props);

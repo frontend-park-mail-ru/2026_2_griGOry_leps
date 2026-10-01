@@ -1,0 +1,22 @@
+@use '@/shared/styles/variables' as *;
+
+.auth-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: $surface-1;
+
+    &__content {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 96px 16px;
+    }
+
+    @media (max-width: 640px) {
+        &__content {
+            padding: 24px 16px;
+        }
+    }
+}

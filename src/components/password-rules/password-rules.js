@@ -1,20 +1,17 @@
-import { registerComponent } from '../../core/template.js';
-import source from './password-rules.hbs?raw';
-import './password-rules.css';
+import template from './password-rules.hbs';
+import './password-rules.scss';
 
-export const renderPasswordRules = registerComponent('password-rules', source);
+export const PasswordRules = (props) => template(props);
 
 const RULE_TEXTS = [
-  'Минимум 8 символов',
-  'Заглавная и строчная буквы',
-  'Хотя бы одна цифра',
+    'Минимум 8 символов',
+    'Заглавная и строчная буквы',
+    'Хотя бы одна цифра',
 ];
 
-/**
- * Список требований к паролю для partial'а `password-rules`.
- * @param {('neutral' | 'ok' | 'fail')[]} [states] состояние каждого правила
- * @returns {{ text: string, state: 'neutral' | 'ok' | 'fail' }[]}
- */
 export function getPasswordRules(states = []) {
-  return RULE_TEXTS.map((text, i) => ({ text, state: states[i] ?? 'neutral' }));
+    return RULE_TEXTS.map((text, i) => ({
+        text,
+        state: states[i] ?? 'neutral',
+    }));
 }

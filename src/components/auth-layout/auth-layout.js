@@ -1,6 +1,4 @@
-import { registerComponent } from '../../core/template.js';
-import '../header/header.js';
-import source from './auth-layout.hbs?raw';
-import './auth-layout.css';
+import template from './auth-layout.hbs';
+import './auth-layout.scss';
 
-export const renderAuthLayout = registerComponent('auth-layout', source);
+export const AuthLayout = (props) => template(props);

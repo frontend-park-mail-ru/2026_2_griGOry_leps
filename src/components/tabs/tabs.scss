@@ -1,0 +1,30 @@
+@use '@/shared/styles/variables' as *;
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: $surface-1;
+    border-radius: $radius-md;
+
+    &__item {
+        flex: 1;
+        padding: 0.625rem 0;
+        border-radius: $radius-sm;
+        font-weight: 500;
+        color: $color-text-muted;
+        text-align: center;
+        text-decoration: none;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-main;
+        }
+
+        &--active {
+            background: $surface-0;
+            color: $color-text-main;
+            box-shadow: 0 1px 2px rgba(20, 20, 23, 0.08);
+        }
+    }
+}

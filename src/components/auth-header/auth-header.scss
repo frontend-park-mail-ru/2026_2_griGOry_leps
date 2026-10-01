@@ -1,0 +1,35 @@
+@use '@/shared/styles/variables' as *;
+
+.auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 4rem;
+    background: $surface-0;
+    border-bottom: 1px solid $gray-200;
+
+    &__logo {
+        display: block;
+    }
+
+    &__logo-img {
+        height: 44px;
+        width: auto;
+        display: block;
+    }
+
+    &__back {
+        font-weight: 500;
+        color: $color-text-muted;
+        text-decoration: none;
+
+        &:hover {
+            color: $color-text-main;
+        }
+    }
+
+    @media (max-width: 640px) {
+        padding: 1rem;
+    }
+}

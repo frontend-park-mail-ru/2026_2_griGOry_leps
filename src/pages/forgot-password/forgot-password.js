@@ -1,25 +1,25 @@
-import { compileTemplate } from '../../core/template.js';
-import { navigate } from '../../router/router.js';
-import '../../components/auth-layout/auth-layout.js';
-import '../../components/auth-card/auth-card.js';
-import '../../components/auth-form/auth-form.js';
-import { initFormFields } from '../../components/form-field/form-field.js';
-import source from './forgot-password.hbs?raw';
+import template from './forgot-password.hbs';
+import './forgot-password.scss';
 
-const render = compileTemplate(source);
+import { FormField, initFormFields } from '@/components/form-field/form-field.js';
+import { navigate } from '@/router/router.js';
 
-/**
- * Рисует первый шаг восстановления пароля (ввод email). Сейчас это только
- * вёрстка: запрос кода не отправляется, форма ведёт на следующий шаг.
- * @param {HTMLElement} root
- * @returns {void}
- */
-export function renderForgotPasswordPage(root) {
-  root.innerHTML = render();
-  initFormFields(root);
+export const ForgotPasswordPage = (root) => {
+    root.innerHTML = template({
+        fieldsHtml: FormField({
+            id: 'email-input',
+            name: 'email',
+            label: 'Email',
+            type: 'email',
+            placeholder: 'name@mail.ru',
+            autocomplete: 'email',
+        }),
+    });
 
-  root.querySelector('#forgot-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    navigate('/reset-password');
-  });
-}
+    initFormFields(root);
+
+    root.querySelector('#forgot-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        navigate('/reset-password');
+    });
+};
