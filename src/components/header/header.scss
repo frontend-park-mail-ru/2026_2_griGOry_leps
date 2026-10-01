@@ -78,6 +78,10 @@
         &:hover {
             background-color: $surface-1;
         }
+
+        &--disabled {
+            cursor: default;
+        }
     }
 
     &__avatar {
@@ -106,6 +110,11 @@
     &__login,
     &__logout {
         @include button-secondary;
+    }
+
+    &__logout:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 }
 

@@ -12,6 +12,17 @@ $goget-primary:       #2563eb;
 $goget-primary-hover: #1d4ed8;
 $goget-accent:        #f59e0b;
 
+$goget-blue:       #0866ff;
+$goget-blue-hover: #0654d6;
+
+$color-text-strong:      #141417;
+$color-text-secondary:   #525259;
+$color-text-placeholder: #9999a1;
+$color-border:           #e6e6e9;
+
+$color-status-error:   #db2626;
+$color-status-success: #21a152;
+
 $surface-0: $white;
 $surface-1: $gray-100;
 
@@ -26,6 +37,7 @@ $timing-animation-short: 0.15s;
 $radius-sm:   8px;
 $radius-md:   10px;
 $radius-lg:   12px;
+$radius-xl:   24px;
 $radius-pill: 999px;
 
 $container-max-width: 1280px;

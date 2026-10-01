@@ -1,15 +1,16 @@
 import { mockCategories, mockPromos } from './data.js';
 import { logWarn } from '@/lib/logger.js';
 
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 const TIMEOUT_MS = 5000;
 
 export class ApiError extends Error {
-    constructor(status, { network = false } = {}) {
+    constructor(status, { network = false, field = '' } = {}) {
         super(network ? 'Network error' : `HTTP ${status}`);
         this.name = 'ApiError';
         this.status = status;
         this.network = network;
+        this.field = field;
     }
 }
 
@@ -43,6 +44,13 @@ function assertOk(response) {
     }
 }
 
+async function assertOkWithField(response) {
+    if (response.ok) return;
+
+    const body = await response.json().catch(() => null);
+    throw new ApiError(response.status, { field: body?.field ?? '' });
+}
+
 export async function getMe() {
     const response = await request('/me');
 
@@ -51,6 +59,26 @@ export async function getMe() {
     }
 
     assertOk(response);
+    return response.json();
+}
+
+export async function login({ login, password }) {
+    const response = await request('/login', {
+        method: 'POST',
+        body: JSON.stringify({ login, password }),
+    });
+
+    await assertOkWithField(response);
+    return response.json();
+}
+
+export async function register({ email, password, first_name, nickname, phone }) {
+    const response = await request('/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, first_name, nickname, phone }),
+    });
+
+    await assertOkWithField(response);
     return response.json();
 }
 

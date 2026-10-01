@@ -1,0 +1,101 @@
+@use '@/shared/styles/variables' as *;
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &__label {
+        font-weight: 500;
+        color: $color-text-strong;
+    }
+
+    &__control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        height: 48px;
+        padding: 0 1rem;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        transition: border-color $timing-animation-short, box-shadow $timing-animation-short;
+
+        &:hover {
+            border-color: $color-text-placeholder;
+        }
+
+        &:focus-within {
+            border-color: $goget-blue;
+            box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.16);
+        }
+    }
+
+    &__input {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        font: inherit;
+        color: $color-text-strong;
+
+        &::placeholder {
+            color: $color-text-placeholder;
+        }
+    }
+
+    &__toggle {
+        display: flex;
+        flex: none;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: $color-text-secondary;
+        cursor: pointer;
+
+        &-slash {
+            display: none;
+        }
+
+        &[aria-pressed="true"] .form-field__toggle-slash {
+            display: inline;
+        }
+    }
+
+    &__hint,
+    &__error {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 18px;
+    }
+
+    &__hint {
+        color: $color-text-placeholder;
+    }
+
+    &__error {
+        color: $color-status-error;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    &--error {
+        .form-field__control,
+        .form-field__control:hover,
+        .form-field__control:focus-within {
+            border-color: $color-status-error;
+        }
+
+        .form-field__control:focus-within {
+            box-shadow: 0 0 0 3px rgba(219, 38, 38, 0.16);
+        }
+
+        .form-field__hint {
+            display: none;
+        }
+    }
+}

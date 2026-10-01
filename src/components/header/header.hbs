@@ -24,14 +24,14 @@
         </form>
 
         {{#if isAuthenticated}}
-            <a href="/profile" data-link class="header__user">
+            <span class="header__user header__user--disabled" aria-disabled="true">
                 <span class="header__avatar" aria-hidden="true">{{userInitial}}</span>
                 <span class="header__user-name">{{userName}}</span>
-            </a>
-            <button type="button" class="header__logout" data-action="logout">Выйти</button>
+            </span>
+            <button type="button" class="header__logout" data-action="logout" disabled>Выйти</button>
         {{else}}
-            <a href="/register.html" data-link class="header__signup">Зарегистрироваться</a>
-            <a href="/login.html"    data-link class="header__login">Войти</a>
+            <a href="/register" data-link class="header__signup">Зарегистрироваться</a>
+            <a href="/login" data-link class="header__login">Войти</a>
         {{/if}}
 
     </div>

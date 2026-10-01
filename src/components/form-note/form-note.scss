@@ -1,0 +1,18 @@
+@use '@/shared/styles/variables' as *;
+
+.form-note {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 18px;
+    color: $color-text-placeholder;
+    text-align: center;
+
+    &__link {
+        color: $goget-blue;
+        font-weight: 500;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
