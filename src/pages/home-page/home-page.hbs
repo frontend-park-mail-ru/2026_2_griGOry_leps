@@ -23,7 +23,7 @@
                 <button class="arrow arrow--next" aria-label="Вперёд">›</button>
             </div>
         </div>
-        <div class="home-products" data-scroller>{{{productsHtml}}}</div>
+        <div class="home-products{{#if productsEmpty}} home-products--empty{{/if}}" data-scroller>{{{productsHtml}}}</div>
     </section>
 
 </div>

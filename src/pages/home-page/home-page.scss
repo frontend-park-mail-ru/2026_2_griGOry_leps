@@ -106,6 +106,16 @@
 
 .home-products {
     grid-auto-columns: 300px;   
+
+    &--empty {
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+
+        .empty-state {
+            width: 100%;
+        }
+    }
 }
 
 .home-promo {

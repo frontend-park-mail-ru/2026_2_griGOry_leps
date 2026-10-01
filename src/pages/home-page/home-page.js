@@ -14,20 +14,22 @@ export const HomePage = async (root) => {
         getProducts(),
     ]);
 
-   const categoriesHtml = categories.length ? categories.slice(0, 4).map(CategoryCard).join('')
-    : EmptyState({
-          title: 'Категории временно недоступны',
-          text: 'Попробуйте обновить страницу позже',
-      });
+    const categoriesHtml = categories.length
+        ? categories.slice(0, 4).map(CategoryCard).join('')
+        : EmptyState({
+            title: 'Категории временно недоступны',
+            text: 'Попробуйте обновить страницу позже',
+        });
 
     const promosHtml = promos.length ? promos.map(PromoCard).join('') : '';
 
-const productsHtml = products.length ? products.map(ProductCard).join('')
-    : EmptyState({
-          title: 'Товаров пока нет',
-          text: 'Загляните позже — мы уже готовим новую подборку',
-      });
-      
+    const productsHtml = products.length
+        ? products.map(ProductCard).join('')
+        : EmptyState({
+            title: 'Товаров пока нет',
+            text: 'Загляните позже — мы уже готовим новую подборку',
+        });
+
     const emptyStateHtml = EmptyState({
         title: 'Пока нет рекомендаций для вас',
         text: 'Разместите первое объявление или загляните позже —<br>мы подберём то, что вам может понравиться',
@@ -38,6 +40,7 @@ const productsHtml = products.length ? products.map(ProductCard).join('')
         categoriesHtml,
         promosHtml,
         productsHtml,
+        productsEmpty: products.length === 0,
         emptyStateHtml,
     });
 
