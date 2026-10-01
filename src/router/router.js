@@ -1,117 +1,126 @@
-import { getUser } from '../store.js';
+import { logError } from '@/lib/logger.js';
+
+/** @typedef {(params: Record<string, string>) => void | Promise<void>} RouteHandler */
+/** @typedef {{ pattern: RegExp, keys: string[], handler: RouteHandler, requireAuth?: boolean }} Route */
+
+/** @type {Route[]} */
+const routes = [];
+
+/** @type {RouteHandler | null} */
+let notFoundHandler = null;
 
 /**
- * @typedef {Object} Route
- * @property {() => void} handler функция, рисующая страницу
- * @property {boolean} isProtected требует ли маршрут авторизации
+ * Проверка «залогинен ли пользователь».
+ * Устанавливается через setAuthCheck() из main.js.
+ * @type {() => boolean}
  */
+let isAuthenticated = () => false;
 
 /**
- * @typedef {Object} RouteOptions
- * @property {boolean} [protected] если true — гостей редиректит на /login
+ * Разрешает или запрещает доступ к защищённым маршрутам.
+ * @param {() => boolean} fn
  */
-
-/** @type {Record<string, Route>} */
-const routes = {};
-
-/** @type {Promise<void>} */
-let authReady = Promise.resolve();
-
-/**
- * Задаёт промис первичной проверки сессии. Защищённые маршруты
- * дожидаются его, прежде чем решать, пускать ли пользователя.
- * @param {Promise<void>} promise
- * @returns {void}
- */
-export function setAuthReady(promise) {
-  authReady = promise;
+export function setAuthCheck(fn) {
+    isAuthenticated = fn;
 }
 
 /**
  * Регистрирует маршрут.
- * @param {string} path путь, например '/about'
- * @param {() => void} handler функция, рисующая страницу
- * @param {RouteOptions} [options]
- * @returns {void}
+ * @param {string} path — например, "/category/:slug"
+ * @param {RouteHandler} handler
+ * @param {{ requireAuth?: boolean }} [options]
  */
 export function registerRoute(path, handler, options = {}) {
-  routes[path] = {
-    handler,
-    isProtected: options.protected ?? false,
-  };
+    const keys = [];
+    const pattern = new RegExp(
+        '^' +
+            path
+                .replace(/\/:([^/]+)/g, (_, key) => {
+                    keys.push(key);
+                    return '/([^/]+)';
+                })
+                .replace(/\//g, '\\/') +
+            '$'
+    );
+
+    routes.push({
+        pattern,
+        keys,
+        handler,
+        requireAuth: options.requireAuth === true,
+    });
 }
 
 /**
- * Проверяет, попадает ли путь под защищённый маршрут
- * (сам маршрут или любой вложенный путь).
- * @param {string} pathname
- * @returns {boolean}
+ * Обработчик для неизвестных маршрутов.
+ * @param {RouteHandler} handler
  */
-function isProtectedPath(pathname) {
-  return Object.entries(routes).some(([routePath, config]) => {
-    if (!config.isProtected) return false;
-    const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^${escaped}(/.*)?$`).test(pathname);
-  });
+export function registerNotFound(handler) {
+    notFoundHandler = handler;
 }
 
 /**
- * Переходит на путь, добавляя запись в историю браузера.
+ * Переход на новый URL с записью в историю.
  * @param {string} path
- * @returns {void}
  */
 export function navigate(path) {
-  history.pushState({}, '', path);
-  resolveRoute();
+    history.pushState({}, '', path);
+    resolveRoute();
 }
 
 /**
- * Переходит на путь, заменяя текущую запись в истории
- * (кнопка «Назад» не вернёт на прежний адрес).
+ * Переход на новый URL БЕЗ записи в историю.
+ * Используется для редиректов (login → /, 404 → /404).
  * @param {string} path
- * @returns {void}
  */
 export function redirect(path) {
-  history.replaceState({}, '', path);
-  resolveRoute();
+    history.replaceState({}, '', path);
+    resolveRoute();
 }
 
 /**
- * Находит обработчик для текущего адреса и вызывает его.
- * Для защищённых маршрутов ждёт проверки сессии и при отсутствии
- * пользователя перенаправляет на /login. Неизвестные пути идут на /404.
- * @returns {Promise<void>}
+ * Резолвит текущий URL и вызывает нужный обработчик.
  */
-export async function resolveRoute() {
-  const path = location.pathname;
-  const config = routes[path] ?? routes['/404'];
+export function resolveRoute() {
+    const path = location.pathname;
 
-  if (isProtectedPath(path)) {
-    await authReady;
-    if (!getUser()) {
-      redirect('/login');
-      return;
+    for (const route of routes) {
+        const match = path.match(route.pattern);
+        if (!match) continue;
+
+        // Защищённый маршрут и пользователь не залогинен
+        if (route.requireAuth && !isAuthenticated()) {
+            redirect('/login');
+            return;
+        }
+
+        const params = {};
+        route.keys.forEach((key, i) => {
+            params[key] = decodeURIComponent(match[i + 1]);
+        });
+
+        Promise.resolve(route.handler(params)).catch((err) => {
+                logError('Ошибка роута', path, err);
+        });
+        return;
     }
-  }
 
-  config?.handler();
+    Promise.resolve(notFoundHandler?.()).catch((err) => {
+        logError('Ошибка 404-роута', path, err);
+    });
 }
 
-/**
- * Подписывается на клики по ссылкам `a[data-link]` и на кнопки
- * «Назад»/«Вперёд», затем отрисовывает текущий маршрут.
- * @returns {void}
- */
 export function initRouter() {
-  document.body.addEventListener('click', (e) => {
-    const target = /** @type {HTMLElement} */ (e.target);
-    const link = target.closest('a[data-link]');
-    if (link instanceof HTMLAnchorElement) {
-      e.preventDefault();
-      navigate(link.getAttribute('href') ?? '/');
-    }
-  });
+    document.body.addEventListener('click', (e) => {
+        const target = /** @type {HTMLElement} */ (e.target);
+        const link = target.closest('a[data-link]');
+        if (link instanceof HTMLAnchorElement) {
+            e.preventDefault();
+            const href = link.getAttribute('href') ?? '/';
+            navigate(href);
+        }
+    });
 
-  window.addEventListener('popstate', resolveRoute);
-  resolveRoute();
+    window.addEventListener('popstate', resolveRoute);
+    resolveRoute();
 }
