@@ -1,22 +1,17 @@
-<article class="product-card">
+<article class="product-card"{{#if id}} data-ad-id="{{id}}"{{/if}}>
     <div class="product-card__img">
-        <img src="{{image}}" alt="{{title}}" loading="lazy" onerror="this.remove()">
+        <span class="product-card__placeholder">Нет фото</span>
+        {{#if image_url}}<img src="{{image_url}}" alt="{{title}}" loading="lazy" onerror="this.remove()">{{/if}}
     </div>
     <div class="product-card__body">
         <div class="product-card__price">
             {{price}} <span class="product-card__currency">₽</span>
-            {{#if delivery}}<span class="product-card__badge">Доставка</span>{{/if}}
+            {{#if has_delivery}}<span class="product-card__badge">Доставка</span>{{/if}}
         </div>
         <h3 class="product-card__title">{{title}}</h3>
         <div class="product-card__meta">
-            <span class="product-card__rating">
-                <img src="/src/img/star.svg" alt="" class="product-card__meta-icon" aria-hidden="true">
-                {{rating}}
-            </span>
-            <span class="product-card__reviews">
-                <img src="/src/img/view_icon.svg" alt="" class="product-card__meta-icon" aria-hidden="true">
-                {{reviews}}
-            </span>
+            {{#if city}}<span>{{city}}</span>{{/if}}
+            {{#if createdAt}}<time datetime="{{created_at}}">{{createdAt}}</time>{{/if}}
         </div>
     </div>
 </article>

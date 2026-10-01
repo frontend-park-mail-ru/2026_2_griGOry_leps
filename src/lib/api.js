@@ -1,9 +1,8 @@
-import { mockCategories, mockPromos, mockProducts } from './data.js';
+import { mockCategories, mockPromos } from './data.js';
 import { logWarn } from '@/lib/logger.js';
 
 const BASE_URL = '/api';
 const TIMEOUT_MS = 5000;
-const USE_MOCKS = import.meta.env.DEV;
 
 export class ApiError extends Error {
     constructor(status, { network = false } = {}) {
@@ -44,6 +43,17 @@ function assertOk(response) {
     }
 }
 
+export async function getMe() {
+    const response = await request('/me');
+
+    if (response.status >= 400 && response.status < 500) {
+        return null;
+    }
+
+    assertOk(response);
+    return response.json();
+}
+
 function toArray(data, key) {
     if (Array.isArray(data)) return data;
     if (data && typeof data === 'object') {
@@ -53,62 +63,30 @@ function toArray(data, key) {
     return [];
 }
 
-/**
- * Возвращает результат loader().
- * При ошибке:
- *   - 4xx → [] (данных нет — не подменяем)
- *   - 5xx/network/timeout → mock (в dev) или [] (в prod)
- * Пустой массив — валидный ответ, fallback НЕ подставляется.
- */
-async function withFallback(loader, fallback) {
+
+async function withEmptyOnError(loader) {
     try {
         return await loader();
     } catch (err) {
-        if (err instanceof ApiError && err.status >= 400 && err.status < 500) {
-            return [];
-        }
-
-        if (USE_MOCKS) {
-            logWarn('API недоступен, показываю моки:', err);
-            return fallback;
-        }
-
         logWarn('API недоступен:', err);
         return [];
     }
 }
 
-// ... getMe, login, register, logout — без изменений ...
-
 export function getCategories() {
-    return withFallback(
-        async () => {
-            const res = await request('/categories');
-            assertOk(res);
-            return toArray(await res.json(), 'categories');
-        },
-        mockCategories
-    );
+    return Promise.resolve(mockCategories);
 }
 
 export function getPromos() {
-    return withFallback(
-        async () => {
-            const res = await request('/promos');
-            assertOk(res);
-            return toArray(await res.json(), 'promos');
-        },
-        mockPromos
-    );
+    return Promise.resolve(mockPromos);
 }
 
 export function getProducts() {
-    return withFallback(
+    return withEmptyOnError(
         async () => {
-            const res = await request('/products');
+            const res = await request('/ads');
             assertOk(res);
-            return toArray(await res.json(), 'products');
-        },
-        mockProducts
+            return toArray(await res.json(), 'items');
+        }
     );
 }

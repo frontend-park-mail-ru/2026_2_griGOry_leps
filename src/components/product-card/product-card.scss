@@ -16,14 +16,27 @@
     }
 
     &__img {
+        position: relative;
         aspect-ratio: 7 / 4;
         background-color: $surface-1;
 
         img {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background-color: $surface-1;
         }
+    }
+
+    &__placeholder {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 0.875rem;
+        color: $color-text-muted;
     }
 
     &__body {
@@ -57,21 +70,10 @@
 
     &__meta {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.625rem;
         font-size: 0.75rem;
         color: $color-text-muted;
     }
 
-    &__rating,
-    &__reviews {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    &__meta-icon {
-        width: 14px;
-        height: 14px;
-        display: block;
-    }
 }
