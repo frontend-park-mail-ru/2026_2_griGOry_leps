@@ -8,7 +8,6 @@ import {
   registerNotFound,
   setAuthCheck,
   initRouter,
-  resolveRoute,
 } from "@/router/router.js";
 import { getMe } from "@/lib/api.js";
 import { getUser, setUser } from "@/store.js";
@@ -22,15 +21,23 @@ import { NotFoundPage } from "@/pages/not-found-page/not-found-page.js";
 const app = document.getElementById("app");
 
 if (app) {
+  app.innerHTML = '<div class="app-loader" aria-label="Загрузка"></div>';
+
+  setAuthCheck(() => getUser() !== null);
+  initHeaderMenu();
+
+  void start();
+}
+
+async function start() {
+  const user = await loadCurrentUser();
+
   app.innerHTML = template({
-    headerHtml: Header({ isAuthenticated: false }),
+    headerHtml: renderHeader(user),
     footerHtml: Footer(),
   });
 
   const page = document.getElementById("page");
-
-  setAuthCheck(() => getUser() !== null);
-  initHeaderMenu();
 
   registerRoute("/", () => HomePage(page));
   registerRoute("/categories", () => CategoriesPage(page));
@@ -39,28 +46,24 @@ if (app) {
   registerNotFound(() => NotFoundPage(page));
 
   initRouter();
-  void loadCurrentUser();
+}
+
+function renderHeader(user) {
+  return Header({
+    isAuthenticated: Boolean(user),
+    userName: user?.first_name || user?.nickname || user?.email || "",
+    userInitial: getInitials(user),
+  });
 }
 
 async function loadCurrentUser() {
   try {
     const user = await getMe();
     if (user) setUser(user);
-
-    const header = document.querySelector(".header");
-    header?.insertAdjacentHTML(
-      "afterend",
-      Header({
-        isAuthenticated: Boolean(user),
-        userName: user?.first_name || user?.nickname || user?.email || "",
-        userInitial: getInitials(user),
-      }),
-    );
-    header?.remove();
-
-    if (user) resolveRoute();
+    return user;
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
+    return null;
   }
 }
 
