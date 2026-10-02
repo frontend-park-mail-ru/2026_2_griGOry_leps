@@ -57,8 +57,12 @@
         color: $color-text-secondary;
         transition: color $timing-animation-short;
 
-        &:hover {
+        &:hover:not(&--disabled) {
             color: $goget-primary;
+        }
+
+        &--disabled {
+            cursor: not-allowed;
         }
 
         &--small {

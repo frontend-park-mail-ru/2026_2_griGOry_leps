@@ -74,8 +74,14 @@
         white-space: nowrap;
         transition: background-color $timing-animation-short;
 
-        &:hover {
+        &:hover:not(:disabled) {
             background-color: $surface-1;
+        }
+
+        &:disabled {
+            color: $color-text-muted;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
     }
 
@@ -193,10 +199,15 @@
     border-radius: $radius-lg;
     transition: border-color $timing-animation-short, box-shadow $timing-animation-short;
 
-    &:hover,
+    &:hover:not(&--disabled),
     &:focus-within {
         border-color: $goget-primary;
         box-shadow: inset 0 0 0 2px $goget-primary;
+    }
+
+    &--disabled {
+        background-color: $surface-1;
+        cursor: not-allowed;
     }
 
     &__input {
@@ -215,6 +226,10 @@
         &::placeholder {
             color: $color-text-muted;
         }
+
+        &:disabled {
+            cursor: not-allowed;
+        }
     }
 
     &__btn {
@@ -230,8 +245,13 @@
         cursor: pointer;
         transition: background-color $timing-animation-short;
 
-        &:hover {
+        &:hover:not(:disabled) {
             background-color: $surface-1;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
         }
     }
 

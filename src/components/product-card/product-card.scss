@@ -7,13 +7,6 @@
     background-color: $surface-0;
     border-radius: $radius-xl;
     overflow: hidden;
-    cursor: pointer;
-    transition: box-shadow $timing-animation-short, transform $timing-animation-short;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-    }
 
     &__img {
         height: 180px;

@@ -9,15 +9,15 @@
             Все категории
         </a>
 
-        <button type="button" class="header__city">
+        <button type="button" class="header__city" disabled>
             <img src="/img/pin.svg" alt="" class="header__icon" aria-hidden="true">
             <span>Москва</span>
             <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true">
         </button>
 
-        <form class="header__search search" action="/search" method="get" role="search">
-            <input type="text" name="q" placeholder="Поиск по объявлениям" autocomplete="off" class="search__input">
-            <button type="submit" class="search__btn" aria-label="Найти">
+        <form class="header__search search search--disabled" role="search" aria-disabled="true">
+            <input type="text" name="q" placeholder="Поиск по объявлениям" autocomplete="off" class="search__input" disabled>
+            <button type="submit" class="search__btn" aria-label="Найти" disabled>
                 <img src="/img/search_icon.svg" alt="" class="search__icon" aria-hidden="true">
             </button>
         </form>
