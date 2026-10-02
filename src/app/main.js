@@ -1,7 +1,7 @@
 import "./styles/style.scss";
 import template from "./app.hbs";
 
-import { Header } from "@/components/header/header.js";
+import { Header, initHeaderMenu } from "@/components/header/header.js";
 import { Footer } from "@/components/footer/footer.js";
 import {
   registerRoute,
@@ -21,14 +21,23 @@ import { NotFoundPage } from "@/pages/not-found-page/not-found-page.js";
 const app = document.getElementById("app");
 
 if (app) {
+  app.innerHTML = '<div class="app-loader" aria-label="Загрузка"></div>';
+
+  setAuthCheck(() => getUser() !== null);
+  initHeaderMenu();
+
+  void start();
+}
+
+async function start() {
+  const user = await loadCurrentUser();
+
   app.innerHTML = template({
-    headerHtml: Header({ isAuthenticated: false }),
+    headerHtml: renderHeader(user),
     footerHtml: Footer(),
   });
 
   const page = document.getElementById("page");
-
-  setAuthCheck(() => getUser() !== null);
 
   registerRoute("/", () => HomePage(page));
   registerRoute("/categories", () => CategoriesPage(page));
@@ -37,27 +46,28 @@ if (app) {
   registerNotFound(() => NotFoundPage(page));
 
   initRouter();
-  void loadCurrentUser();
+}
+
+function renderHeader(user) {
+  return Header({
+    isAuthenticated: Boolean(user),
+    userName: user?.first_name || user?.nickname || user?.email || "",
+    userInitial: getInitials(user),
+  });
 }
 
 async function loadCurrentUser() {
   try {
     const user = await getMe();
     if (user) setUser(user);
-
-    const header = document.querySelector(".header");
-    header?.insertAdjacentHTML(
-      "afterend",
-      Header({
-        isAuthenticated: Boolean(user),
-        userName: user?.first_name || user?.nickname || user?.email || "",
-        userInitial: (user?.first_name || user?.nickname || user?.email || "")
-          .charAt(0)
-          .toUpperCase(),
-      }),
-    );
-    header?.remove();
+    return user;
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
+    return null;
   }
+}
+
+function getInitials(user) {
+  const name = user?.first_name || user?.nickname || "";
+  return name.trim().slice(0, 2).toUpperCase();
 }
