@@ -37,7 +37,7 @@ export const HomePage = async (root) => {
         ? EmptyState({
             title: 'Пока нет рекомендаций для вас',
             text: 'Разместите первое объявление или загляните позже — мы подберём то, что вам может понравиться',
-            action: { href: '/login', label: 'Разместить объявление' },
+            action: { label: 'Разместить объявление', disabled: true },
         })
         : '';
 

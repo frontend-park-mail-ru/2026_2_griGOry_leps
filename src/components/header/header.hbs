@@ -23,7 +23,7 @@
         </form>
 
         {{#if isAuthenticated}}
-            <button type="button" class="header__post">Разместить объявление</button>
+            <button type="button" class="header__post" disabled>Разместить объявление</button>
             <div class="header__user">
                 <button type="button" class="header__user-toggle" data-action="toggle-user-menu" aria-label="{{userName}}" aria-haspopup="true">
                     <span class="header__avatar">{{userInitial}}</span>

@@ -92,7 +92,7 @@
     color: $white;
     background-color: $goget-accent;
 
-    &:hover {
+    &:hover:not(:disabled) {
         color: $goget-accent;
         background-color: $surface-0;
         border-color: $goget-accent;

@@ -49,7 +49,7 @@
         color: $white;
         background-color: $goget-primary;
 
-        &:hover {
+        &:hover:not(:disabled) {
             color: $color-text-main;
             background-color: $surface-0;
             border-color: $goget-primary;
