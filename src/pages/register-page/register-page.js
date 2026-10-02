@@ -152,6 +152,11 @@ export const RegisterPage = (root) => {
         } catch (err) {
             showApiError(form, err, {
                 fallback: 'Не удалось зарегистрироваться. Попробуйте ещё раз',
+                conflictMessages: {
+                    email: 'Пользователь с таким Email уже существует',
+                    phone: 'Пользователь с таким номером уже существует',
+                    nickname: 'Никнейм занят',
+                },
                 byStatus: { 409: 'Пользователь с такими данными уже существует' },
             });
         } finally {

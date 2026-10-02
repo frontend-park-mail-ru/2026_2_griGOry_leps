@@ -2,6 +2,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 const PHONE_PATTERN = /^\+7\d{10}$/;
 
+const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
+
 export const LIMITS = {
     nameMin: 2,
     nameMax: 50,
@@ -10,17 +12,35 @@ export const LIMITS = {
     phoneMax: 12,
     emailMax: 254,
     passwordMin: 8,
-    passwordMax: 72,
+    passwordMax: 72, // байт
 };
 
 /**
- * Оставляет в телефоне только «+» в начале и цифры, обрезает по длине.
+ * Приводит телефон в любом виде (8900…, 900…, +7 900 123-45-67) к «+7XXXXXXXXXX»:
+ * оставляет только «+» в начале и цифры, «8» в начале меняет на «+7».
  * @param {string} value
  * @returns {string}
  */
 export function sanitizePhone(value) {
-    const plus = value.trimStart().startsWith('+') ? '+' : '';
-    return (plus + value.replace(/\D/g, '')).slice(0, LIMITS.phoneMax);
+    const digits = value.replace(/\D/g, '');
+    if (!digits) return value.trimStart().startsWith('+') ? '+' : '';
+
+    let normalized = digits;
+    if (!value.trimStart().startsWith('+')) {
+        if (digits.startsWith('8')) normalized = `7${digits.slice(1)}`;
+        else if (digits.startsWith('9')) normalized = `7${digits}`;
+    }
+
+    return `+${normalized}`.slice(0, LIMITS.phoneMax);
+}
+
+/**
+ * Длина строки в байтах UTF-8: бэк считает ограничение на пароль в байтах.
+ * @param {string} value
+ * @returns {number}
+ */
+export function byteLength(value) {
+    return new TextEncoder().encode(value).length;
 }
 
 /**
@@ -68,7 +88,7 @@ export function validateLogin(value) {
     const login = value.trim();
     if (!login) return 'Введите телефон или email';
     if (login.includes('@')) return validateEmail(login);
-    return validatePhone(login);
+    return validatePhone(sanitizePhone(login));
 }
 
 /**
@@ -86,8 +106,8 @@ export function checkPasswordRules(password) {
 
 export function validatePassword(value) {
     if (!value) return 'Введите пароль';
-    if (value.length > LIMITS.passwordMax) {
-        return `Пароль: не более ${LIMITS.passwordMax} символов`;
+    if (byteLength(value) > LIMITS.passwordMax) {
+        return PASSWORD_TOO_LONG;
     }
     if (!checkPasswordRules(value).every(Boolean)) {
         return 'Пароль не соответствует требованиям';
@@ -97,8 +117,8 @@ export function validatePassword(value) {
 
 export function validateLoginPassword(value) {
     if (!value) return 'Введите пароль';
-    if (value.length > LIMITS.passwordMax) {
-        return `Пароль: не более ${LIMITS.passwordMax} символов`;
+    if (byteLength(value) > LIMITS.passwordMax) {
+        return PASSWORD_TOO_LONG;
     }
     return '';
 }
@@ -112,4 +132,14 @@ export function validatePasswordRepeat(value, password) {
     if (!value) return 'Повторите пароль';
     if (value !== password) return 'Пароли не совпадают';
     return '';
+}
+
+/**
+ * Логин — это email или телефон. Телефон приводится к «+7XXXXXXXXXX»,
+ * email не трогаем (в нём может быть что угодно, в т.ч. цифра в начале).
+ * @param {string} value
+ * @returns {string}
+ */
+export function normalizeLogin(value) {
+    return /^[+\d\s()-]+$/.test(value) ? sanitizePhone(value) : value;
 }

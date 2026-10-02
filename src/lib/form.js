@@ -5,6 +5,7 @@ import { setFormError } from '@/components/auth-form/auth-form.js';
  * @typedef {{
  *   validate: (value: string, values: Record<string, string>) => string,
  *   sanitize?: (value: string) => string,
+ *   normalize?: (value: string) => string,
  * }} FieldRule
  */
 
@@ -51,11 +52,28 @@ export function bindLiveValidation(form, rules, onInput) {
         onInput?.(values);
     });
 
+    // normalize применяется, когда пользователь закончил ввод (blur) и перед отправкой
+    form.addEventListener('change', (e) => {
+        const input = /** @type {HTMLInputElement} */ (e.target);
+        const rule = rules[input.name];
+        if (!rule?.normalize) return;
+
+        input.value = rule.normalize(input.value);
+        if (touched.has(input.name)) validateField(input.name, readValues(form));
+    });
+
     return {
         /**
          * Проверяет все поля. Возвращает значения или null, если есть ошибки.
          */
         validateAll() {
+            Object.entries(rules).forEach(([name, rule]) => {
+                const input = form.elements.namedItem(name);
+                if (rule.normalize && input instanceof HTMLInputElement) {
+                    input.value = rule.normalize(input.value);
+                }
+            });
+
             const values = readValues(form);
             let isValid = true;
 
@@ -75,14 +93,20 @@ export function bindLiveValidation(form, rules, onInput) {
  * иначе выводит общее сообщение над кнопкой.
  * @param {HTMLFormElement} form
  * @param {{ status?: number, field?: string, network?: boolean }} err
- * @param {{ fallback: string, byStatus?: Record<number, string> }} messages
+ * @param {{
+ *   fallback: string,
+ *   byStatus?: Record<number, string>,
+ *   conflictMessages?: Record<string, string>,
+ * }} messages conflictMessages — тексты для 409 по имени поля
  */
-export function showApiError(form, err, { fallback, byStatus = {} }) {
+export function showApiError(form, err, { fallback, byStatus = {}, conflictMessages = {} }) {
     if (err?.field && form.querySelector(`[data-error-for="${err.field}"]`)) {
         setFieldError(
             form,
             err.field,
-            err.status === 409 ? 'Такое значение уже занято' : 'Проверьте значение поля',
+            err.status === 409
+                ? (conflictMessages[err.field] ?? 'Такое значение уже занято')
+                : 'Проверьте значение поля',
         );
         return;
     }

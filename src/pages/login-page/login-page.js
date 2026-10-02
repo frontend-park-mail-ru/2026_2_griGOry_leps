@@ -11,7 +11,7 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs.js';
 
 import { login } from '@/lib/api.js';
 import { bindLiveValidation, showApiError } from '@/lib/form.js';
-import { validateLogin, validateLoginPassword } from '@/lib/validators.js';
+import { normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators.js';
 import { redirect } from '@/router/router.js';
 import { setUser } from '@/store.js';
 
@@ -60,7 +60,7 @@ export const LoginPage = (root) => {
     const submitButton = form.querySelector('button[type="submit"]');
 
     const validation = bindLiveValidation(form, {
-        login: { validate: validateLogin },
+        login: { validate: validateLogin, normalize: normalizeLogin },
         password: { validate: validateLoginPassword },
     });
 
