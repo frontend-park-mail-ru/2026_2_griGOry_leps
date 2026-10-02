@@ -12,7 +12,7 @@
         <button type="button" class="header__city">
             <img src="/img/pin.svg" alt="" class="header__icon" aria-hidden="true">
             <span>Москва</span>
-            <span class="header__chevron" aria-hidden="true">▾</span>
+            <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true">
         </button>
 
         <form class="header__search search" action="/search" method="get" role="search">
@@ -23,11 +23,17 @@
         </form>
 
         {{#if isAuthenticated}}
-            <a href="/profile" data-link class="header__user">
-                <span class="header__avatar" aria-hidden="true">{{userInitial}}</span>
-                <span class="header__user-name">{{userName}}</span>
-            </a>
-            <button type="button" class="header__logout" data-action="logout">Выйти</button>
+            <button type="button" class="header__post">Разместить объявление</button>
+            <div class="header__user">
+                <button type="button" class="header__user-toggle" data-action="toggle-user-menu" aria-label="{{userName}}" aria-haspopup="true">
+                    <span class="header__avatar">{{userInitial}}</span>
+                    <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true">
+                </button>
+                <div class="header__menu">
+                    <span class="header__menu-name">{{userName}}</span>
+                    <button type="button" class="header__menu-item" data-action="logout">Выйти</button>
+                </div>
+            </div>
         {{else}}
             <a href="/register.html" data-link class="header__signup">Зарегистрироваться</a>
             <a href="/login.html"    data-link class="header__login">Войти</a>

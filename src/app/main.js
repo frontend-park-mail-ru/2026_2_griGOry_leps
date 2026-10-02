@@ -1,7 +1,7 @@
 import "./styles/style.scss";
 import template from "./app.hbs";
 
-import { Header } from "@/components/header/header.js";
+import { Header, initHeaderMenu } from "@/components/header/header.js";
 import { Footer } from "@/components/footer/footer.js";
 import {
   registerRoute,
@@ -30,6 +30,7 @@ if (app) {
   const page = document.getElementById("page");
 
   setAuthCheck(() => getUser() !== null);
+  initHeaderMenu();
 
   registerRoute("/", () => HomePage(page));
   registerRoute("/categories", () => CategoriesPage(page));
@@ -52,9 +53,7 @@ async function loadCurrentUser() {
       Header({
         isAuthenticated: Boolean(user),
         userName: user?.first_name || user?.nickname || user?.email || "",
-        userInitial: (user?.first_name || user?.nickname || user?.email || "")
-          .charAt(0)
-          .toUpperCase(),
+        userInitial: getInitials(user),
       }),
     );
     header?.remove();
@@ -63,4 +62,9 @@ async function loadCurrentUser() {
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
   }
+}
+
+function getInitials(user) {
+  const name = user?.first_name || user?.nickname || "";
+  return name.trim().slice(0, 2).toUpperCase();
 }
