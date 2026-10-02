@@ -66,9 +66,9 @@ export const mockCategories = [
 ];
 
 export const mockPromos = [
-    { title: 'Идём в школу',      subtitle: 'рюкзаки, канцтовары',        image: '/img/mock/pencil.png',         link: '/promo/school' },
-    { title: 'Подарок за визит',  subtitle: 'заберите в течение суток',   image: '/img/mock/gift.png',           link: '/promo/gift' },
-    { title: 'Сезон велосипедов', subtitle: 'подборка для города и гор', image: '/img/mock/mountain_bike.png',  link: '/promo/bike' },
+    { title: 'Идём в школу',      subtitle: 'рюкзаки, канцтовары',        image: '/img/promo/school.jpg', link: '/category/kids' },
+    { title: 'Подарок за визит',  subtitle: 'заберите в течение суток',   image: '/img/promo/gift.jpg',   link: '/categories' },
+    { title: 'Сезон велосипедов', subtitle: 'подборка для города и гор', image: '/img/promo/bike.jpg',   link: '/category/sport' },
 ];
 
 export const CategoryNames = Object.fromEntries(
