@@ -8,6 +8,7 @@ import {
   registerNotFound,
   setAuthCheck,
   initRouter,
+  resolveRoute,
 } from "@/router/router.js";
 import { getMe } from "@/lib/api.js";
 import { getUser, setUser } from "@/store.js";
@@ -57,6 +58,8 @@ async function loadCurrentUser() {
       }),
     );
     header?.remove();
+
+    if (user) resolveRoute();
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
   }

@@ -6,6 +6,7 @@ import { PromoCard } from '@/components/promo-card/promo-card.js';
 import { ProductCard } from '@/components/product-card/product-card.js';
 import { EmptyState } from '@/components/empty-state/empty-state.js';
 import { getCategories, getPromos, getProducts } from '@/lib/api.js';
+import { getUser } from '@/store.js';
 
 export const HomePage = async (root) => {
     const [categories, promos, products] = await Promise.all([
@@ -30,11 +31,23 @@ export const HomePage = async (root) => {
             text: 'Загляните позже — мы уже готовим новую подборку',
         });
 
+    const isGuest = getUser() === null;
+
+    const emptyStateHtml = isGuest
+        ? EmptyState({
+            title: 'Пока нет рекомендаций для вас',
+            text: 'Разместите первое объявление или загляните позже — мы подберём то, что вам может понравиться',
+            action: { href: '/login', label: 'Разместить объявление' },
+        })
+        : '';
+
     root.innerHTML = template({
         categoriesHtml,
         promosHtml,
         productsHtml,
         productsEmpty: products.length === 0,
+        productsTitle: isGuest ? 'Популярное сейчас' : 'Рекомендуем для вас',
+        emptyStateHtml,
     });
 
     bindScrollers(root);

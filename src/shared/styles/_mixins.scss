@@ -87,6 +87,19 @@
     }
 }
 
+@mixin button-orange {
+    @include button-base;
+    color: $white;
+    background-color: $goget-accent;
+
+    &:hover {
+        color: $goget-accent;
+        background-color: $surface-0;
+        border-color: $goget-accent;
+        opacity: 0.85;
+    }
+}
+
 @mixin button-primary {
     @include typo-p;
     display: inline-flex;

@@ -13,9 +13,13 @@
 
     <section class="home-promo">{{{promosHtml}}}</section>
 
+    {{#if emptyStateHtml}}
+        <section class="home-empty">{{{emptyStateHtml}}}</section>
+    {{/if}}
+
     <section class="home-section">
         <div class="home-section__head">
-            <h2>Рекомендуем для вас</h2>
+            <h2>{{productsTitle}}</h2>
             <div class="home-section__arrows">
                 <button type="button" class="arrow arrow--prev" aria-label="Назад"><img src="/img/chevron.svg" alt=""></button>
                 <button type="button" class="arrow arrow--next" aria-label="Вперёд"><img src="/img/chevron.svg" alt=""></button>
