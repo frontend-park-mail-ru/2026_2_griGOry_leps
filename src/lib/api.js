@@ -84,7 +84,7 @@ export function getPromos() {
 export function getProducts() {
     return withEmptyOnError(
         async () => {
-            const res = await request('/ads');
+            const res = await request('/listings');
             assertOk(res);
             return toArray(await res.json(), 'items');
         }
