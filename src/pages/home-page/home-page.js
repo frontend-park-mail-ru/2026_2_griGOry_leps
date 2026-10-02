@@ -15,7 +15,7 @@ export const HomePage = async (root) => {
     ]);
 
     const categoriesHtml = categories.length
-        ? categories.slice(0, 4).map(CategoryCard).join('')
+        ? categories.map(CategoryCard).join('')
         : EmptyState({
             title: 'Категории временно недоступны',
             text: 'Попробуйте обновить страницу позже',
@@ -30,18 +30,11 @@ export const HomePage = async (root) => {
             text: 'Загляните позже — мы уже готовим новую подборку',
         });
 
-    const emptyStateHtml = EmptyState({
-        title: 'Пока нет рекомендаций для вас',
-        text: 'Разместите первое объявление или загляните позже —<br>мы подберём то, что вам может понравиться',
-        action: { href: '/create', label: 'Разместить объявление' },
-    });
-
     root.innerHTML = template({
         categoriesHtml,
         promosHtml,
         productsHtml,
         productsEmpty: products.length === 0,
-        emptyStateHtml,
     });
 
     bindScrollers(root);
@@ -51,17 +44,24 @@ function bindScrollers(root) {
     root.querySelectorAll('.home-section__head').forEach((head) => {
         const section = head.closest('.home-section');
         const scroller = section?.querySelector('[data-scroller]');
-        if (!scroller) return;
-
         const prev = head.querySelector('.arrow--prev');
         const next = head.querySelector('.arrow--next');
+        if (!scroller || !prev || !next) return;
 
-        prev?.addEventListener('click', () => {
+        const updateArrows = () => {
+            prev.disabled = scroller.scrollLeft <= 0;
+            next.disabled = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+        };
+
+        prev.addEventListener('click', () => {
             scroller.scrollBy({ left: -scroller.clientWidth, behavior: 'smooth' });
         });
 
-        next?.addEventListener('click', () => {
+        next.addEventListener('click', () => {
             scroller.scrollBy({ left: scroller.clientWidth, behavior: 'smooth' });
         });
+
+        scroller.addEventListener('scroll', updateArrows);
+        updateArrows();
     });
 }
