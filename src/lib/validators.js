@@ -45,12 +45,15 @@ export function byteLength(value) {
 
 /**
  * Каждый валидатор возвращает текст ошибки или пустую строку.
+ * Пустое значение ошибкой не считается: обязательность полей проверяется
+ * только при отправке формы (см. `required` в bindLiveValidation).
  * @param {string} value
  * @returns {string}
  */
 export function validateName(value) {
+    if (!value) return '';
     const name = value.trim();
-    if (!name) return 'Введите имя';
+    if (!name) return 'Имя не может состоять из пробелов';
     if (name.length < LIMITS.nameMin || name.length > LIMITS.nameMax) {
         return `Имя: от ${LIMITS.nameMin} до ${LIMITS.nameMax} символов`;
     }
@@ -58,7 +61,7 @@ export function validateName(value) {
 }
 
 export function validateNickname(value) {
-    if (!value) return 'Введите никнейм';
+    if (!value) return '';
     if (value.length < LIMITS.nicknameMin || value.length > LIMITS.nicknameMax) {
         return `Никнейм: от ${LIMITS.nicknameMin} до ${LIMITS.nicknameMax} символов`;
     }
@@ -69,14 +72,14 @@ export function validateNickname(value) {
 }
 
 export function validatePhone(value) {
-    if (!value) return 'Введите телефон';
+    if (!value) return '';
     if (!PHONE_PATTERN.test(value)) return 'Телефон в формате +7 и 10 цифр';
     return '';
 }
 
 export function validateEmail(value) {
+    if (!value) return '';
     const email = value.trim();
-    if (!email) return 'Введите email';
     if (email.length > LIMITS.emailMax) {
         return `Email: не более ${LIMITS.emailMax} символов`;
     }
@@ -85,8 +88,8 @@ export function validateEmail(value) {
 }
 
 export function validateLogin(value) {
+    if (!value) return '';
     const login = value.trim();
-    if (!login) return 'Введите телефон или email';
     if (login.includes('@')) return validateEmail(login);
     return validatePhone(sanitizePhone(login));
 }
@@ -105,7 +108,7 @@ export function checkPasswordRules(password) {
 }
 
 export function validatePassword(value) {
-    if (!value) return 'Введите пароль';
+    if (!value) return '';
     if (byteLength(value) > LIMITS.passwordMax) {
         return PASSWORD_TOO_LONG;
     }
@@ -116,7 +119,7 @@ export function validatePassword(value) {
 }
 
 export function validateLoginPassword(value) {
-    if (!value) return 'Введите пароль';
+    if (!value) return '';
     if (byteLength(value) > LIMITS.passwordMax) {
         return PASSWORD_TOO_LONG;
     }
@@ -129,7 +132,7 @@ export function validateLoginPassword(value) {
  * @returns {string}
  */
 export function validatePasswordRepeat(value, password) {
-    if (!value) return 'Повторите пароль';
+    if (!value) return '';
     if (value !== password) return 'Пароли не совпадают';
     return '';
 }

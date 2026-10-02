@@ -6,7 +6,10 @@ import { setFormError } from '@/components/auth-form/auth-form.js';
  *   validate: (value: string, values: Record<string, string>) => string,
  *   sanitize?: (value: string) => string,
  *   normalize?: (value: string) => string,
+ *   required?: string,
  * }} FieldRule
+ * sanitize — на каждый ввод, normalize — по окончании ввода и при отправке,
+ * required — текст ошибки для пустого поля (показывается только после сабмита).
  */
 
 /**
@@ -32,11 +35,31 @@ function readValues(form) {
  */
 export function bindLiveValidation(form, rules, onInput) {
     const touched = new Set();
+    let submitted = false;
 
     const validateField = (name, values) => {
-        const message = rules[name].validate(values[name] ?? '', values);
+        const rule = rules[name];
+        const value = values[name] ?? '';
+
+        let message = '';
+        if (value === '') {
+            message = submitted ? (rule.required ?? '') : '';
+        } else {
+            message = rule.validate(value, values);
+        }
+
         setFieldError(form, name, message);
         return message;
+    };
+
+    /**
+     * @param {HTMLInputElement} input
+     * @param {{ normalize?: boolean }} [options]
+     */
+    const transform = (input, { normalize = false } = {}) => {
+        const rule = rules[input.name];
+        if (rule.sanitize) input.value = rule.sanitize(input.value);
+        if (normalize && rule.normalize) input.value = rule.normalize(input.value);
     };
 
     form.addEventListener('input', (e) => {
@@ -44,7 +67,7 @@ export function bindLiveValidation(form, rules, onInput) {
         const rule = rules[input.name];
         if (!rule) return;
 
-        if (rule.sanitize) input.value = rule.sanitize(input.value);
+        transform(input);
 
         touched.add(input.name);
         const values = readValues(form);
@@ -58,7 +81,7 @@ export function bindLiveValidation(form, rules, onInput) {
         const rule = rules[input.name];
         if (!rule?.normalize) return;
 
-        input.value = rule.normalize(input.value);
+        transform(input, { normalize: true });
         if (touched.has(input.name)) validateField(input.name, readValues(form));
     });
 
@@ -67,10 +90,12 @@ export function bindLiveValidation(form, rules, onInput) {
          * Проверяет все поля. Возвращает значения или null, если есть ошибки.
          */
         validateAll() {
-            Object.entries(rules).forEach(([name, rule]) => {
+            submitted = true;
+
+            Object.keys(rules).forEach((name) => {
                 const input = form.elements.namedItem(name);
-                if (rule.normalize && input instanceof HTMLInputElement) {
-                    input.value = rule.normalize(input.value);
+                if (input instanceof HTMLInputElement) {
+                    transform(input, { normalize: true });
                 }
             });
 

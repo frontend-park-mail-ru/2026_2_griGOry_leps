@@ -60,8 +60,12 @@ export const LoginPage = (root) => {
     const submitButton = form.querySelector('button[type="submit"]');
 
     const validation = bindLiveValidation(form, {
-        login: { validate: validateLogin, normalize: normalizeLogin },
-        password: { validate: validateLoginPassword },
+        login: {
+            validate: validateLogin,
+            normalize: normalizeLogin,
+            required: 'Введите телефон или email',
+        },
+        password: { validate: validateLoginPassword, required: 'Введите пароль' },
     });
 
     form.addEventListener('submit', async (e) => {

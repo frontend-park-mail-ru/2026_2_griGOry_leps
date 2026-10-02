@@ -104,6 +104,15 @@ function findRoute(path) {
 }
 
 /**
+ * @param {string} path
+ */
+function renderNotFound(path) {
+    Promise.resolve(notFoundHandler?.()).catch((err) => {
+        logError('Ошибка 404-роута', path, err);
+    });
+}
+
+/**
  * Резолвит текущий URL и вызывает нужный обработчик.
  */
 export function resolveRoute() {
@@ -111,9 +120,7 @@ export function resolveRoute() {
     const found = findRoute(path);
 
     if (!found) {
-        Promise.resolve(notFoundHandler?.()).catch((err) => {
-            logError('Ошибка 404-роута', path, err);
-        });
+        renderNotFound(path);
         return;
     }
 
@@ -126,9 +133,15 @@ export function resolveRoute() {
     }
 
     const params = {};
-    route.keys.forEach((key, i) => {
-        params[key] = decodeURIComponent(match[i + 1]);
-    });
+    try {
+        route.keys.forEach((key, i) => {
+            params[key] = decodeURIComponent(match[i + 1]);
+        });
+    } catch {
+        // Некорректная последовательность в URL, например /category/asd%
+        renderNotFound(path);
+        return;
+    }
 
     Promise.resolve(route.handler(params)).catch((err) => {
         logError('Ошибка роута', path, err);

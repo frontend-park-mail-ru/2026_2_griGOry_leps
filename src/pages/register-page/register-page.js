@@ -119,12 +119,17 @@ export const RegisterPage = (root) => {
     const validation = bindLiveValidation(
         form,
         {
-            first_name: { validate: validateName },
-            nickname: { validate: validateNickname },
-            phone: { validate: validatePhone, sanitize: sanitizePhone },
-            email: { validate: validateEmail },
-            password: { validate: validatePassword },
+            first_name: { validate: validateName, required: 'Введите имя' },
+            nickname: { validate: validateNickname, required: 'Введите никнейм' },
+            phone: {
+                validate: validatePhone,
+                sanitize: sanitizePhone,
+                required: 'Введите телефон',
+            },
+            email: { validate: validateEmail, required: 'Введите email' },
+            password: { validate: validatePassword, required: 'Введите пароль' },
             passwordRepeat: {
+                required: 'Повторите пароль',
                 validate: (value, values) => validatePasswordRepeat(value, values.password ?? ''),
             },
         },
