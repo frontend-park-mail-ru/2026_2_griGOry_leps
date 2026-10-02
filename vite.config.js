@@ -1,16 +1,42 @@
-import process from "node:process";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
+import * as path from "path";
+import Handlebars from "handlebars";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
-  const target = env.API_TARGET ?? "http://localhost:8080";
+function handlebarsPlugin() {
+    return {
+        name: 'vite-plugin-hbs-module',
+        transform(src, id) {
+            if (!id.endsWith('.hbs')) return;
 
-  return {
-    server: {
-      port: 5173,
-      proxy: {
-        "/api": { target, changeOrigin: true },
-      },
+            const precompiled = Handlebars.precompile(src);
+
+            return {
+                code: `
+                    import Handlebars from 'handlebars/runtime';
+                    const template = Handlebars.template(${precompiled});
+                    export default template;
+                `,
+                map: null,
+            };
+        },
+    };
+}
+
+export default defineConfig({
+    plugins: [handlebarsPlugin()],
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src/'),
+        },
     },
-  };
+    server: {
+        port: 5173,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                cookieDomainRewrite: 'localhost',
+            },
+        },
+    },
 });

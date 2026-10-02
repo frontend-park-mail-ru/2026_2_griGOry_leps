@@ -1,0 +1,33 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.category-page {
+    width: 100%;
+    padding: 0 32px;
+
+    &__section {
+        padding: 2rem 0 3rem;
+    }
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 0 0;
+    font-size: 0.8125rem;
+    color: $color-text-muted;
+
+    a {
+        color: $color-text-muted;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-main;
+        }
+    }
+
+    &__sep {
+        color: $gray-200;
+    }
+}

@@ -1,0 +1,36 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5rem 1rem 1.5rem;
+    text-align: center;
+
+    &__icon {
+        margin-bottom: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+    }
+
+    &__title {
+        @include typo-h4;
+        margin-bottom: 0.625rem;
+    }
+
+    &__text {
+        @include typo-p;
+        color: $color-text-muted;
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+        max-width: 480px;
+    }
+
+    &__action {
+        @include button-accent;
+    }
+}
