@@ -183,27 +183,51 @@
 }
 
 .search {
-    position: relative;
     display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 8px 0 16px;
+    background-color: $surface-0;
+    border: 1px solid $gray-200;
+    border-radius: $radius-lg;
+    transition: border-color $timing-animation-short, box-shadow $timing-animation-short;
+
+    &:hover,
+    &:focus-within {
+        border-color: $goget-primary;
+        box-shadow: inset 0 0 0 2px $goget-primary;
+    }
 
     &__input {
-        @include form-field;
-        padding-right: 2.75rem;
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        font-family: $font-body;
+        font-size: 16px;
+        line-height: 24px;
+        color: $color-text-main;
+        background: none;
+        border: none;
+        outline: none;
+
+        &::placeholder {
+            color: $color-text-muted;
+        }
     }
 
     &__btn {
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 32px;
-        height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: transparent;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: none;
         border: none;
         border-radius: $radius-sm;
+        cursor: pointer;
         transition: background-color $timing-animation-short;
 
         &:hover {
@@ -212,9 +236,9 @@
     }
 
     &__icon {
-        width: 18px;
-        height: 18px;
         display: block;
+        width: 22px;
+        height: 22px;
         pointer-events: none;
     }
 }
