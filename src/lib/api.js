@@ -82,6 +82,11 @@ export async function register({ email, password, first_name, nickname, phone })
     return response.json();
 }
 
+export async function logout() {
+    const response = await request('/logout', { method: 'POST' });
+    assertOk(response);
+}
+
 function toArray(data, key) {
     if (Array.isArray(data)) return data;
     if (data && typeof data === 'object') {

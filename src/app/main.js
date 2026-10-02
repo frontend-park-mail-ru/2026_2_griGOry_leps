@@ -9,9 +9,10 @@ import {
   setAuthCheck,
   recheckGuards,
   initRouter,
+  navigate,
 } from "@/router/router.js";
-import { getMe } from "@/lib/api.js";
-import { getUser, setUser, subscribe } from "@/store.js";
+import { getMe, logout } from "@/lib/api.js";
+import { getUser, setUser, clearUser, subscribe } from "@/store.js";
 import { logWarn } from "@/lib/logger.js";
 
 import { HomePage } from "@/pages/home-page/home-page.js";
@@ -34,6 +35,7 @@ if (app) {
 
   setAuthCheck(() => getUser() !== null);
   subscribe(renderHeader);
+  app.addEventListener("click", handleLogout);
 
   // Страницы авторизации скрывают общие хедер и футер (см. style.scss)
   const withLayout = (layout, handler) => (params) => {
@@ -70,6 +72,21 @@ function renderHeader(user) {
     userName: name,
     userInitial: name.charAt(0).toUpperCase(),
   });
+}
+
+async function handleLogout(e) {
+  const button = e.target.closest('[data-action="logout"]');
+  if (!button) return;
+
+  button.disabled = true;
+  try {
+    await logout();
+    clearUser();
+    navigate("/");
+  } catch (err) {
+    logWarn("Не удалось выйти:", err);
+    button.disabled = false;
+  }
 }
 
 async function loadCurrentUser() {
