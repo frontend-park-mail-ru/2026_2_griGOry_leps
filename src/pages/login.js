@@ -1,3 +1,8 @@
+/**
+ * @module pages/login
+ * @description Страница входа: форма, клиентская валидация и отправка в `api.login`.
+ */
+
 import { login } from '../api.js';
 import { setUser } from '../store.js';
 import { redirect } from '../router/router.js';
@@ -18,8 +23,16 @@ const MIN_PHONE_DIGITS = 10;
  */
 
 /**
- * @param {string} value
- * @returns {boolean}
+ * Ошибка, из которой собирается сообщение (подходит `ApiError` из модуля `api`).
+ * @typedef {Object} LoginError
+ * @property {number} [status] HTTP-статус, 0 при сетевой ошибке
+ * @property {boolean} [network] запрос не дошёл до сервера
+ */
+
+/**
+ * Проверяет номер телефона: допустимые символы и минимум цифр.
+ * @param {string} value Значение поля
+ * @returns {boolean} true, если номер выглядит корректно
  */
 function isValidPhone(value) {
   if (!/^\+?[\d\s()-]+$/.test(value)) return false;
@@ -54,7 +67,7 @@ export function validateLoginForm({ login: loginValue, password }) {
 
 /**
  * Подбирает сообщение для пользователя по типу ошибки.
- * @param {{ status?: number, network?: boolean } | null | undefined} err
+ * @param {(LoginError|null|undefined)} err Пойманная ошибка
  * @returns {string}
  */
 export function getLoginErrorMessage(err) {

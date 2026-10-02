@@ -1,0 +1,12 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.js$"
+  },
+  "opts": {
+    "recurse": true,
+    "destination": "docs"
+  },
+  "plugins": ["plugins/markdown"],
+  "sourceType": "module"
+}

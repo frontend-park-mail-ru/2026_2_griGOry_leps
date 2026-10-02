@@ -1,3 +1,8 @@
+/**
+ * @file Точка входа SPA: регистрирует маршруты, запускает проверку сессии
+ * (`GET /api/me`) и роутер.
+ */
+
 import { registerRoute, initRouter, setAuthReady } from './router/router.js';
 import { renderHomePage } from './pages/home.js';
 import { renderAboutPage } from './pages/about.js';
@@ -17,7 +22,7 @@ async function initAuth() {
     const user = await getMe();
     if (user) setUser(user);
   } catch {
-    // Сессию проверить не удалось — остаёмся гостем.
+    // Сессию проверить не удалось - остаёмся гостем.
   }
 }
 

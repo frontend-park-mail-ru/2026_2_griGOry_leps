@@ -1,8 +1,14 @@
+/**
+ * @module router/router
+ * @description SPA-роутер на History API. Поддерживает защищённые маршруты:
+ * гостей с них перенаправляет на `/login` после первичной проверки сессии.
+ */
+
 import { getUser } from '../store.js';
 
 /**
  * @typedef {Object} Route
- * @property {() => void} handler функция, рисующая страницу
+ * @property {function(): void} handler функция, рисующая страницу
  * @property {boolean} isProtected требует ли маршрут авторизации
  */
 
@@ -30,7 +36,7 @@ export function setAuthReady(promise) {
 /**
  * Регистрирует маршрут.
  * @param {string} path путь, например '/about'
- * @param {() => void} handler функция, рисующая страницу
+ * @param {function(): void} handler функция, рисующая страницу
  * @param {RouteOptions} [options]
  * @returns {void}
  */

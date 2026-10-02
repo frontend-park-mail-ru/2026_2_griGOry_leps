@@ -1,14 +1,33 @@
+/**
+ * @module api
+ * @description Клиент бэкенда GO&GET. Авторизация построена на cookie-сессии
+ * `session_id` (httpOnly), поэтому все запросы идут с `credentials: 'include'`.
+ */
+
+/**
+ * Пользователь, схема `User` из openapi.yaml бэкенда (поля в snake_case).
+ * @typedef {Object} User
+ * @property {number} id Идентификатор
+ * @property {string} email Email
+ * @property {string} first_name Имя
+ * @property {string} nickname Публичный никнейм
+ * @property {string} phone Телефон в формате `+79001234567`
+ */
+
+/** Базовый префикс всех запросов к бэкенду. */
 const BASE_URL = '/api';
 
 /**
  * Ошибка обращения к API.
  * `network === true` — запрос не дошёл до сервера (нет сети, сервер недоступен),
  * в этом случае `status` равен 0.
+ * @extends Error
  */
 export class ApiError extends Error {
   /**
    * @param {number} status HTTP-статус ответа или 0 при сетевой ошибке
-   * @param {{ network?: boolean }} [options]
+   * @param {Object} [options]
+   * @param {boolean} [options.network=false] запрос не дошёл до сервера
    */
   constructor(status, { network = false } = {}) {
     super(network ? 'Network error' : `HTTP ${status}`);
@@ -21,7 +40,7 @@ export class ApiError extends Error {
 /**
  * Выполняет запрос к API с куками сессии.
  * @param {string} endpoint путь относительно BASE_URL, например '/login'
- * @param {RequestInit} [options]
+ * @param {RequestInit} [options] параметры fetch
  * @returns {Promise<Response>}
  * @throws {ApiError} при сетевой ошибке (status = 0, network = true)
  */
@@ -56,8 +75,8 @@ function assertOk(response) {
 
 /**
  * Возвращает текущего пользователя или null, если сессии нет.
- * @returns {Promise<object | null>}
- * @throws {ApiError}
+ * @returns {Promise<(User|null)>} пользователь или null при любой 4xx
+ * @throws {ApiError} при сетевой ошибке или 5xx
  */
 export async function getMe() {
   const response = await request('/me');
@@ -73,8 +92,8 @@ export async function getMe() {
 /**
  * Вход по email или телефону. Cookie сессии ставит бэкенд.
  * @param {{ login: string, password: string }} credentials
- * @returns {Promise<object>} пользователь
- * @throws {ApiError}
+ * @returns {Promise<User>} пользователь
+ * @throws {ApiError} 401 при неверном логине или пароле, status 0 при сетевой ошибке
  */
 export async function login({ login, password }) {
   const response = await request('/login', {
@@ -90,7 +109,7 @@ export async function login({ login, password }) {
  * Регистрация. Бэкенд сразу создаёт сессию и ставит cookie,
  * поэтому повторный вызов login() после регистрации не нужен.
  * @param {{ email: string, password: string, first_name: string, nickname: string, phone: string }} data
- * @returns {Promise<object>} созданный пользователь
+ * @returns {Promise<User>} созданный пользователь
  * @throws {ApiError}
  */
 export async function register(data) {

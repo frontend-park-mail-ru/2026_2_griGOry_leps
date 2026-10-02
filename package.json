@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "docs": "jsdoc -c jsdoc.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
-    "vite": "^5.4.10",
-    "eslint": "^9.13.0"
+    "eslint": "^9.13.0",
+    "jsdoc": "^4.0.4",
+    "vite": "^5.4.10"
   }
 }
