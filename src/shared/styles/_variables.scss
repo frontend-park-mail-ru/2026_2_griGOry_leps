@@ -13,12 +13,22 @@ $goget-primary:       #0866ff;
 $goget-primary-hover: #0052cc;
 $goget-accent:        #ffa800;
 
+$goget-blue:       #0866ff;
+$goget-blue-hover: #0654d6;
+
+$color-text-strong:      #141417;
+$color-text-secondary:   #525259;
+$color-text-placeholder: #9999a1;
+$color-border:           #e6e6e9;
+
+$color-status-error:   #db2626;
+$color-status-success: #21a152;
+
 $surface-0: $white;
 $surface-1: $gray-100;
 
 $color-text-main:     $gray-900;
 $color-text-muted:    $gray-400;
-$color-text-secondary: $gray-700;
 
 $font-header: 'Fira Sans', sans-serif;
 $font-body:   'Fira Sans', sans-serif;
@@ -30,6 +40,7 @@ $radius-sm:   8px;
 $radius-md:   10px;
 $radius-lg:   12px;
 $radius-xl:   16px;
+$radius-2xl:  24px;
 $radius-pill: 999px;
 
 $container-max-width: 1280px;

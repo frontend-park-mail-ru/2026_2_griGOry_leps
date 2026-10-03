@@ -1,0 +1,5 @@
+@use '@/shared/styles/mixins' as *;
+
+.login-page {
+    @include auth-page;
+}

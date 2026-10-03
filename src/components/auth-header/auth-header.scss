@@ -1,0 +1,30 @@
+@use '@/shared/styles/variables' as *;
+
+.auth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 4rem;
+    background: $surface-0;
+    border-bottom: 1px solid $color-border;
+
+    &__logo-img {
+        height: 44px;
+        width: auto;
+    }
+
+    &__back {
+        font-weight: 500;
+        color: $color-text-secondary;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-strong;
+        }
+    }
+
+    @media (max-width: 640px) {
+        padding: 1rem;
+    }
+}

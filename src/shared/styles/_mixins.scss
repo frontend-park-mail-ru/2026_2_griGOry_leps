@@ -175,3 +175,22 @@
         border-color: $goget-primary;
     }
 }
+
+@mixin auth-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    background-color: $surface-1;
+
+    &__content {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 96px 16px;
+
+        @media (max-width: 640px) {
+            padding: 24px 16px;
+        }
+    }
+}

@@ -1,0 +1,5 @@
+@use '@/shared/styles/mixins' as *;
+
+.register-page {
+    @include auth-page;
+}
