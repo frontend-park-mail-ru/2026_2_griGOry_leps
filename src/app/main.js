@@ -1,13 +1,12 @@
 import "./styles/style.scss";
 import template from "./app.hbs";
 
-import { Header } from "@/components/header/header.js";
+import { Header, initHeaderMenu } from "@/components/header/header.js";
 import { Footer } from "@/components/footer/footer.js";
 import {
   registerRoute,
   registerNotFound,
   setAuthCheck,
-  recheckGuards,
   initRouter,
   navigate,
 } from "@/router/router.js";
@@ -26,15 +25,25 @@ import { NotFoundPage } from "@/pages/not-found-page/not-found-page.js";
 const app = document.getElementById("app");
 
 if (app) {
+  app.innerHTML = '<div class="app-loader" aria-label="Загрузка"></div>';
+
+  setAuthCheck(() => getUser() !== null);
+  initHeaderMenu();
+
+  void start();
+}
+
+async function start() {
+  const user = await loadCurrentUser();
+
   app.innerHTML = template({
-    headerHtml: Header({ isAuthenticated: false }),
+    headerHtml: renderHeader(user),
     footerHtml: Footer(),
   });
 
   const page = document.getElementById("page");
 
-  setAuthCheck(() => getUser() !== null);
-  subscribe(renderHeader);
+  subscribe(updateHeader);
   app.addEventListener("click", handleLogout);
 
   // Страницы авторизации скрывают общие хедер и футер (см. style.scss)
@@ -58,20 +67,19 @@ if (app) {
   registerNotFound(withLayout("main", () => NotFoundPage(page)));
 
   initRouter();
-  void loadCurrentUser();
 }
 
 function renderHeader(user) {
-  const name = user?.first_name || user?.nickname || user?.email || "";
-
-  const header = document.querySelector(".header");
-  if (!header) return;
-
-  header.outerHTML = Header({
+  return Header({
     isAuthenticated: Boolean(user),
-    userName: name,
-    userInitial: name.charAt(0).toUpperCase(),
+    userName: user?.first_name || user?.nickname || user?.email || "",
+    userInitial: getInitials(user),
   });
+}
+
+function updateHeader(user) {
+  const header = document.querySelector(".header");
+  if (header) header.outerHTML = renderHeader(user);
 }
 
 async function handleLogout(e) {
@@ -92,11 +100,15 @@ async function handleLogout(e) {
 async function loadCurrentUser() {
   try {
     const user = await getMe();
-    if (!user) return;
-
-    setUser(user);
-    recheckGuards();
+    if (user) setUser(user);
+    return user;
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
+    return null;
   }
+}
+
+function getInitials(user) {
+  const name = user?.first_name || user?.nickname || "";
+  return name.trim().slice(0, 2).toUpperCase();
 }

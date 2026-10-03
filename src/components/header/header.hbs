@@ -2,33 +2,38 @@
     <div class="header__inner">
 
         <a href="/" data-link class="header__logo" aria-label="GoGet — на главную">
-            <img src="/img/goget.png" alt="GoGet">
+            <img src="/img/goget.svg" alt="GoGet">
         </a>
 
         <a href="/categories" data-link class="header__category">
             Все категории
-            <span class="header__chevron" aria-hidden="true">▾</span>
         </a>
 
-        <button type="button" class="header__city">
+        <button type="button" class="header__city" disabled>
             <img src="/img/pin.svg" alt="" class="header__icon" aria-hidden="true">
             <span>Москва</span>
-            <span class="header__chevron" aria-hidden="true">▾</span>
+            <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true">
         </button>
 
-        <form class="header__search search" action="/search" method="get" role="search">
-            <input type="text" name="q" placeholder="Поиск по объявлениям" autocomplete="off" class="search__input">
-            <button type="submit" class="search__btn" aria-label="Найти">
-                <img src="/img/search_Icon.svg" alt="" class="search__icon" aria-hidden="true">
+        <form class="header__search search search--disabled" role="search" aria-disabled="true">
+            <input type="text" name="q" placeholder="Поиск по объявлениям" autocomplete="off" class="search__input" disabled>
+            <button type="submit" class="search__btn" aria-label="Найти" disabled>
+                <img src="/img/search_icon.svg" alt="" class="search__icon" aria-hidden="true">
             </button>
         </form>
 
         {{#if isAuthenticated}}
-            <span class="header__user header__user--disabled" aria-disabled="true">
-                <span class="header__avatar" aria-hidden="true">{{userInitial}}</span>
-                <span class="header__user-name">{{userName}}</span>
-            </span>
-            <button type="button" class="header__logout" data-action="logout">Выйти</button>
+            <button type="button" class="header__post" disabled>Разместить объявление</button>
+            <div class="header__user">
+                <button type="button" class="header__user-toggle" data-action="toggle-user-menu" aria-label="{{userName}}" aria-haspopup="true">
+                    <span class="header__avatar">{{userInitial}}</span>
+                    <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true">
+                </button>
+                <div class="header__menu">
+                    <span class="header__menu-name">{{userName}}</span>
+                    <button type="button" class="header__menu-item" data-action="logout">Выйти</button>
+                </div>
+            </div>
         {{else}}
             <a href="/register" data-link class="header__signup">Зарегистрироваться</a>
             <a href="/login" data-link class="header__login">Войти</a>

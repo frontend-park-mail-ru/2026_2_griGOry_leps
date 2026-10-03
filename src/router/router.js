@@ -67,6 +67,7 @@ export function registerNotFound(handler) {
  */
 export function navigate(path) {
     history.pushState({}, '', path);
+    window.scrollTo(0, 0);
     resolveRoute();
 }
 
@@ -77,6 +78,7 @@ export function navigate(path) {
  */
 export function redirect(path) {
     history.replaceState({}, '', path);
+    window.scrollTo(0, 0);
     resolveRoute();
 }
 
