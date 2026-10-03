@@ -1,63 +1,114 @@
 import "./styles/style.scss";
 import template from "./app.hbs";
 
-import { Header } from "@/components/header/header.js";
+import { Header, initHeaderMenu } from "@/components/header/header.js";
 import { Footer } from "@/components/footer/footer.js";
 import {
   registerRoute,
   registerNotFound,
   setAuthCheck,
   initRouter,
+  navigate,
 } from "@/router/router.js";
-import { getMe } from "@/lib/api.js";
-import { getUser, setUser } from "@/store.js";
+import { getMe, logout } from "@/lib/api.js";
+import { getUser, setUser, clearUser, subscribe } from "@/store.js";
 import { logWarn } from "@/lib/logger.js";
 
 import { HomePage } from "@/pages/home-page/home-page.js";
 import { CategoriesPage } from "@/pages/categories-page/categories-page.js";
 import { CategoryPage } from "@/pages/category-page/category-page.js";
+import { LoginPage } from "@/pages/login-page/login-page.js";
+import { RegisterPage } from "@/pages/register-page/register-page.js";
+import { TermsPage } from "@/pages/terms-page/terms-page.js";
 import { NotFoundPage } from "@/pages/not-found-page/not-found-page.js";
 
 const app = document.getElementById("app");
 
 if (app) {
+  app.innerHTML = '<div class="app-loader" aria-label="Загрузка"></div>';
+
+  setAuthCheck(() => getUser() !== null);
+  initHeaderMenu();
+
+  void start();
+}
+
+async function start() {
+  const user = await loadCurrentUser();
+
   app.innerHTML = template({
-    headerHtml: Header({ isAuthenticated: false }),
+    headerHtml: renderHeader(user),
     footerHtml: Footer(),
   });
 
   const page = document.getElementById("page");
 
-  setAuthCheck(() => getUser() !== null);
+  subscribe(updateHeader);
+  app.addEventListener("click", handleLogout);
 
-  registerRoute("/", () => HomePage(page));
-  registerRoute("/categories", () => CategoriesPage(page));
-  registerRoute("/category/:slug", CategoryPage(page));
+  // Страницы авторизации скрывают общие хедер и футер (см. style.scss)
+  const withLayout = (layout, handler) => (params) => {
+    app.dataset.layout = layout;
+    return handler(params);
+  };
 
-  registerNotFound(() => NotFoundPage(page));
+  registerRoute("/", withLayout("main", () => HomePage(page)));
+  registerRoute("/categories", withLayout("main", () => CategoriesPage(page)));
+  registerRoute("/category/:slug", withLayout("main", CategoryPage(page)));
+
+  registerRoute("/login", withLayout("auth", () => LoginPage(page)), {
+    guestOnly: true,
+  });
+  registerRoute("/register", withLayout("auth", () => RegisterPage(page)), {
+    guestOnly: true,
+  });
+  registerRoute("/terms", withLayout("main", () => TermsPage(page)));
+
+  registerNotFound(withLayout("main", () => NotFoundPage(page)));
 
   initRouter();
-  void loadCurrentUser();
+}
+
+function renderHeader(user) {
+  return Header({
+    isAuthenticated: Boolean(user),
+    userName: user?.first_name || user?.nickname || user?.email || "",
+    userInitial: getInitials(user),
+  });
+}
+
+function updateHeader(user) {
+  const header = document.querySelector(".header");
+  if (header) header.outerHTML = renderHeader(user);
+}
+
+async function handleLogout(e) {
+  const button = e.target.closest('[data-action="logout"]');
+  if (!button) return;
+
+  button.disabled = true;
+  try {
+    await logout();
+    clearUser();
+    navigate("/");
+  } catch (err) {
+    logWarn("Не удалось выйти:", err);
+    button.disabled = false;
+  }
 }
 
 async function loadCurrentUser() {
   try {
     const user = await getMe();
     if (user) setUser(user);
-
-    const header = document.querySelector(".header");
-    header?.insertAdjacentHTML(
-      "afterend",
-      Header({
-        isAuthenticated: Boolean(user),
-        userName: user?.first_name || user?.nickname || user?.email || "",
-        userInitial: (user?.first_name || user?.nickname || user?.email || "")
-          .charAt(0)
-          .toUpperCase(),
-      }),
-    );
-    header?.remove();
+    return user;
   } catch (err) {
     logWarn("Не удалось получить текущего пользователя:", err);
+    return null;
   }
+}
+
+function getInitials(user) {
+  const name = user?.first_name || user?.nickname || "";
+  return name.trim().slice(0, 2).toUpperCase();
 }

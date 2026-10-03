@@ -8,3 +8,17 @@ export const Header = (props = {}) => {
     userInitial: props.userInitial ?? "",
   });
 };
+
+export function initHeaderMenu() {
+  document.addEventListener("click", (e) => {
+    const toggle = e.target.closest('[data-action="toggle-user-menu"]');
+    const menu = document.querySelector(".header__user");
+    if (!menu) return;
+
+    if (toggle) {
+      menu.classList.toggle("header__user--open");
+    } else if (!e.target.closest(".header__menu")) {
+      menu.classList.remove("header__user--open");
+    }
+  });
+}

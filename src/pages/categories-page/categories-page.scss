@@ -25,23 +25,35 @@
 
 .categories-page {
     width: 100%;
-    padding: 0 32px;
+    padding: 32px 64px 64px;
+
+    .breadcrumbs {
+        padding: 0;
+    }
 
     &__head {
         display: flex;
         align-items: baseline;
-        gap: 0.75rem;
-        margin-bottom: 2rem;
+        gap: 16px;
+        margin: 64px 0 32px;
+
+        h1 {
+            font-weight: 700;
+            font-size: 40px;
+            line-height: 48px;
+            color: $color-text-main;
+        }
     }
 
     &__count {
-        @include typo-p;
+        font-size: 16px;
+        line-height: 24px;
         color: $color-text-muted;
     }
 
     &__grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 24px;
     }
 }

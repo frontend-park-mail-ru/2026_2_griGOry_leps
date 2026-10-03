@@ -1,0 +1,31 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.terms-page {
+    width: 100%;
+    padding: 0 32px 3rem;
+
+    &__content {
+        max-width: 800px;
+        margin: 1.5rem auto 0;
+
+        h1 {
+            @include typo-h2;
+            margin-bottom: 1.5rem;
+        }
+
+        section {
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            @include typo-h3;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            @include typo-p;
+            line-height: 1.6;
+        }
+    }
+}

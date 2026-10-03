@@ -1,23 +1,22 @@
 @use '@/shared/styles/variables' as *;
-@use '@/shared/styles/mixins' as *;
 
 .category-card {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 10px;
     text-align: center;
-    font-size: 0.75rem;
-    color: $color-text-main;
 
     &__img {
         width: 100%;
-        aspect-ratio: 2 / 1;
-        margin-bottom: 0.5rem;
+        height: 112px;
         background-color: $surface-1;
-        border-radius: $radius-lg;
+        border: 1px solid $gray-200;
+        border-radius: $radius-xl;
         overflow: hidden;
 
         img {
+            display: block;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -30,8 +29,9 @@
     }
 
     &__title {
-        @include typo-small;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
         color: $color-text-main;
-        line-height: 1.3;
     }
 }

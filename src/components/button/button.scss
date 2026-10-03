@@ -1,0 +1,30 @@
+@use '@/shared/styles/variables' as *;
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    color: $white;
+    background-color: $goget-blue;
+    border: none;
+    border-radius: $radius-lg;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    transition: background-color $timing-animation-short;
+
+    &:hover {
+        background-color: $goget-blue-hover;
+    }
+
+    &--block {
+        width: 100%;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
