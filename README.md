@@ -7,7 +7,7 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 - [Доска задач (YouGile)](https://ru.yougile.com/team/82999ec3673c/GOSH4LEEPS)
 - [Репозиторий бэкенда](https://github.com/go-park-mail-ru/2026_2_griGOry_leps)
 - [Макеты в Figma](https://www.figma.com/design/azXAN6gTvGAovlElu3VP3b/GoGET-%25E2%2580%2594-Team-Workspace?node-id=0-1&p=f&t=7sQMYz0HqS3QT7iN-0)
-- [Deploy]()
+- [Deploy](http://161.104.107.201:8001)
 
 ## Участники команды
 
@@ -25,9 +25,13 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 
 ## Технологический стек
 
-- **Язык:** TypeScript (без фреймворка, чистый DOM)
+- **Язык:** JavaScript (ES-модули, без фреймворка)
+- **Шаблоны:** [Handlebars](https://handlebarsjs.com/), шаблоны компилируются при сборке
+- **Стили:** SCSS, именование классов по БЭМ
 - **Сборка:** [Vite](https://vitejs.dev/)
+- **Раздача собранного фронта:** [Express](https://expressjs.com/) (`server.js`)
 - **Линтер:** ESLint
+- **Документация кода:** JSDoc
 
 ## Как работать с задачами
 
@@ -84,8 +88,9 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 
 ### Системные требования
 
-- [Node.js](https://nodejs.org/) 20+ LTS
+- [Node.js](https://nodejs.org/) 20.11+ (LTS)
 - npm (ставится вместе с Node.js)
+- запущенный бэкенд (см. [README бэкенда](https://github.com/go-park-mail-ru/2026_2_griGOry_leps))
 
 ### Пошаговая инструкция
 
@@ -96,16 +101,44 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
    cd 2026_2_griGOry_leps
    ```
 
-2. Установите зависимости:
+2. Создайте локальный файл окружения:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   `VITE_API_URL` — адрес API бэкенда, по умолчанию `http://localhost:8080/api`.
+
+3. Установите зависимости:
 
    ```bash
    npm install
    ```
 
-3. Запустите dev-сервер:
+4. Запустите dev-сервер:
 
    ```bash
    npm run dev
    ```
 
-Приложение будет доступно на `http://localhost:5173`. Бэкенд должен быть запущен на `http://localhost:8080` (см. README бэкенд-репозитория).
+Приложение будет доступно на `http://localhost:5173`. Бэкенд должен быть запущен на `http://localhost:8080`, а в его `.env` — `FRONTEND_ORIGIN=http://localhost:5173`, иначе браузер заблокирует запросы по CORS.
+
+### Сборка и запуск как на сервере
+
+```bash
+npm run build
+npm start
+```
+
+Express раздаёт собранный фронт из `dist/` на `http://localhost:8001` (порт меняется переменной `PORT`). В этом режиме в `.env` бэкенда должно быть `FRONTEND_ORIGIN=http://localhost:8001`. Адрес API вшивается в сборку, поэтому после изменения `.env` нужно пересобрать проект.
+
+### Скрипты
+
+| Команда | Что делает |
+|---|---|
+| `npm run dev` | dev-сервер Vite с горячей перезагрузкой |
+| `npm run build` | сборка в `dist/` |
+| `npm start` | раздача `dist/` через Express |
+| `npm run lint` | проверка кода ESLint |
+| `npm run lint:fix` | автоисправление ошибок ESLint |
+| `npm run docs` | генерация JSDoc-документации в `docs/` |
