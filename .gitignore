@@ -98,3 +98,7 @@ __MACOSX/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# JSDoc (генерируется командой npm run docs)
+
+docs/

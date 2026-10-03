@@ -1,7 +1,21 @@
+/**
+ * @module router
+ * @description Роутер на History API: маршруты с параметрами, гарды для гостей
+ * и авторизованных, перехват кликов по ссылкам с data-link.
+ */
+
 import { logError } from '@/lib/logger.js';
 
-/** @typedef {(params: Record<string, string>) => void | Promise<void>} RouteHandler */
-/** @typedef {{ pattern: RegExp, keys: string[], handler: RouteHandler, requireAuth?: boolean, guestOnly?: boolean }} Route */
+/** @typedef {function(Object<string, string>): (void|Promise<void>)} RouteHandler */
+
+/**
+ * @typedef {Object} Route
+ * @property {RegExp} pattern
+ * @property {string[]} keys
+ * @property {RouteHandler} handler
+ * @property {boolean} [requireAuth]
+ * @property {boolean} [guestOnly]
+ */
 
 /** @type {Route[]} */
 const routes = [];
@@ -12,13 +26,13 @@ let notFoundHandler = null;
 /**
  * Проверка «залогинен ли пользователь».
  * Устанавливается через setAuthCheck() из main.js.
- * @type {() => boolean}
+ * @type {function(): boolean}
  */
 let isAuthenticated = () => false;
 
 /**
  * Разрешает или запрещает доступ к защищённым маршрутам.
- * @param {() => boolean} fn
+ * @param {function(): boolean} fn
  */
 export function setAuthCheck(fn) {
     isAuthenticated = fn;
@@ -28,8 +42,9 @@ export function setAuthCheck(fn) {
  * Регистрирует маршрут.
  * @param {string} path — например, "/category/:slug"
  * @param {RouteHandler} handler
- * @param {{ requireAuth?: boolean, guestOnly?: boolean }} [options]
- *   requireAuth — только для авторизованных, guestOnly — только для гостей
+ * @param {Object} [options]
+ * @param {boolean} [options.requireAuth] Только для авторизованных
+ * @param {boolean} [options.guestOnly] Только для гостей
  */
 export function registerRoute(path, handler, options = {}) {
     const keys = [];
@@ -159,6 +174,9 @@ export function recheckGuards() {
     if (found && getGuardRedirect(found.route)) resolveRoute();
 }
 
+/**
+ * Вешает обработчики на ссылки data-link и кнопки «назад/вперёд», рендерит текущую страницу.
+ */
 export function initRouter() {
     document.body.addEventListener('click', (e) => {
         const target = /** @type {HTMLElement} */ (e.target);

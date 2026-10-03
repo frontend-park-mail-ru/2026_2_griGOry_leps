@@ -2,14 +2,11 @@ import { setFieldError } from '@/components/form-field/form-field.js';
 import { setFormError } from '@/components/auth-form/auth-form.js';
 
 /**
- * @typedef {{
- *   validate: (value: string, values: Record<string, string>) => string,
- *   sanitize?: (value: string) => string,
- *   normalize?: (value: string) => string,
- *   required?: string,
- * }} FieldRule
- * sanitize — на каждый ввод, normalize — по окончании ввода и при отправке,
- * required — текст ошибки для пустого поля (показывается только после сабмита).
+ * @typedef {Object} FieldRule
+ * @property {function(string, Object<string, string>): string} validate
+ * @property {function(string): string} [sanitize] На каждый ввод
+ * @property {function(string): string} [normalize] По окончании ввода и при отправке
+ * @property {string} [required] Текст ошибки для пустого поля, показывается только после сабмита
  */
 
 /**
@@ -30,8 +27,8 @@ function readValues(form) {
  * поэтому «Повторите пароль» реагирует и на изменение «Пароля».
  * @param {HTMLFormElement} form
  * @param {Record<string, FieldRule>} rules
- * @param {(values: Record<string, string>) => void} [onInput]
- * @returns {{ validateAll: () => Record<string, string> | null }}
+ * @param {function(Object<string, string>): void} [onInput]
+ * @returns {{validateAll: function(): ?Object<string, string>}}
  */
 export function bindLiveValidation(form, rules, onInput) {
     const touched = new Set();
@@ -54,7 +51,8 @@ export function bindLiveValidation(form, rules, onInput) {
 
     /**
      * @param {HTMLInputElement} input
-     * @param {{ normalize?: boolean }} [options]
+     * @param {Object} [options]
+     * @param {boolean} [options.normalize]
      */
     const transform = (input, { normalize = false } = {}) => {
         const rule = rules[input.name];
@@ -117,12 +115,11 @@ export function bindLiveValidation(form, rules, onInput) {
  * Показывает ошибку ответа бэка: подсвечивает поле из `field`,
  * иначе выводит общее сообщение над кнопкой.
  * @param {HTMLFormElement} form
- * @param {{ status?: number, field?: string, network?: boolean }} err
- * @param {{
- *   fallback: string,
- *   byStatus?: Record<number, string>,
- *   conflictMessages?: Record<string, string>,
- * }} messages conflictMessages — тексты для 409 по имени поля
+ * @param {module:api.ApiError} err
+ * @param {Object} messages
+ * @param {string} messages.fallback
+ * @param {Object<number, string>} [messages.byStatus]
+ * @param {Object<string, string>} [messages.conflictMessages] Тексты для 409 по имени поля
  */
 export function showApiError(form, err, { fallback, byStatus = {}, conflictMessages = {} }) {
     if (err?.field && form.querySelector(`[data-error-for="${err.field}"]`)) {
