@@ -1,6 +1,8 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 const PHONE_PATTERN = /^\+7\d{10}$/;
+const NAME_PATTERN = /^[\p{L}\s-]+$/u;
+const PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
 
 const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
 
@@ -57,6 +59,9 @@ export function validateName(value) {
     if (name.length < LIMITS.nameMin || name.length > LIMITS.nameMax) {
         return `Имя: от ${LIMITS.nameMin} до ${LIMITS.nameMax} символов`;
     }
+    if (!NAME_PATTERN.test(name)) {
+        return 'Только буквы, пробел и дефис';
+    }
     return '';
 }
 
@@ -111,6 +116,9 @@ export function validatePassword(value) {
     if (!value) return '';
     if (byteLength(value) > LIMITS.passwordMax) {
         return PASSWORD_TOO_LONG;
+    }
+    if (!PASSWORD_PATTERN.test(value)) {
+        return 'Только латинские буквы, цифры и символы без пробелов';
     }
     if (!checkPasswordRules(value).every(Boolean)) {
         return 'Пароль не соответствует требованиям';
