@@ -1,3 +1,8 @@
+/**
+ * @module app
+ * @description Точка входа: проверяет сессию, рисует шапку и футер, регистрирует маршруты.
+ */
+
 import "./styles/style.scss";
 import template from "./app.hbs";
 
@@ -33,6 +38,10 @@ if (app) {
   void start();
 }
 
+/**
+ * Ждёт ответа /me, рисует каркас страницы и запускает роутер.
+ * @returns {Promise<void>}
+ */
 async function start() {
   const user = await loadCurrentUser();
 
@@ -69,6 +78,10 @@ async function start() {
   initRouter();
 }
 
+/**
+ * @param {(module:api~User|null)} user
+ * @returns {string} HTML шапки для гостя или авторизованного
+ */
 function renderHeader(user) {
   return Header({
     isAuthenticated: Boolean(user),
@@ -77,11 +90,19 @@ function renderHeader(user) {
   });
 }
 
+/**
+ * Перерисовывает шапку при входе и выходе.
+ * @param {(module:api~User|null)} user
+ */
 function updateHeader(user) {
   const header = document.querySelector(".header");
   if (header) header.outerHTML = renderHeader(user);
 }
 
+/**
+ * Клик по «Выйти» в меню аватара.
+ * @param {MouseEvent} e
+ */
 async function handleLogout(e) {
   const button = e.target.closest('[data-action="logout"]');
   if (!button) return;
@@ -97,6 +118,9 @@ async function handleLogout(e) {
   }
 }
 
+/**
+ * @returns {Promise<(module:api~User|null)>} null для гостя или если бэк недоступен
+ */
 async function loadCurrentUser() {
   try {
     const user = await getMe();
@@ -108,6 +132,11 @@ async function loadCurrentUser() {
   }
 }
 
+/**
+ * Две первые буквы имени для аватара.
+ * @param {(module:api~User|null)} user
+ * @returns {string}
+ */
 function getInitials(user) {
   const name = user?.first_name || user?.nickname || "";
   return name.trim().slice(0, 2).toUpperCase();
