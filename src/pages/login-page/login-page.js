@@ -59,9 +59,21 @@ export const LoginPage = (root) => {
     const form = root.querySelector(`#${FORM_ID}`);
     const submitButton = form.querySelector('button[type="submit"]');
 
+    let typedLogin = '';
+    let shownLogin = '';
+
+    const sanitizeLogin = (value) => {
+        typedLogin = shownLogin && value.startsWith(shownLogin)
+            ? typedLogin + value.slice(shownLogin.length)
+            : value;
+        shownLogin = normalizeLogin(typedLogin);
+        return shownLogin;
+    };
+
     const validation = bindLiveValidation(form, {
         login: {
             validate: validateLogin,
+            sanitize: sanitizeLogin,
             normalize: normalizeLogin,
             required: 'Введите телефон или email',
         },
