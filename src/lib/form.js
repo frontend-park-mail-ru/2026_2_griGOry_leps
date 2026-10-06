@@ -133,6 +133,11 @@ export function showApiError(form, err, { fallback, byStatus = {}, conflictMessa
         return;
     }
 
+    if (err?.timeout) {
+        setFormError(form, 'Сервер долго не отвечает. Попробуйте ещё раз');
+        return;
+    }
+
     if (err?.network) {
         setFormError(form, 'Нет соединения с сервером. Проверьте интернет');
         return;
