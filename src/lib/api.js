@@ -8,7 +8,7 @@ import { mockCategories, mockPromos } from './data.js';
 import { logWarn } from '@/lib/logger.js';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
-const TIMEOUT_MS = 5000;
+const DEFAULT_TIMEOUT_MS = 10000;
 
 /**
  * @typedef {Object} User
@@ -34,14 +34,20 @@ const TIMEOUT_MS = 5000;
  * Ошибка запроса к API.
  * @property {number} status HTTP-статус, 0 при сетевой ошибке
  * @property {boolean} network Не удалось достучаться до сервера
+ * @property {boolean} timeout Сервер не ответил за отведённое время
  * @property {string} field Поле формы, к которому относится ошибка
  */
 export class ApiError extends Error {
-    constructor(status, { network = false, field = '' } = {}) {
-        super(network ? 'Network error' : `HTTP ${status}`);
+    constructor(status, { network = false, timeout = false, field = '' } = {}) {
+        let message = `HTTP ${status}`;
+        if (timeout) message = 'Timeout';
+        else if (network) message = 'Network error';
+
+        super(message);
         this.name = 'ApiError';
         this.status = status;
         this.network = network;
+        this.timeout = timeout;
         this.field = field;
     }
 }
@@ -49,11 +55,12 @@ export class ApiError extends Error {
 /**
  * Базовый запрос к API: JSON-заголовок, cookie, таймаут.
  * @param {string} endpoint Путь без префикса, например "/me"
- * @param {RequestInit} [options]
+ * @param {RequestInit & { timeout?: number }} [options] timeout — в мс,
+ *     по умолчанию DEFAULT_TIMEOUT_MS; 0 — без таймаута (для долгих запросов)
  * @returns {Promise<Response>}
- * @throws {ApiError} При сетевой ошибке или таймауте
+ * @throws {ApiError} При сетевой ошибке (network) или таймауте (timeout)
  */
-export async function request(endpoint, options = {}) {
+export async function request(endpoint, { timeout = DEFAULT_TIMEOUT_MS, ...options } = {}) {
     const headers = new Headers(options.headers);
 
     if (options.body && !headers.has('Content-Type')) {
@@ -61,7 +68,13 @@ export async function request(endpoint, options = {}) {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    let timedOut = false;
+    const timeoutId = timeout > 0
+        ? setTimeout(() => {
+            timedOut = true;
+            controller.abort();
+        }, timeout)
+        : null;
 
     try {
         return await fetch(`${BASE_URL}${endpoint}`, {
@@ -71,7 +84,9 @@ export async function request(endpoint, options = {}) {
             signal: controller.signal,
         });
     } catch {
-        throw new ApiError(0, { network: true });
+        throw timedOut
+            ? new ApiError(0, { timeout: true })
+            : new ApiError(0, { network: true });
     } finally {
         clearTimeout(timeoutId);
     }

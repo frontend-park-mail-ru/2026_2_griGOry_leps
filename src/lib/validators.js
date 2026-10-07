@@ -1,4 +1,7 @@
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Локальная часть — латиница, цифры и «._%+-»; домен — латинские метки через точку
+const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/;
+const EMAIL_CHARS_PATTERN = /^[A-Za-z0-9._%+@-]+$/;
+const EMOJI_PATTERN = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
 const NICKNAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 const PHONE_PATTERN = /^\+7\d{10}$/;
 const NAME_PATTERN = /^[\p{L}\s-]+$/u;
@@ -88,6 +91,10 @@ export function validateEmail(value) {
     if (email.length > LIMITS.emailMax) {
         return `Email: не более ${LIMITS.emailMax} символов`;
     }
+    if (EMOJI_PATTERN.test(email)) return 'Email не может содержать эмодзи';
+    if (!EMAIL_CHARS_PATTERN.test(email)) {
+        return 'Email: только латиница, цифры и символы «._%+-»';
+    }
     if (!EMAIL_PATTERN.test(email)) return 'Введите корректный email';
     return '';
 }
@@ -95,6 +102,7 @@ export function validateEmail(value) {
 export function validateLogin(value) {
     if (!value) return '';
     const login = value.trim();
+    if (EMOJI_PATTERN.test(login)) return 'Логин не может содержать эмодзи';
     if (login.includes('@')) return validateEmail(login);
     return validatePhone(sanitizePhone(login));
 }
@@ -131,6 +139,7 @@ export function validateLoginPassword(value) {
     if (byteLength(value) > LIMITS.passwordMax) {
         return PASSWORD_TOO_LONG;
     }
+    if (EMOJI_PATTERN.test(value)) return 'Пароль не может содержать эмодзи';
     return '';
 }
 

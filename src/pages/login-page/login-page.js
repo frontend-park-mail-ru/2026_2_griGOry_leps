@@ -96,7 +96,10 @@ export const LoginPage = (root) => {
             setUser(user);
             redirect('/');
         } catch (err) {
-            if (err?.status === 401) {
+            // Не подсказываем, что именно неверно: подсвечиваем оба поля,
+            // текст — только под паролем
+            if (err?.status === 401 || err?.status === 404) {
+                setFieldError(form, 'login', '', true);
                 setFieldError(form, 'password', 'Неверный логин или пароль');
                 return;
             }
