@@ -134,7 +134,7 @@ export function showApiError(form, err, { fallback, byStatus = {}, conflictMessa
     }
 
     if (err?.timeout) {
-        setFormError(form, 'Сервер долго не отвечает. Попробуйте ещё раз');
+        setFormError(form, 'Сервер не отвечает. Попробуйте ещё раз');
         return;
     }
 
