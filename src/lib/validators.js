@@ -2,6 +2,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NICKNAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 const PHONE_PATTERN = /^\+7\d{10}$/;
 const NAME_PATTERN = /^[\p{L}\s-]+$/u;
+const DISPLAY_NAME_PATTERN = /^[\p{L}\d_.\s-]+$/u;
 const PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
 
 const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
@@ -14,7 +15,7 @@ export const LIMITS = {
     phoneMax: 12,
     emailMax: 254,
     passwordMin: 8,
-    passwordMax: 72, // байт
+    passwordMax: 72,
 };
 
 /**
@@ -72,6 +73,24 @@ export function validateNickname(value) {
     }
     if (!NICKNAME_PATTERN.test(value)) {
         return 'Только латиница, цифры, «_» и «.»';
+    }
+    return '';
+}
+
+/**
+ * Единое поле «Имя или никнейм»: буквы любого алфавита, цифры, «_», «.», «-» и пробел.
+ * @param {string} value
+ * @returns {string}
+ */
+export function validateDisplayName(value) {
+    if (!value) return '';
+    const name = value.trim();
+    if (!name) return 'Имя не может состоять из пробелов';
+    if (name.length < LIMITS.nameMin || name.length > LIMITS.nicknameMax) {
+        return `От ${LIMITS.nameMin} до ${LIMITS.nicknameMax} символов`;
+    }
+    if (!DISPLAY_NAME_PATTERN.test(name)) {
+        return 'Только буквы, цифры, «_», «.», «-» и пробел';
     }
     return '';
 }

@@ -5,7 +5,7 @@ import { AuthHeader } from '@/components/auth-header/auth-header.js';
 import { AuthCard } from '@/components/auth-card/auth-card.js';
 import { AuthForm, setFormError } from '@/components/auth-form/auth-form.js';
 import { Button } from '@/components/button/button.js';
-import { FormField, initFormFields } from '@/components/form-field/form-field.js';
+import { FormField, initFormFields, setFieldHighlight } from '@/components/form-field/form-field.js';
 import { FormNote } from '@/components/form-note/form-note.js';
 import { PasswordRules, updatePasswordRules } from '@/components/password-rules/password-rules.js';
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs.js';
@@ -15,9 +15,8 @@ import { bindLiveValidation, showApiError } from '@/lib/form.js';
 import {
     checkPasswordRules,
     sanitizePhone,
+    validateDisplayName,
     validateEmail,
-    validateName,
-    validateNickname,
     validatePassword,
     validatePasswordRepeat,
     validatePhone,
@@ -30,17 +29,9 @@ const FORM_ID = 'register-form';
 export const RegisterPage = (root) => {
     const fieldsHtml = [
         FormField({
-            id: 'first-name-input',
-            name: 'first_name',
-            label: 'Имя',
-            placeholder: 'Как к вам обращаться',
-            autocomplete: 'given-name',
-            hint: 'Видно только вам — в профиле',
-        }),
-        FormField({
             id: 'nickname-input',
             name: 'nickname',
-            label: 'Никнейм',
+            label: 'Имя или никнейм',
             placeholder: 'Например, ivan_bike',
             autocomplete: 'nickname',
             hint: 'Его увидят покупатели и продавцы',
@@ -50,7 +41,7 @@ export const RegisterPage = (root) => {
             name: 'phone',
             label: 'Телефон',
             type: 'tel',
-            placeholder: '+79000000000',
+            placeholder: '+7 900 000-00-00',
             autocomplete: 'tel',
             inputmode: 'tel',
             hint: 'Покупатели смогут вам позвонить',
@@ -62,7 +53,7 @@ export const RegisterPage = (root) => {
             type: 'email',
             placeholder: 'name@mail.ru',
             autocomplete: 'email',
-            hint: 'Для связи, если скроете телефон',
+            hint: 'Для связи, если скроете телефон в объявлении',
         }),
         FormField({
             id: 'password-input',
@@ -106,8 +97,6 @@ export const RegisterPage = (root) => {
     const form = root.querySelector(`#${FORM_ID}`);
     const submitButton = form.querySelector('button[type="submit"]');
 
-    // Выполненные требования подсвечиваются зелёным сразу при вводе,
-    // невыполненные краснеют, как только в поле что-то введено.
     const renderPasswordRules = ({ password = '' }) => {
         const states = checkPasswordRules(password).map((isMet) => {
             if (isMet) return 'ok';
@@ -115,12 +104,15 @@ export const RegisterPage = (root) => {
         });
         updatePasswordRules(form, states);
     };
+    const highlightPasswordMismatch = ({ password = '', passwordRepeat = '' }) => {
+        const mismatch = Boolean(passwordRepeat) && validatePasswordRepeat(passwordRepeat, password) !== '';
+        setFieldHighlight(form, 'password', mismatch);
+    };
 
     const validation = bindLiveValidation(
         form,
         {
-            first_name: { validate: validateName, required: 'Введите имя' },
-            nickname: { validate: validateNickname, required: 'Введите никнейм' },
+            nickname: { validate: validateDisplayName, required: 'Введите имя или никнейм' },
             phone: {
                 validate: validatePhone,
                 sanitize: sanitizePhone,
@@ -133,7 +125,10 @@ export const RegisterPage = (root) => {
                 validate: (value, values) => validatePasswordRepeat(value, values.password ?? ''),
             },
         },
-        renderPasswordRules,
+        (values) => {
+            renderPasswordRules(values);
+            highlightPasswordMismatch(values);
+        },
     );
 
     form.addEventListener('submit', async (e) => {
@@ -146,8 +141,8 @@ export const RegisterPage = (root) => {
         submitButton.disabled = true;
         try {
             const user = await register({
-                first_name: values.first_name.trim(),
-                nickname: values.nickname,
+                first_name: values.nickname.trim(),
+                nickname: values.nickname.trim(),
                 phone: values.phone,
                 email: values.email.trim(),
                 password: values.password,
@@ -159,8 +154,8 @@ export const RegisterPage = (root) => {
                 fallback: 'Не удалось зарегистрироваться. Попробуйте ещё раз',
                 conflictMessages: {
                     email: 'Пользователь с таким Email уже существует',
-                    phone: 'Пользователь с таким номером уже существует',
-                    nickname: 'Никнейм занят',
+                    phone: 'Этот номер уже зарегистрирован. Войдите или восстановите пароль',
+                    nickname: 'Это имя уже занято, придумайте другое',
                 },
                 byStatus: { 409: 'Пользователь с такими данными уже существует' },
             });
