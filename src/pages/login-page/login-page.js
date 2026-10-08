@@ -5,7 +5,7 @@ import { AuthHeader } from '@/components/auth-header/auth-header.js';
 import { AuthCard } from '@/components/auth-card/auth-card.js';
 import { AuthForm, setFormError } from '@/components/auth-form/auth-form.js';
 import { Button } from '@/components/button/button.js';
-import { FormField, initFormFields, setFieldError } from '@/components/form-field/form-field.js';
+import { FormField, initFormFields, setFieldError, setFieldHighlight } from '@/components/form-field/form-field.js';
 import { FormNote } from '@/components/form-note/form-note.js';
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs.js';
 
@@ -23,7 +23,7 @@ export const LoginPage = (root) => {
             id: 'login-input',
             name: 'login',
             label: 'Телефон или email',
-            placeholder: '+79000000000 или name@mail.ru',
+            placeholder: '+7 900 000-00-00',
             autocomplete: 'username',
         }),
         FormField({
@@ -78,6 +78,8 @@ export const LoginPage = (root) => {
             required: 'Введите телефон или email',
         },
         password: { validate: validateLoginPassword, required: 'Введите пароль' },
+    }, () => {
+        setFieldHighlight(form, 'login', false);
     });
 
     form.addEventListener('submit', async (e) => {
@@ -97,6 +99,7 @@ export const LoginPage = (root) => {
             redirect('/');
         } catch (err) {
             if (err?.status === 401) {
+                setFieldHighlight(form, 'login', true);
                 setFieldError(form, 'password', 'Неверный логин или пароль');
                 return;
             }

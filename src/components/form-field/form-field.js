@@ -26,3 +26,18 @@ export function setFieldError(root, name, message = '') {
     field.classList.toggle('form-field--error', Boolean(message));
     field.querySelector('input')?.setAttribute('aria-invalid', String(Boolean(message)));
 }
+
+/**
+ * Подсвечивает поле красным без текста ошибки.
+ * @param {ParentNode} root
+ * @param {string} name
+ * @param {boolean} invalid
+ */
+export function setFieldHighlight(root, name, invalid) {
+    const field = root.querySelector(`[data-error-for="${name}"]`)?.closest('.form-field');
+    if (!field) return;
+
+    field.classList.toggle('form-field--invalid', invalid);
+    const hasOwnError = field.classList.contains('form-field--error');
+    field.querySelector('input')?.setAttribute('aria-invalid', String(invalid || hasOwnError));
+}

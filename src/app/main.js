@@ -54,8 +54,6 @@ async function start() {
 
   subscribe(updateHeader);
   app.addEventListener("click", handleLogout);
-
-  // Страницы авторизации скрывают общие хедер и футер (см. style.scss)
   const withLayout = (layout, handler) => (params) => {
     app.dataset.layout = layout;
     return handler(params);

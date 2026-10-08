@@ -1,5 +1,8 @@
 import { setFieldError } from '@/components/form-field/form-field.js';
 import { setFormError } from '@/components/auth-form/auth-form.js';
+import { debounce } from '@/lib/debounce.js';
+
+const VALIDATION_DELAY_MS = 300;
 
 /**
  * @typedef {Object} FieldRule
@@ -22,7 +25,8 @@ function readValues(form) {
 }
 
 /**
- * Валидация «по вводу»: ошибка появляется сразу, пока пользователь печатает.
+ * Валидация «по вводу»: ошибки показываются, когда пользователь сделал паузу в 300 мс,
+ * а не на каждое нажатие клавиши. При уходе из поля и при отправке — сразу.
  * Поля, которых пользователь уже касался, перепроверяются при любом вводе,
  * поэтому «Повторите пароль» реагирует и на изменение «Пароля».
  * @param {HTMLFormElement} form
@@ -60,34 +64,39 @@ export function bindLiveValidation(form, rules, onInput) {
         if (normalize && rule.normalize) input.value = rule.normalize(input.value);
     };
 
+    const validateTouched = () => {
+        const values = readValues(form);
+        touched.forEach((name) => validateField(name, values));
+        onInput?.(values);
+    };
+
+    const validateTouchedDebounced = debounce(validateTouched, VALIDATION_DELAY_MS);
+
     form.addEventListener('input', (e) => {
         const input = /** @type {HTMLInputElement} */ (e.target);
         const rule = rules[input.name];
         if (!rule) return;
-
         transform(input);
 
         touched.add(input.name);
-        const values = readValues(form);
-        touched.forEach((name) => validateField(name, values));
-        onInput?.(values);
+        validateTouchedDebounced();
     });
 
-    // normalize применяется, когда пользователь закончил ввод (blur) и перед отправкой
     form.addEventListener('change', (e) => {
         const input = /** @type {HTMLInputElement} */ (e.target);
         const rule = rules[input.name];
-        if (!rule?.normalize) return;
+        if (!rule) return;
 
         transform(input, { normalize: true });
-        if (touched.has(input.name)) validateField(input.name, readValues(form));
+        if (touched.has(input.name)) {
+            validateTouchedDebounced.cancel();
+            validateTouched();
+        }
     });
 
     return {
-        /**
-         * Проверяет все поля. Возвращает значения или null, если есть ошибки.
-         */
         validateAll() {
+            validateTouchedDebounced.cancel();
             submitted = true;
 
             Object.keys(rules).forEach((name) => {
