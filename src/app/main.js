@@ -54,8 +54,6 @@ async function start() {
 
   subscribe(updateHeader);
   app.addEventListener("click", handleLogout);
-
-  // Страницы авторизации скрывают общие хедер и футер (см. style.scss)
   const withLayout = (layout, handler) => (params) => {
     app.dataset.layout = layout;
     return handler(params);
@@ -85,7 +83,7 @@ async function start() {
 function renderHeader(user) {
   return Header({
     isAuthenticated: Boolean(user),
-    userName: user?.first_name || user?.nickname || user?.email || "",
+    userName: user?.nickname || user?.email || "",
     userInitial: getInitials(user),
   });
 }
@@ -138,6 +136,6 @@ async function loadCurrentUser() {
  * @returns {string}
  */
 function getInitials(user) {
-  const name = user?.first_name || user?.nickname || "";
+  const name = user?.nickname || "";
   return name.trim().slice(0, 2).toUpperCase();
 }

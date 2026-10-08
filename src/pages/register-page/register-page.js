@@ -96,7 +96,6 @@ export const RegisterPage = (root) => {
 
     const form = root.querySelector(`#${FORM_ID}`);
     const submitButton = form.querySelector('button[type="submit"]');
-
     const renderPasswordRules = ({ password = '' }) => {
         const states = checkPasswordRules(password).map((isMet) => {
             if (isMet) return 'ok';
@@ -141,7 +140,6 @@ export const RegisterPage = (root) => {
         submitButton.disabled = true;
         try {
             const user = await register({
-                first_name: values.nickname.trim(),
                 nickname: values.nickname.trim(),
                 phone: values.phone,
                 email: values.email.trim(),

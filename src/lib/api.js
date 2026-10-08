@@ -14,7 +14,6 @@ const TIMEOUT_MS = 5000;
  * @typedef {Object} User
  * @property {number} id
  * @property {string} email
- * @property {string} first_name
  * @property {string} nickname
  * @property {string} phone
  */
@@ -123,14 +122,14 @@ export async function login({ login, password }) {
 
 /**
  * Регистрация. После успеха бэк сразу ставит cookie сессии.
- * @param {{ email: string, password: string, first_name: string, nickname: string, phone: string }} data
+ * @param {{ email: string, password: string, nickname: string, phone: string }} data
  * @returns {Promise<User>}
  * @throws {ApiError} 400 или 409, в field указано поле с ошибкой
  */
-export async function register({ email, password, first_name, nickname, phone }) {
+export async function register({ email, password, nickname, phone }) {
     const response = await request('/register', {
         method: 'POST',
-        body: JSON.stringify({ email, password, first_name, nickname, phone }),
+        body: JSON.stringify({ email, password, nickname, phone }),
     });
 
     await assertOkWithField(response);
