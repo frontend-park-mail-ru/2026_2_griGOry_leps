@@ -18,6 +18,7 @@ export default [
       "no-var": "error",
       "prefer-const": "error",
       "no-console": "warn",
+      "eol-last": ["error", "always"],
     },
   },
   {
