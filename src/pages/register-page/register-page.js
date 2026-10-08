@@ -53,7 +53,7 @@ export const RegisterPage = (root) => {
             type: 'email',
             placeholder: 'name@mail.ru',
             autocomplete: 'email',
-            hint: 'Для связи, если скроете телефон в объявлении',
+            hint: 'Для входа в аккаунт и связи с вами',
         }),
         FormField({
             id: 'password-input',
