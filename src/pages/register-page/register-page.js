@@ -15,8 +15,8 @@ import { bindLiveValidation, showApiError } from '@/lib/form.js';
 import {
     checkPasswordRules,
     sanitizePhone,
-    validateDisplayName,
     validateEmail,
+    validateName,
     validatePassword,
     validatePasswordRepeat,
     validatePhone,
@@ -29,11 +29,11 @@ const FORM_ID = 'register-form';
 export const RegisterPage = (root) => {
     const fieldsHtml = [
         FormField({
-            id: 'nickname-input',
-            name: 'nickname',
-            label: 'Имя или никнейм',
-            placeholder: 'Например, ivan_bike',
-            autocomplete: 'nickname',
+            id: 'first-name-input',
+            name: 'first_name',
+            label: 'Имя',
+            placeholder: 'Например, Иван',
+            autocomplete: 'given-name',
             hint: 'Его увидят покупатели и продавцы',
         }),
         FormField({
@@ -111,7 +111,7 @@ export const RegisterPage = (root) => {
     const validation = bindLiveValidation(
         form,
         {
-            nickname: { validate: validateDisplayName, required: 'Введите имя или никнейм' },
+            first_name: { validate: validateName, required: 'Введите имя' },
             phone: {
                 validate: validatePhone,
                 sanitize: sanitizePhone,
@@ -140,7 +140,7 @@ export const RegisterPage = (root) => {
         submitButton.disabled = true;
         try {
             const user = await register({
-                nickname: values.nickname.trim(),
+                first_name: values.first_name.trim().replace(/ {2,}/g, ' '),
                 phone: values.phone,
                 email: values.email.trim(),
                 password: values.password,
@@ -153,7 +153,6 @@ export const RegisterPage = (root) => {
                 conflictMessages: {
                     email: 'Пользователь с таким Email уже существует',
                     phone: 'Этот номер уже зарегистрирован. Войдите или восстановите пароль',
-                    nickname: 'Это имя уже занято, придумайте другое',
                 },
                 byStatus: { 409: 'Пользователь с такими данными уже существует' },
             });
