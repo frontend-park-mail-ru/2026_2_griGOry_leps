@@ -6,7 +6,6 @@ main {
     padding: 0;
 }
 
-// Страницы авторизации рисуют собственный хедер и без футера
 #app[data-layout='auth'] > .header,
 #app[data-layout='auth'] > .footer {
     display: none;

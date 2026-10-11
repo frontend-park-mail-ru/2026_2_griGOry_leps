@@ -21,14 +21,28 @@ export function initFormFields(root) {
  * @param {ParentNode} root
  * @param {string} name
  * @param {string} [message] Текст под полем
- * @param {boolean} [invalid] Подсветить поле; можно без текста, если ошибка показана у соседнего
  */
-export function setFieldError(root, name, message = '', invalid = Boolean(message)) {
+export function setFieldError(root, name, message = '') {
     const errorEl = root.querySelector(`[data-error-for="${name}"]`);
     const field = errorEl?.closest('.form-field');
     if (!errorEl || !field) return;
 
     errorEl.textContent = message;
-    field.classList.toggle('form-field--error', invalid);
-    field.querySelector('input')?.setAttribute('aria-invalid', String(invalid));
+    field.classList.toggle('form-field--error', Boolean(message));
+    field.querySelector('input')?.setAttribute('aria-invalid', String(Boolean(message)));
+}
+
+/**
+ * Подсвечивает поле красным без текста ошибки.
+ * @param {ParentNode} root
+ * @param {string} name
+ * @param {boolean} invalid
+ */
+export function setFieldHighlight(root, name, invalid) {
+    const field = root.querySelector(`[data-error-for="${name}"]`)?.closest('.form-field');
+    if (!field) return;
+
+    field.classList.toggle('form-field--invalid', invalid);
+    const hasOwnError = field.classList.contains('form-field--error');
+    field.querySelector('input')?.setAttribute('aria-invalid', String(invalid || hasOwnError));
 }

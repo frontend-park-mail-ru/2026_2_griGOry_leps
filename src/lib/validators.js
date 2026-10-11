@@ -1,10 +1,8 @@
-// Локальная часть — латиница, цифры и «._%+-»; домен — латинские метки через точку
 const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/;
 const EMAIL_CHARS_PATTERN = /^[A-Za-z0-9._%+@-]+$/;
 const EMOJI_PATTERN = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
-const NICKNAME_PATTERN = /^[A-Za-z0-9_.]+$/;
 const PHONE_PATTERN = /^\+7\d{10}$/;
-const NAME_PATTERN = /^[\p{L}\s-]+$/u;
+const NAME_PATTERN = /^[A-Za-zА-Яа-яЁё0-9_. -]+$/;
 const PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
 
 const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
@@ -12,12 +10,10 @@ const PASSWORD_TOO_LONG = 'Пароль слишком длинный: макс�
 export const LIMITS = {
     nameMin: 2,
     nameMax: 50,
-    nicknameMin: 3,
-    nicknameMax: 32,
     phoneMax: 12,
     emailMax: 254,
     passwordMin: 8,
-    passwordMax: 72, // байт
+    passwordMax: 72,
 };
 
 /**
@@ -57,24 +53,13 @@ export function byteLength(value) {
  */
 export function validateName(value) {
     if (!value) return '';
-    const name = value.trim();
+    const name = value.trim().replace(/ {2,}/g, ' ');
     if (!name) return 'Имя не может состоять из пробелов';
     if (name.length < LIMITS.nameMin || name.length > LIMITS.nameMax) {
         return `Имя: от ${LIMITS.nameMin} до ${LIMITS.nameMax} символов`;
     }
     if (!NAME_PATTERN.test(name)) {
-        return 'Только буквы, пробел и дефис';
-    }
-    return '';
-}
-
-export function validateNickname(value) {
-    if (!value) return '';
-    if (value.length < LIMITS.nicknameMin || value.length > LIMITS.nicknameMax) {
-        return `Никнейм: от ${LIMITS.nicknameMin} до ${LIMITS.nicknameMax} символов`;
-    }
-    if (!NICKNAME_PATTERN.test(value)) {
-        return 'Только латиница, цифры, «_» и «.»';
+        return 'Только латиница, кириллица, цифры, пробел, «-», «_» и «.»';
     }
     return '';
 }
