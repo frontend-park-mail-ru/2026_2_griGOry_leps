@@ -77,12 +77,14 @@ export async function request(endpoint, { timeout = DEFAULT_TIMEOUT_MS, ...optio
         : null;
 
     try {
-        return await fetch(`${BASE_URL}${endpoint}`, {
+        const response = await fetch(`${BASE_URL}${endpoint}`, {
             ...options,
             headers,
             credentials: 'include',
             signal: controller.signal,
         });
+        const body = await response.text();
+        return new Response(body || null, response);
     } catch {
         throw timedOut
             ? new ApiError(0, { timeout: true })
