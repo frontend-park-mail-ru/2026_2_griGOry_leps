@@ -16,8 +16,8 @@ const listeners = [];
  * @returns {void}
  */
 export function setUser(user) {
-  currentUser = user;
-  listeners.forEach((fn) => fn(user));
+    currentUser = user;
+    listeners.forEach((fn) => fn(user));
 }
 
 /**
@@ -25,7 +25,7 @@ export function setUser(user) {
  * @returns {void}
  */
 export function clearUser() {
-  setUser(null);
+    setUser(null);
 }
 
 /**
@@ -33,7 +33,7 @@ export function clearUser() {
  * @returns {(module:api~User|null)} Пользователь или null, если это гость
  */
 export function getUser() {
-  return currentUser;
+    return currentUser;
 }
 
 /**
@@ -45,9 +45,9 @@ export function getUser() {
  * // позже: off();
  */
 export function subscribe(fn) {
-  listeners.push(fn);
-  return () => {
-    const index = listeners.indexOf(fn);
-    if (index > -1) listeners.splice(index, 1);
-  };
+    listeners.push(fn);
+    return () => {
+        const index = listeners.indexOf(fn);
+        if (index > -1) listeners.splice(index, 1);
+    };
 }

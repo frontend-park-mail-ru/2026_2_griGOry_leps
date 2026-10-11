@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
-import * as path from "path";
-import Handlebars from "handlebars";
+import { defineConfig } from 'vite';
+import * as path from 'path';
+import Handlebars from 'handlebars';
 
 function handlebarsPlugin() {
     return {
