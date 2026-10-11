@@ -31,7 +31,7 @@ export const RegisterPage = (root) => {
         FormField({
             id: 'first-name-input',
             name: 'first_name',
-            label: 'Имя',
+            label: 'Имя или никнейм',
             placeholder: 'Например, Иван',
             autocomplete: 'given-name',
             hint: 'Его увидят покупатели и продавцы',

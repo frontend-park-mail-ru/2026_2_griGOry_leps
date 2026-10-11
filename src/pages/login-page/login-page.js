@@ -23,7 +23,7 @@ export const LoginPage = (root) => {
             id: 'login-input',
             name: 'login',
             label: 'Телефон или email',
-            placeholder: '+7 900 000-00-00',
+            placeholder: '+7 900 000-00-00 или name@mail.ru',
             autocomplete: 'username',
         }),
         FormField({

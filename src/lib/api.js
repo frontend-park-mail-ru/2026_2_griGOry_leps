@@ -15,7 +15,6 @@ const DEFAULT_TIMEOUT_MS = 10000;
  * @property {number} id
  * @property {string} email
  * @property {string} first_name
- * @property {string} nickname Необязательный, заполняется в профиле (после регистрации пустой)
  * @property {string} phone
  */
 

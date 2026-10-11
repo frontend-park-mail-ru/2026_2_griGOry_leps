@@ -1,9 +1,8 @@
-// Локальная часть — латиница, цифры и «._%+-»; домен — латинские метки через точку
 const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/;
 const EMAIL_CHARS_PATTERN = /^[A-Za-z0-9._%+@-]+$/;
 const EMOJI_PATTERN = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
 const PHONE_PATTERN = /^\+7\d{10}$/;
-const NAME_PATTERN = /^[A-Za-zА-Яа-яЁё0-9_. ]+$/;
+const NAME_PATTERN = /^[A-Za-zА-Яа-яЁё0-9_. -]+$/;
 const PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
 
 const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
@@ -60,7 +59,7 @@ export function validateName(value) {
         return `Имя: от ${LIMITS.nameMin} до ${LIMITS.nameMax} символов`;
     }
     if (!NAME_PATTERN.test(name)) {
-        return 'Только латиница, кириллица, цифры, пробел, «_» и «.»';
+        return 'Только латиница, кириллица, цифры, пробел, «-», «_» и «.»';
     }
     return '';
 }

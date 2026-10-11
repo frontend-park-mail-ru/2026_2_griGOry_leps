@@ -155,7 +155,6 @@ export function resolveRoute() {
             params[key] = decodeURIComponent(match[i + 1]);
         });
     } catch {
-        // Некорректная последовательность в URL, например /category/asd%
         renderNotFound(path);
         return;
     }

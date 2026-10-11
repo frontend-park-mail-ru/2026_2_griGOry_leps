@@ -83,7 +83,7 @@ async function start() {
 function renderHeader(user) {
     return Header({
         isAuthenticated: Boolean(user),
-        userName: user?.first_name || user?.nickname || user?.email || '',
+        userName: user?.first_name || user?.email || '',
         userInitial: getInitials(user),
     });
 }
@@ -136,6 +136,6 @@ async function loadCurrentUser() {
  * @returns {string}
  */
 function getInitials(user) {
-    const name = user?.first_name || user?.nickname || '';
+    const name = user?.first_name || '';
     return name.trim().slice(0, 2).toUpperCase();
 }
