@@ -1,29 +1,14 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import * as path from 'path';
-import Handlebars from 'handlebars';
-
-function handlebarsPlugin() {
-    return {
-        name: 'vite-plugin-hbs-module',
-        transform(src, id) {
-            if (!id.endsWith('.hbs')) return;
-
-            const precompiled = Handlebars.precompile(src);
-
-            return {
-                code: `
-                    import Handlebars from 'handlebars/runtime';
-                    const template = Handlebars.template(${precompiled});
-                    export default template;
-                `,
-                map: null,
-            };
-        },
-    };
-}
 
 export default defineConfig({
-    plugins: [handlebarsPlugin()],
+    // JSX компилируется в вызовы нашего h() из src/vdom, импорт подставляется в каждый .jsx сам
+    esbuild: {
+        jsx: 'transform',
+        jsxFactory: 'h',
+        jsxFragment: 'Fragment',
+        jsxInject: 'import { h, Fragment } from \'@/vdom/index.js\';',
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src/'),
@@ -31,5 +16,9 @@ export default defineConfig({
     },
     server: {
         port: 5173,
+    },
+    test: {
+        environment: 'jsdom',
+        include: ['src/**/*.test.{js,jsx}'],
     },
 });

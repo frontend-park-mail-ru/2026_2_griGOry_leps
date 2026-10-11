@@ -26,11 +26,12 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 ## Технологический стек
 
 - **Язык:** JavaScript (ES-модули, без фреймворка)
-- **Шаблоны:** [Handlebars](https://handlebarsjs.com/), шаблоны компилируются при сборке
+- **Рендер:** собственный виртуальный DOM (`src/vdom`), разметка компонентов на JSX — см. [Как устроен VDOM](#как-устроен-vdom)
 - **Стили:** SCSS, именование классов по БЭМ
 - **Сборка:** [Vite](https://vitejs.dev/)
 - **Раздача собранного фронта:** [Express](https://expressjs.com/) (`server.js`)
 - **Линтер:** ESLint
+- **Тесты:** [Vitest](https://vitest.dev/) + jsdom
 - **Документация кода:** JSDoc
 
 ## Как работать с задачами
@@ -141,4 +142,31 @@ Express раздаёт собранный фронт из `dist/` на `http://l
 | `npm start` | раздача `dist/` через Express |
 | `npm run lint` | проверка кода ESLint |
 | `npm run lint:fix` | автоисправление ошибок ESLint |
+| `npm test` | юнит-тесты (Vitest) |
 | `npm run docs` | генерация JSDoc-документации в `docs/` |
+
+## Как устроен VDOM
+
+Страницы и компоненты описываются на JSX в файлах `.jsx`. Vite компилирует JSX в вызовы
+`h()` из `src/vdom`, импорт подставляется в каждый `.jsx` автоматически (`vite.config.js`).
+
+```
+src/vdom/
+  h.js           JSX → виртуальные узлы: h(), Fragment
+  props.js       атрибуты, свойства (value, checked) и обработчики событий
+  render.js      render(container, vnode): сравнение деревьев (diff) и точечные изменения DOM (patch)
+  component.js   Component — компонент с состоянием и setState
+  vdom.test.jsx  юнит-тесты
+```
+
+- **Функциональный компонент** — функция от пропсов, состояния нет: `const Card = ({ title }) => <h3>{title}</h3>`.
+- **Классовый компонент** — наследник `Component` с `state` и `setState()`. При `setState` перерисовывается
+  только он сам. Есть `componentDidMount()` и `componentWillUnmount()` для подписок.
+- **Списки** — передавайте `key`: `items.map((item) => <li key={item.id}>…</li>)`, тогда при перестановке
+  элементы переиспользуются, а не создаются заново.
+- **События** — `onClick`, `onInput`, `onSubmit` и т. д.; `onChange` у поля ввода срабатывает,
+  когда пользователь закончил ввод и ушёл из поля (как нативное событие `change`).
+- **Доступ к DOM-элементу** — `ref={(el) => { this.el = el; }}`.
+
+Приложение рисуется одним деревом в `src/app/main.jsx`: `render(app, [<Header />, <main>{страница}</main>, <Footer />])`.
+При переходе по страницам или входе/выходе пользователя VDOM меняет в DOM только отличия.
