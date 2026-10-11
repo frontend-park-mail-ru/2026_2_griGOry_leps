@@ -17,6 +17,11 @@ export function initFormFields(root) {
     });
 }
 
+/**
+ * @param {ParentNode} root
+ * @param {string} name
+ * @param {string} [message] Текст под полем
+ */
 export function setFieldError(root, name, message = '') {
     const errorEl = root.querySelector(`[data-error-for="${name}"]`);
     const field = errorEl?.closest('.form-field');

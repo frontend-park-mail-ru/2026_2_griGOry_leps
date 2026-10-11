@@ -1,38 +1,46 @@
-import js from "@eslint/js";
-import globals from "globals";
+import js from '@eslint/js';
+import globals from 'globals';
 
 export default [
-  {
-    ignores: ["dist/**", "node_modules/**", "docs/**"],
-  },
-  js.configs.recommended,
-  {
-    files: ["src/**/*.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      globals: globals.browser,
+    {
+        ignores: ['dist/**', 'node_modules/**', 'docs/**'],
     },
-    rules: {
-      eqeqeq: "error",
-      "no-var": "error",
-      "prefer-const": "error",
-      "no-console": "warn",
-      "eol-last": ["error", "always"],
+    js.configs.recommended,
+    {
+        files: ['src/**/*.js'],
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType: 'module',
+            globals: globals.browser,
+        },
+        rules: {
+            eqeqeq: 'error',
+            'no-var': 'error',
+            'prefer-const': 'error',
+            'no-console': 'warn',
+            'eol-last': ['error', 'always'],
+        },
     },
-  },
-  {
-    files: ["src/lib/logger.js"],
-    rules: {
-      "no-console": "off",
+    {
+        files: ['**/*.js'],
+        rules: {
+            indent: ['error', 4, { SwitchCase: 1 }],
+            quotes: ['error', 'single', { avoidEscape: true }],
+            semi: ['error', 'always'],
+        },
     },
-  },
-  {
-    files: ["*.config.js", "server.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      globals: globals.node,
+    {
+        files: ['src/lib/logger.js'],
+        rules: {
+            'no-console': 'off',
+        },
     },
-  },
+    {
+        files: ['*.config.js', 'server.js'],
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType: 'module',
+            globals: globals.node,
+        },
+    },
 ];

@@ -108,6 +108,10 @@ export const RegisterPage = (root) => {
         setFieldHighlight(form, 'password', mismatch);
     };
 
+    form.elements.password.addEventListener('input', (e) => {
+        renderPasswordRules({ password: e.target.value });
+    });
+
     const validation = bindLiveValidation(
         form,
         {
@@ -124,10 +128,7 @@ export const RegisterPage = (root) => {
                 validate: (value, values) => validatePasswordRepeat(value, values.password ?? ''),
             },
         },
-        (values) => {
-            renderPasswordRules(values);
-            highlightPasswordMismatch(values);
-        },
+        highlightPasswordMismatch,
     );
 
     form.addEventListener('submit', async (e) => {
