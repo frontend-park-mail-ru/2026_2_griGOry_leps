@@ -17,12 +17,18 @@ export function initFormFields(root) {
     });
 }
 
-export function setFieldError(root, name, message = '') {
+/**
+ * @param {ParentNode} root
+ * @param {string} name
+ * @param {string} [message] Текст под полем
+ * @param {boolean} [invalid] Подсветить поле; можно без текста, если ошибка показана у соседнего
+ */
+export function setFieldError(root, name, message = '', invalid = Boolean(message)) {
     const errorEl = root.querySelector(`[data-error-for="${name}"]`);
     const field = errorEl?.closest('.form-field');
     if (!errorEl || !field) return;
 
     errorEl.textContent = message;
-    field.classList.toggle('form-field--error', Boolean(message));
-    field.querySelector('input')?.setAttribute('aria-invalid', String(Boolean(message)));
+    field.classList.toggle('form-field--error', invalid);
+    field.querySelector('input')?.setAttribute('aria-invalid', String(invalid));
 }

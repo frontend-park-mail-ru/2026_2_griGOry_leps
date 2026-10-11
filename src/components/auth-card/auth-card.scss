@@ -25,7 +25,10 @@
         color: $color-text-strong;
     }
 
+    // Две строки всегда: иначе при переключении «Вход»/«Регистрация»
+    // подзаголовок разной длины сдвигает табы
     &__subtitle {
+        min-height: 3em;
         margin: 0;
         color: $color-text-secondary;
     }
