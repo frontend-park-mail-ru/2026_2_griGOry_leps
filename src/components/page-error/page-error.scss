@@ -1,0 +1,7 @@
+@use '@/shared/styles/mixins' as *;
+
+.page-error {
+    @include container;
+    padding-top: 64px;
+    padding-bottom: 64px;
+}

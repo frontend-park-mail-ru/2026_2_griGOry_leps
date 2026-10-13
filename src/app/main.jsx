@@ -10,6 +10,7 @@ import './styles/style.scss';
 
 import { Header } from '@/components/header/header.jsx';
 import { Footer } from '@/components/footer/footer.jsx';
+import { PageError } from '@/components/page-error/page-error.jsx';
 import {
     registerRoute,
     registerNotFound,
@@ -19,7 +20,7 @@ import {
 } from '@/router/router.js';
 import { getMe, getCategories, getPromos, getProducts, logout } from '@/lib/api.js';
 import { getUser, setUser, clearUser, subscribe } from '@/store.js';
-import { logWarn } from '@/lib/logger.js';
+import { logError, logWarn } from '@/lib/logger.js';
 
 import { HomePage } from '@/pages/home-page/home-page.jsx';
 import { CategoriesPage } from '@/pages/categories-page/categories-page.jsx';
@@ -61,8 +62,7 @@ function renderApp() {
 }
 
 /**
- * Регистрирует маршрут. Если у страницы есть загрузка данных, старая страница
- * остаётся на экране, пока данные не придут.
+ * Регистрирует маршрут. При ошибке загрузки данных показывает PageError.
  * @param {string} path
  * @param {Object} page
  * @param {string} page.name
@@ -74,7 +74,18 @@ function renderApp() {
 function route(path, { name, layout = 'main', load, view }, options) {
     const handler = async (params = {}) => {
         const id = ++navigationId;
-        const data = load ? await load(params) : {};
+
+        let data = {};
+        try {
+            if (load) data = await load(params);
+        } catch (err) {
+            logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
+            if (id !== navigationId) return;
+
+            currentPage = { name: `${name}-error`, layout, view: () => <PageError onRetry={() => handler(params)} /> };
+            renderApp();
+            return;
+        }
         if (id !== navigationId) return;
 
         currentPage = { name, layout, view: () => view(data, params) };
@@ -85,14 +96,18 @@ function route(path, { name, layout = 'main', load, view }, options) {
     else registerRoute(path, handler, options);
 }
 
+/**
+ * @returns {Promise<void>} Бросает ошибку, если выйти не удалось
+ */
 async function handleLogout() {
     try {
         await logout();
-        clearUser();
-        navigate('/');
     } catch (err) {
         logWarn('Не удалось выйти:', err);
+        throw err;
     }
+    clearUser();
+    navigate('/');
 }
 
 /**

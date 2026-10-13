@@ -4,22 +4,25 @@
  * и вносит в настоящий DOM только отличия (patch).
  */
 
-import { TEXT, createTextVNode, isComponentClass, normalizeChildren } from './h.js';
+import { TEXT, EMPTY, createEmptyVNode, isComponentClass, normalizeChildren } from './h.js';
 import { setProp, updateProps } from './props.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Компоненты, которые уже вставлены в DOM, но ещё не получили componentDidMount.
- * Вызываем его после того, как закончится текущая перерисовка целиком.
- * @type {import('./component.js').Component[]}
+ * Очередь componentDidMount / componentDidUpdate до конца перерисовки.
+ * @type {Array<[import('./component.js').Component, ('mount'|'update')]>}
  */
-let pendingMounts = [];
+let pendingLifecycle = [];
 
-function flushMounts() {
-    const mounts = pendingMounts;
-    pendingMounts = [];
-    mounts.forEach((instance) => instance.componentDidMount?.());
+function flushLifecycle() {
+    const queue = pendingLifecycle;
+    pendingLifecycle = [];
+    queue.forEach(([instance, kind]) => {
+        if (instance._unmounted) return;
+        if (kind === 'mount') instance.componentDidMount?.();
+        else instance.componentDidUpdate?.();
+    });
 }
 
 /**
@@ -32,16 +35,37 @@ function normalizeRoot(output) {
     if (nodes.length > 1) {
         throw new Error('Компонент должен возвращать один корневой элемент');
     }
-    // Пустой текстовый узел держит место компонента, который ничего не рисует
-    return nodes[0] ?? createTextVNode('');
+    return nodes[0] ?? createEmptyVNode();
 }
 
 /**
- * @param {import('./h.js').VNode} vnode
- * @returns {(string|null)}
+ * Ключи для сравнения списков: key или позиция. Дубли key получают суффикс (`a`, `a#1`).
+ * @param {import('./h.js').VNode[]} children
+ * @returns {string[]}
  */
-function keyOf(vnode, index) {
-    return vnode.key !== null && vnode.key !== undefined ? `k:${vnode.key}` : `i:${index}`;
+function buildKeys(children) {
+    const seen = new Map();
+
+    return children.map((child, i) => {
+        if (child.key === null || child.key === undefined) return `i:${i}`;
+
+        const base = `k:${child.key}`;
+        const count = seen.get(base) ?? 0;
+        seen.set(base, count + 1);
+        return count === 0 ? base : `${base}#${count}`;
+    });
+}
+
+/**
+ * Рисует компонент и запоминает результат.
+ * @param {import('./component.js').Component} instance
+ * @returns {import('./h.js').VNode}
+ */
+function renderInstance(instance) {
+    instance._dirty = false;
+    const rendered = normalizeRoot(instance.render());
+    rendered.owner = instance;
+    return rendered;
 }
 
 /**
@@ -55,15 +79,19 @@ function createNode(vnode, isSvg) {
         return vnode.dom;
     }
 
+    if (vnode.type === EMPTY) {
+        vnode.dom = document.createComment('');
+        return vnode.dom;
+    }
+
     if (isComponentClass(vnode.type)) {
         const instance = new vnode.type(vnode.props);
         vnode.instance = instance;
         instance._host = vnode;
         instance._isSvg = isSvg;
-        instance._rendered = normalizeRoot(instance.render());
-        instance._rendered.owner = instance;
+        instance._rendered = renderInstance(instance);
         vnode.dom = createNode(instance._rendered, isSvg);
-        pendingMounts.push(instance);
+        pendingLifecycle.push([instance, 'mount']);
         return vnode.dom;
     }
 
@@ -110,20 +138,49 @@ function syncHostDom(instance) {
 }
 
 /**
- * Перерисовывает компонент и вносит отличия в DOM. Вызывается из setState.
+ * Перерисовывает компонент и вносит отличия в DOM.
  * @param {import('./component.js').Component} instance
  */
-export function updateComponent(instance) {
+function updateComponent(instance) {
     if (instance._unmounted || !instance._rendered) return;
 
     const prev = instance._rendered;
-    const next = normalizeRoot(instance.render());
-    next.owner = instance;
+    const next = renderInstance(instance);
 
     patch(prev.dom.parentNode, prev, next, instance._isSvg);
     instance._rendered = next;
     syncHostDom(instance);
-    flushMounts();
+    pendingLifecycle.push([instance, 'update']);
+}
+
+/** Компоненты, вызвавшие setState, которые ещё не перерисованы */
+const dirtyComponents = new Set();
+let flushScheduled = false;
+
+/** Перерисовывает компоненты, изменившие состояние. */
+function flushUpdates() {
+    flushScheduled = false;
+    const queue = [...dirtyComponents];
+    dirtyComponents.clear();
+
+    queue.forEach((instance) => {
+        if (instance._dirty) updateComponent(instance);
+    });
+    flushLifecycle();
+}
+
+/**
+ * Планирует перерисовку компонента в микрозадаче: несколько setState подряд дают одну перерисовку.
+ * @param {import('./component.js').Component} instance
+ */
+export function enqueueUpdate(instance) {
+    instance._dirty = true;
+    dirtyComponents.add(instance);
+
+    if (!flushScheduled) {
+        flushScheduled = true;
+        queueMicrotask(flushUpdates);
+    }
 }
 
 /**
@@ -141,6 +198,11 @@ function patch(parentDom, oldVNode, newVNode, isSvg) {
         return;
     }
 
+    if (newVNode.type === EMPTY) {
+        newVNode.dom = oldVNode.dom;
+        return;
+    }
+
     if (newVNode.type === TEXT) {
         newVNode.dom = oldVNode.dom;
         if (oldVNode.props.nodeValue !== newVNode.props.nodeValue) {
@@ -154,13 +216,12 @@ function patch(parentDom, oldVNode, newVNode, isSvg) {
         newVNode.instance = instance;
         instance._host = newVNode;
         instance.props = newVNode.props;
-        newVNode.dom = oldVNode.dom;
 
-        const next = normalizeRoot(instance.render());
-        next.owner = instance;
+        const next = renderInstance(instance);
         patch(parentDom, instance._rendered, next, isSvg);
         instance._rendered = next;
         newVNode.dom = next.dom;
+        pendingLifecycle.push([instance, 'update']);
         return;
     }
 
@@ -188,12 +249,12 @@ function patch(parentDom, oldVNode, newVNode, isSvg) {
  */
 function patchChildren(parentDom, oldChildren, newChildren, isSvg) {
     const oldByKey = new Map();
-    oldChildren.forEach((child, i) => oldByKey.set(keyOf(child, i), child));
+    buildKeys(oldChildren).forEach((key, i) => oldByKey.set(key, oldChildren[i]));
 
     let prevDom = null;
 
-    newChildren.forEach((child, i) => {
-        const key = keyOf(child, i);
+    buildKeys(newChildren).forEach((key, i) => {
+        const child = newChildren[i];
         const old = oldByKey.get(key);
 
         if (old) {
@@ -215,7 +276,7 @@ function patchChildren(parentDom, oldChildren, newChildren, isSvg) {
 }
 
 /**
- * Рисует виртуальные узлы внутри контейнера. При повторном вызове
+ * Рисует виртуальные узлы внутри контейнера сразу (синхронно). При повторном вызове
  * для того же контейнера сравнивает с прошлым результатом и меняет только разницу.
  * @param {Element} container
  * @param {*} vnodes Узел, массив узлов или фрагмент
@@ -232,5 +293,5 @@ export function render(container, vnodes) {
 
     patchChildren(container, container.__vchildren, next, container instanceof SVGElement);
     container.__vchildren = next;
-    flushMounts();
+    flushLifecycle();
 }

@@ -7,6 +7,9 @@
 /** Тип текстового узла */
 export const TEXT = '#text';
 
+/** Тип пустого места на позиции `{cond && <Tag />}` */
+export const EMPTY = '#empty';
+
 /**
  * @typedef {Object} VNode
  * @property {string|Function} type Тег, TEXT или класс компонента
@@ -43,18 +46,24 @@ export function createTextVNode(value) {
 }
 
 /**
- * Приводит детей к плоскому массиву VNode: раскрывает вложенные массивы и фрагменты,
- * выбрасывает null, undefined и булевы значения (чтобы работало `{cond && <Tag />}`),
- * строки и числа превращает в текстовые узлы.
+ * @returns {VNode} Пустое место (в DOM — комментарий)
+ */
+export function createEmptyVNode() {
+    return { type: EMPTY, props: {}, children: [], key: null, dom: null };
+}
+
+/**
+ * Приводит детей к плоскому массиву VNode: раскрывает массивы и фрагменты,
+ * строки и числа превращает в текстовые узлы, null и булевы значения — в пустое место.
  * @param {Array<*>} children
  * @param {VNode[]} [result]
  * @returns {VNode[]}
  */
 export function normalizeChildren(children, result = []) {
     for (const child of children) {
-        if (child === null || child === undefined || typeof child === 'boolean') continue;
-
-        if (Array.isArray(child)) {
+        if (child === null || child === undefined || typeof child === 'boolean') {
+            result.push(createEmptyVNode());
+        } else if (Array.isArray(child)) {
             normalizeChildren(child, result);
         } else if (typeof child === 'string' || typeof child === 'number') {
             result.push(createTextVNode(String(child)));
@@ -84,7 +93,6 @@ export function h(type, props, ...children) {
 
     if (typeof type === 'function' && !isComponentClass(type)) {
         const result = type({ ...rest, children: flatChildren });
-        // key указывают у компонента (<Card key={id} />), а сравнивать по нему нужно его разметку
         if (key !== null && result && !Array.isArray(result) && typeof result === 'object') {
             result.key = key;
         }

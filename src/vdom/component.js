@@ -3,7 +3,7 @@
  * @description Базовый класс компонента с состоянием.
  */
 
-import { updateComponent } from './render.js';
+import { enqueueUpdate } from './render.js';
 
 /**
  * Компонент с собственным состоянием. Наследник описывает разметку в render(),
@@ -11,6 +11,7 @@ import { updateComponent } from './render.js';
  *
  * Жизненный цикл:
  * - componentDidMount() — после вставки в DOM (подписки, таймеры, загрузка данных);
+ * - componentDidUpdate() — после каждой перерисовки (DOM уже обновлён);
  * - componentWillUnmount() — перед удалением (отписки).
  * @example
  * class Counter extends Component {
@@ -32,13 +33,13 @@ export class Component {
     }
 
     /**
-     * Обновляет состояние и перерисовывает компонент.
+     * Обновляет состояние и планирует перерисовку компонента.
      * @param {(Object|function(Object, Object): Object)} update Часть состояния или функция от старого состояния
      */
     setState(update) {
         const patch = typeof update === 'function' ? update(this.state, this.props) : update;
         this.state = { ...this.state, ...patch };
-        updateComponent(this);
+        enqueueUpdate(this);
     }
 
     /**

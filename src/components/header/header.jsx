@@ -14,10 +14,10 @@ function getInitials(user) {
  * Шапка сайта. Для гостя — кнопки входа и регистрации, для пользователя — аватар с меню.
  * @property {Object} props
  * @property {(module:api~User|null)} props.user
- * @property {function(): Promise<void>} props.onLogout
+ * @property {function(): Promise<void>} props.onLogout Бросает ошибку, если выйти не удалось
  */
 export class Header extends Component {
-    state = { menuOpen: false, loggingOut: false };
+    state = { menuOpen: false, loggingOut: false, logoutError: '' };
 
     componentDidMount() {
         document.addEventListener('click', this.handleDocumentClick);
@@ -35,22 +35,22 @@ export class Header extends Component {
     };
 
     toggleMenu = () => {
-        this.setState({ menuOpen: !this.state.menuOpen });
+        this.setState({ menuOpen: !this.state.menuOpen, logoutError: '' });
     };
 
     handleLogout = async () => {
-        this.setState({ loggingOut: true });
+        this.setState({ loggingOut: true, logoutError: '' });
         try {
             await this.props.onLogout();
-            this.setState({ menuOpen: false });
-        } finally {
-            this.setState({ loggingOut: false });
+            this.setState({ menuOpen: false, loggingOut: false });
+        } catch {
+            this.setState({ loggingOut: false, logoutError: 'Не удалось выйти. Попробуйте ещё раз' });
         }
     };
 
     renderUser(user) {
         const userName = user.first_name || user.email || '';
-        const { menuOpen, loggingOut } = this.state;
+        const { menuOpen, loggingOut, logoutError } = this.state;
 
         return (
             <>
@@ -78,6 +78,7 @@ export class Header extends Component {
                             disabled={loggingOut}
                             onClick={this.handleLogout}
                         >Выйти</button>
+                        {logoutError && <span class="header__menu-error" role="alert">{logoutError}</span>}
                     </div>
                 </div>
             </>

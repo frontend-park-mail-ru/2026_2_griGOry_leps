@@ -19,6 +19,22 @@ class ScrollSection extends Component {
 
     componentDidMount() {
         this.updateArrows();
+
+        if (typeof ResizeObserver !== 'undefined' && this.scroller) {
+            this.resizeObserver = new ResizeObserver(this.updateArrows);
+            this.resizeObserver.observe(this.scroller);
+        } else {
+            window.addEventListener('resize', this.updateArrows);
+        }
+    }
+
+    componentDidUpdate() {
+        this.updateArrows();
+    }
+
+    componentWillUnmount() {
+        this.resizeObserver?.disconnect();
+        window.removeEventListener('resize', this.updateArrows);
     }
 
     setScroller = (el) => {

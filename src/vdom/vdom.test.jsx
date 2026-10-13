@@ -3,6 +3,9 @@ import { h, Component, render } from './index.js';
 
 let root;
 
+/** Дождаться отложенной перерисовки после setState */
+const flush = () => Promise.resolve();
+
 beforeEach(() => {
     root = document.createElement('div');
     document.body.innerHTML = '';
@@ -10,9 +13,9 @@ beforeEach(() => {
 });
 
 describe('h', () => {
-    it('выкидывает null, false и раскрывает массивы во фрагменте', () => {
+    it('null и false становятся пустым местом, массивы и фрагменты раскрываются', () => {
         const vnode = h('ul', null, [h('li', null, 'a'), null, false], <>{'b'}</>);
-        expect(vnode.children.map((c) => c.props.nodeValue ?? c.type)).toEqual(['li', 'b']);
+        expect(vnode.children.map((c) => c.props.nodeValue ?? c.type)).toEqual(['li', '#empty', '#empty', 'b']);
     });
 
     it('переносит key функционального компонента на его разметку', () => {
@@ -71,12 +74,33 @@ describe('render', () => {
         expect(root.querySelector('ul').innerHTML).toBe('<li>b</li><li>d</li>');
     });
 
-    it('условный рендер: {cond && <Tag />}', () => {
+    it('условный рендер: {cond && <Tag />} не сдвигает соседей', () => {
         const view = (show) => <div>{show && <b>есть</b>}<i>всегда</i></div>;
         render(root, view(false));
-        expect(root.firstChild.innerHTML).toBe('<i>всегда</i>');
+        const always = root.querySelector('i');
+        expect(root.firstChild.textContent).toBe('всегда');
+
         render(root, view(true));
         expect(root.firstChild.innerHTML).toBe('<b>есть</b><i>всегда</i>');
+        expect(root.querySelector('i')).toBe(always);
+
+        render(root, view(false));
+        expect(root.querySelector('i')).toBe(always);
+    });
+
+    it('пустое место не мешает CSS-селектору :empty', () => {
+        render(root, <p class="error">{null}</p>);
+        expect(root.querySelector('p:empty')).not.toBeNull();
+        expect(root.textContent).toBe('');
+    });
+
+    it('дубли key не оставляют в DOM лишних узлов', () => {
+        const list = (items) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
+        render(root, list(['a', 'a', 'b']));
+        expect(root.querySelectorAll('li')).toHaveLength(3);
+
+        render(root, list(['b']));
+        expect(root.querySelector('ul').innerHTML).toBe('<li>b</li>');
     });
 
     it('вешает обработчики событий и меняет их без повторной подписки', () => {
@@ -113,6 +137,16 @@ describe('render', () => {
         expect(input.value).toBe('abcd');
     });
 
+    it('числовое value не перезаписывается на каждой перерисовке', () => {
+        render(root, <input value={5} />);
+        const setter = vi.spyOn(root.firstChild, 'value', 'set');
+
+        render(root, <input value={5} />);
+
+        expect(setter).not.toHaveBeenCalled();
+        expect(root.firstChild.value).toBe('5');
+    });
+
     it('создаёт SVG в правильном пространстве имён', () => {
         render(root, <svg viewBox="0 0 10 10"><path d="M0 0" /></svg>);
         expect(root.querySelector('path').namespaceURI).toBe('http://www.w3.org/2000/svg');
@@ -145,20 +179,23 @@ describe('Component', () => {
         }
     }
 
-    it('перерисовывается по setState, сохраняя DOM-узел', () => {
+    it('перерисовывается по setState, сохраняя DOM-узел', async () => {
         render(root, <Counter label="Клики" />);
         const button = root.firstChild;
 
         button.click();
+        await flush();
         button.click();
+        await flush();
 
         expect(root.firstChild).toBe(button);
         expect(button.textContent).toBe('Клики: 2');
     });
 
-    it('сохраняет состояние, когда родитель меняет пропсы', () => {
+    it('сохраняет состояние, когда родитель меняет пропсы', async () => {
         render(root, <div><Counter label="A" /></div>);
         root.querySelector('button').click();
+        await flush();
 
         render(root, <div><Counter label="B" /></div>);
 
@@ -186,7 +223,7 @@ describe('Component', () => {
         expect(calls).toEqual([['mount', true], ['unmount']]);
     });
 
-    it('не перерисовывается после удаления', () => {
+    it('не перерисовывается после удаления', async () => {
         let instance;
         class Late extends Component {
             constructor(props) {
@@ -201,11 +238,12 @@ describe('Component', () => {
         render(root, <Late />);
         render(root, <b />);
 
-        expect(() => instance.setState({ text: 'стало' })).not.toThrow();
+        instance.setState({ text: 'стало' });
+        await flush();
         expect(root.innerHTML).toBe('<b></b>');
     });
 
-    it('вложенный компонент меняет корневой тег без поломки родителя', () => {
+    it('вложенный компонент меняет корневой тег без поломки родителя', async () => {
         class Toggle extends Component {
             state = { on: false };
             render() {
@@ -217,10 +255,68 @@ describe('Component', () => {
 
         render(root, <section><Toggle /><span>после</span></section>);
         root.querySelector('i').click();
+        await flush();
 
         expect(root.firstChild.innerHTML).toBe('<b>on</b><span>после</span>');
 
         render(root, <section><Toggle /><span>после!</span></section>);
         expect(root.firstChild.innerHTML).toBe('<b>on</b><span>после!</span>');
+    });
+
+    it('объединяет несколько setState подряд в одну перерисовку', async () => {
+        const renders = vi.fn();
+        let instance;
+
+        class Form extends Component {
+            state = { a: 0, b: 0 };
+            constructor(props) {
+                super(props);
+                instance = this;
+            }
+            render() {
+                renders();
+                return <p>{this.state.a}-{this.state.b}</p>;
+            }
+        }
+
+        render(root, <Form />);
+        renders.mockClear();
+
+        instance.setState({ a: 1 });
+        instance.setState({ b: 2 });
+        instance.setState(({ a }) => ({ a: a + 1 }));
+        expect(instance.state).toEqual({ a: 2, b: 2 });
+
+        await flush();
+        expect(renders).toHaveBeenCalledTimes(1);
+        expect(root.textContent).toBe('2-2');
+    });
+
+    it('вызывает componentDidUpdate после перерисовки — своей и от родителя', async () => {
+        const updates = vi.fn();
+        let instance;
+
+        class Probe extends Component {
+            constructor(props) {
+                super(props);
+                instance = this;
+            }
+            componentDidUpdate() {
+                updates(root.textContent);
+            }
+            render() {
+                return <i>{this.props.text}{this.state.extra}</i>;
+            }
+        }
+
+        render(root, <Probe text="a" />);
+        expect(updates).not.toHaveBeenCalled();
+
+        render(root, <Probe text="b" />);
+        expect(updates).toHaveBeenLastCalledWith('b');
+
+        instance.setState({ extra: '!' });
+        await flush();
+        expect(updates).toHaveBeenLastCalledWith('b!');
     });
 });

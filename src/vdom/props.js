@@ -89,8 +89,7 @@ export function setProp(dom, name, value, oldValue, isSvg) {
     const attr = name === 'className' ? 'class' : name;
 
     if (!isSvg && DOM_PROPERTIES.has(attr) && attr in dom) {
-        const next = attr === 'value' ? (value ?? '') : Boolean(value);
-        // Пишем, только если значение действительно другое: иначе курсор в поле прыгнет в конец
+        const next = attr === 'value' ? String(value ?? '') : Boolean(value);
         if (dom[attr] !== next) dom[attr] = next;
         return;
     }
@@ -118,7 +117,6 @@ export function updateProps(dom, oldProps, newProps, isSvg) {
 
     Object.keys(newProps).forEach((name) => {
         const value = newProps[name];
-        // value/checked сверяем с DOM всегда: пользователь мог изменить поле сам
         if (value !== oldProps[name] || DOM_PROPERTIES.has(name)) {
             setProp(dom, name, value, oldProps[name], isSvg);
         }

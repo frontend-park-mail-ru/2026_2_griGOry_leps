@@ -170,6 +170,13 @@
         border-bottom: 1px solid $gray-200;
     }
 
+    &__menu-error {
+        padding: 4px 12px 8px;
+        font-size: 13px;
+        line-height: 18px;
+        color: $color-status-error;
+    }
+
     &__menu-item {
         padding: 8px 12px;
         font-size: 15px;
