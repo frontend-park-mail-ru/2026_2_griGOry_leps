@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest run",
     "start": "node server.js",
     "docs": "jsdoc -c jsdoc.json"
   },
@@ -16,10 +17,11 @@
     "@eslint/js": "^9.13.0",
     "eslint": "^9.13.0",
     "globals": "^17.13.0",
-    "handlebars": "^4.7.8",
     "jsdoc": "^4.0.5",
+    "jsdom": "^25.0.1",
     "sass-embedded": "^1.97.3",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "vitest": "^2.1.9"
   },
   "dependencies": {
     "express": "^5.2.1"

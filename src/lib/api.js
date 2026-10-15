@@ -54,7 +54,7 @@ export class ApiError extends Error {
 /**
  * Базовый запрос к API: JSON-заголовок, cookie, таймаут.
  * @param {string} endpoint Путь без префикса, например "/me"
- * @param {RequestInit & { timeout?: number }} [options] timeout — в мс,
+ * @param {Object} [options] Параметры fetch (RequestInit) и timeout: timeout — в мс,
  *     по умолчанию DEFAULT_TIMEOUT_MS; 0 — без таймаута (для долгих запросов)
  * @returns {Promise<Response>}
  * @throws {ApiError} При сетевой ошибке (network) или таймауте (timeout)
