@@ -164,6 +164,14 @@ describe('render', () => {
         render(root, [<header />, <main />]);
         expect(root.innerHTML).toBe('<header></header><main></main>');
     });
+
+    it('value у select выставляется после того, как появились option', () => {
+        render(root, <select value="b"><option value="a">A</option><option value="b">B</option></select>);
+        expect(root.querySelector('select').value).toBe('b');
+
+        render(root, <select value="c"><option value="a">A</option><option value="c">C</option></select>);
+        expect(root.querySelector('select').value).toBe('c');
+    });
 });
 
 describe('Component', () => {

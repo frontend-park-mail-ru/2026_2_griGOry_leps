@@ -101,8 +101,8 @@ function createNode(vnode, isSvg) {
         ? document.createElementNS(SVG_NS, vnode.type)
         : document.createElement(vnode.type);
 
-    Object.entries(vnode.props).forEach(([name, value]) => setProp(dom, name, value, undefined, svg));
     vnode.children.forEach((child) => dom.appendChild(createNode(child, svg && vnode.type !== 'foreignObject')));
+    Object.entries(vnode.props).forEach(([name, value]) => setProp(dom, name, value, undefined, svg));
 
     vnode.dom = dom;
     vnode.props.ref?.(dom);
@@ -230,13 +230,12 @@ function patch(parentDom, oldVNode, newVNode, isSvg) {
     const svg = isSvg || newVNode.type === 'svg';
     newVNode.dom = dom;
 
+    patchChildren(dom, oldVNode.children, newVNode.children, svg && newVNode.type !== 'foreignObject');
     updateProps(dom, oldVNode.props, newVNode.props, svg);
     if (oldVNode.props.ref !== newVNode.props.ref) {
         oldVNode.props.ref?.(null);
         newVNode.props.ref?.(dom);
     }
-
-    patchChildren(dom, oldVNode.children, newVNode.children, svg && newVNode.type !== 'foreignObject');
 }
 
 /**
