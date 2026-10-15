@@ -2,12 +2,10 @@ import { defineConfig } from 'vitest/config';
 import * as path from 'path';
 
 export default defineConfig({
-    // JSX компилируется в вызовы нашего h() из src/vdom, импорт подставляется в каждый .jsx сам
+    // JSX → jsx() из src/vdom/jsx-runtime.ts, импорт подставляется сам
     esbuild: {
-        jsx: 'transform',
-        jsxFactory: 'h',
-        jsxFragment: 'Fragment',
-        jsxInject: 'import { h, Fragment } from \'@/vdom/index.js\';',
+        jsx: 'automatic',
+        jsxImportSource: '@/vdom',
     },
     resolve: {
         alias: {
@@ -19,6 +17,6 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['src/**/*.test.{js,jsx}'],
+        include: ['src/**/*.test.{ts,tsx}'],
     },
 });
