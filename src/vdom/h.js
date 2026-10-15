@@ -17,7 +17,7 @@ export const EMPTY = '#empty';
  * @property {VNode[]} children
  * @property {(string|number|null)} key Ключ для сравнения списков
  * @property {(Node|null)} dom Реальный DOM-узел после монтирования
- * @property {(import('./component.js').Component|undefined)} instance Экземпляр классового компонента
+ * @property {(module:vdom/component.Component|undefined)} instance Экземпляр классового компонента
  */
 
 /**

@@ -10,8 +10,9 @@ import { setProp, updateProps } from './props.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
- * Очередь componentDidMount / componentDidUpdate до конца перерисовки.
- * @type {Array<[import('./component.js').Component, ('mount'|'update')]>}
+ * Очередь componentDidMount / componentDidUpdate до конца перерисовки:
+ * пары [компонент, 'mount' | 'update'].
+ * @type {Array<Array<*>>}
  */
 let pendingLifecycle = [];
 
@@ -28,7 +29,7 @@ function flushLifecycle() {
 /**
  * Результат render() компонента приводим к одному узлу.
  * @param {*} output
- * @returns {import('./h.js').VNode}
+ * @returns {module:vdom/h~VNode}
  */
 function normalizeRoot(output) {
     const nodes = normalizeChildren([output]);
@@ -40,7 +41,7 @@ function normalizeRoot(output) {
 
 /**
  * Ключи для сравнения списков: key или позиция. Дубли key получают суффикс (`a`, `a#1`).
- * @param {import('./h.js').VNode[]} children
+ * @param {module:vdom/h~VNode[]} children
  * @returns {string[]}
  */
 function buildKeys(children) {
@@ -58,8 +59,8 @@ function buildKeys(children) {
 
 /**
  * Рисует компонент и запоминает результат.
- * @param {import('./component.js').Component} instance
- * @returns {import('./h.js').VNode}
+ * @param {module:vdom/component.Component} instance
+ * @returns {module:vdom/h~VNode}
  */
 function renderInstance(instance) {
     instance._dirty = false;
@@ -69,7 +70,7 @@ function renderInstance(instance) {
 }
 
 /**
- * @param {import('./h.js').VNode} vnode
+ * @param {module:vdom/h~VNode} vnode
  * @param {boolean} isSvg
  * @returns {Node}
  */
@@ -111,7 +112,7 @@ function createNode(vnode, isSvg) {
 /**
  * Вызывает componentWillUnmount и сбрасывает ref во всём поддереве.
  * Сам DOM-узел удаляет вызывающий код.
- * @param {import('./h.js').VNode} vnode
+ * @param {module:vdom/h~VNode} vnode
  */
 function unmount(vnode) {
     if (vnode.instance) {
@@ -127,7 +128,7 @@ function unmount(vnode) {
 /**
  * После перерисовки компонента его корневой DOM-узел мог смениться:
  * обновляем ссылку у узла-хозяина и у всех компонентов выше, чей корень — этот компонент.
- * @param {import('./component.js').Component} instance
+ * @param {module:vdom/component.Component} instance
  */
 function syncHostDom(instance) {
     let current = instance;
@@ -139,7 +140,7 @@ function syncHostDom(instance) {
 
 /**
  * Перерисовывает компонент и вносит отличия в DOM.
- * @param {import('./component.js').Component} instance
+ * @param {module:vdom/component.Component} instance
  */
 function updateComponent(instance) {
     if (instance._unmounted || !instance._rendered) return;
@@ -171,7 +172,7 @@ function flushUpdates() {
 
 /**
  * Планирует перерисовку компонента в микрозадаче: несколько setState подряд дают одну перерисовку.
- * @param {import('./component.js').Component} instance
+ * @param {module:vdom/component.Component} instance
  */
 export function enqueueUpdate(instance) {
     instance._dirty = true;
@@ -186,8 +187,8 @@ export function enqueueUpdate(instance) {
 /**
  * Сравнивает два узла одного места и обновляет DOM.
  * @param {Node} parentDom
- * @param {import('./h.js').VNode} oldVNode
- * @param {import('./h.js').VNode} newVNode
+ * @param {module:vdom/h~VNode} oldVNode
+ * @param {module:vdom/h~VNode} newVNode
  * @param {boolean} isSvg
  */
 function patch(parentDom, oldVNode, newVNode, isSvg) {
@@ -243,8 +244,8 @@ function patch(parentDom, oldVNode, newVNode, isSvg) {
  * переиспользуются и при необходимости переставляются, лишние удаляются, новые создаются.
  * Родитель целиком управляется VDOM: посторонних DOM-узлов в нём быть не должно.
  * @param {Element} parentDom
- * @param {import('./h.js').VNode[]} oldChildren
- * @param {import('./h.js').VNode[]} newChildren
+ * @param {module:vdom/h~VNode[]} oldChildren
+ * @param {module:vdom/h~VNode[]} newChildren
  * @param {boolean} isSvg
  */
 function patchChildren(parentDom, oldChildren, newChildren, isSvg) {

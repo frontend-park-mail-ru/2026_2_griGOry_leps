@@ -8,7 +8,8 @@ const RULE_TEXTS = [
 
 /**
  * Требования к паролю: серые, пока поле пустое, зелёные — выполненные, красные — нет.
- * @param {{states?: Array<'ok' | 'fail' | 'neutral'>}} props
+ * @param {Object} props
+ * @param {Array<string>} [props.states] Для каждого требования: 'ok', 'fail' или 'neutral'
  */
 export const PasswordRules = ({ states = [] }) => (
     <ul class="password-rules">

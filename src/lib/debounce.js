@@ -5,10 +5,9 @@
  */
 
 /**
- * @template {function(...*): void} F
- * @param {F} fn
+ * @param {Function} fn
  * @param {number} ms
- * @returns {F & {cancel: function(): void}} Обёртка с методом `cancel` для отмены отложенного вызова
+ * @returns {Function} Обёртка с методом `cancel()` для отмены отложенного вызова
  */
 export function debounce(fn, ms) {
     let timer;

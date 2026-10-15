@@ -5,8 +5,11 @@ import './empty-state.scss';
  * @param {Object} props
  * @param {string} props.title
  * @param {string} props.text
- * @param {{label: string, href?: string, onClick?: function(): void, disabled?: boolean}} [props.action]
- *        Кнопка (если есть onClick или disabled) или ссылка (href) под текстом
+ * @param {Object} [props.action] Кнопка (onClick или disabled) или ссылка (href) под текстом
+ * @param {string} props.action.label
+ * @param {string} [props.action.href]
+ * @param {function(): void} [props.action.onClick]
+ * @param {boolean} [props.action.disabled]
  */
 export const EmptyState = ({ title, text, action }) => (
     <div class="empty-state">

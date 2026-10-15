@@ -154,7 +154,7 @@ export class FormValidation {
  * @param {string} options.fallback
  * @param {Object<number, string>} [options.byStatus]
  * @param {Object<string, string>} [options.conflictMessages] Тексты для 409 по имени поля
- * @returns {{field?: string, message: string}}
+ * @returns {{field: (string|undefined), message: string}} field есть, если ошибка относится к полю
  */
 export function describeApiError(err, { fields, fallback, byStatus = {}, conflictMessages = {} }) {
     if (err?.field && fields.includes(err.field)) {

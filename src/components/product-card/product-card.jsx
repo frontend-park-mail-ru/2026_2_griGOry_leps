@@ -15,7 +15,12 @@ function formatPrice(price) {
 
 /**
  * Карточка объявления в ленте.
- * @param {{id?: number, title: string, price: (string|number), image_url?: string, has_delivery?: boolean}} props
+ * @param {Object} props
+ * @param {number} [props.id]
+ * @param {string} props.title
+ * @param {(string|number)} props.price
+ * @param {string} [props.image_url]
+ * @param {boolean} [props.has_delivery]
  */
 export const ProductCard = ({ id, title, price, image_url: imageUrl, has_delivery: hasDelivery }) => (
     <article class="product-card" data-ad-id={id}>

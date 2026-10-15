@@ -1,7 +1,7 @@
 {
   "source": {
     "include": ["src"],
-    "includePattern": ".+\\.js$"
+    "includePattern": ".+\\.[jt]sx?$"
   },
   "opts": {
     "recurse": true,
