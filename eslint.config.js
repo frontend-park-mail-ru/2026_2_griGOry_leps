@@ -1,42 +1,19 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-/**
- * В ESLint 9 no-unused-vars не видит переменные, которые используются только в JSX
- * (например, импортированный компонент <FormField />). Это правило помечает их использованными.
- */
-const jsxUsesVars = {
-    meta: { type: 'problem', schema: [] },
-    create(context) {
-        return {
-            JSXOpeningElement(node) {
-                let name = node.name;
-                while (name.type === 'JSXMemberExpression') name = name.object;
-                if (name.type === 'JSXIdentifier' && /^[A-Z]/.test(name.name)) {
-                    context.sourceCode.markVariableAsUsed(name.name, node);
-                }
-            },
-        };
-    },
-};
-
-export default [
+export default tseslint.config(
     {
         ignores: ['dist/**', 'node_modules/**', 'docs/**'],
     },
     js.configs.recommended,
     {
-        files: ['src/**/*.{js,jsx}'],
+        files: ['src/**/*.{ts,tsx}'],
+        extends: [tseslint.configs.recommended],
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
             globals: globals.browser,
-            parserOptions: {
-                ecmaFeatures: { jsx: true },
-            },
-        },
-        plugins: {
-            local: { rules: { 'jsx-uses-vars': jsxUsesVars } },
         },
         rules: {
             eqeqeq: 'error',
@@ -44,11 +21,10 @@ export default [
             'prefer-const': 'error',
             'no-console': 'warn',
             'eol-last': ['error', 'always'],
-            'local/jsx-uses-vars': 'error',
         },
     },
     {
-        files: ['**/*.{js,jsx}'],
+        files: ['**/*.{js,ts,tsx}'],
         rules: {
             indent: ['error', 4, { SwitchCase: 1 }],
             quotes: ['error', 'single', { avoidEscape: true }],
@@ -56,7 +32,13 @@ export default [
         },
     },
     {
-        files: ['src/lib/logger.js'],
+        files: ['src/**/*.test.tsx'],
+        rules: {
+            '@typescript-eslint/no-this-alias': 'off',
+        },
+    },
+    {
+        files: ['src/lib/logger.ts'],
         rules: {
             'no-console': 'off',
         },
@@ -69,4 +51,4 @@ export default [
             globals: globals.node,
         },
     },
-];
+);

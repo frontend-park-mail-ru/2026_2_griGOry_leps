@@ -1,0 +1,10 @@
+import type { Promo } from '@/lib/data';
+import './promo-card.scss';
+
+export const PromoCard = ({ title, subtitle, image }: Promo) => (
+    <div class="promo-card">
+        <h3 class="promo-card__title">{title}</h3>
+        <p class="promo-card__subtitle">{subtitle}</p>
+        <img src={image} alt="" loading="lazy" class="promo-card__img" />
+    </div>
+);
