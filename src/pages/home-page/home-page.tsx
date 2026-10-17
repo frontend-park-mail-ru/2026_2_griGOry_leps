@@ -1,5 +1,5 @@
 import { Component, type Child } from '@/vdom';
-import type { Listing, User } from '@/lib/api';
+import type { AdCard, User } from '@/lib/api';
 import type { Category, Promo } from '@/lib/data';
 import './home-page.scss';
 
@@ -14,7 +14,6 @@ export interface ScrollSectionProps {
     children?: Child;
 }
 
-/** Стрелка выключается, когда листать в её сторону больше некуда */
 class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; canNext: boolean }> {
     state = { canPrev: false, canNext: false };
 
@@ -96,7 +95,7 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
 export interface HomeData {
     categories: Category[];
     promos: Promo[];
-    products: Listing[];
+    products: AdCard[];
 }
 
 export const HomePage = ({ categories, promos, products, user }: HomeData & { user: User | null }) => {

@@ -1,17 +1,16 @@
-import type { Listing } from '@/lib/api';
+import type { AdCard } from '@/lib/api';
 import './product-card.scss';
 
 const priceFormatter = new Intl.NumberFormat('ru-RU', {
     maximumFractionDigits: 2,
 });
 
-/** "15000.00" → «15 000» */
 function formatPrice(price: string | number): string {
     const value = Number(String(price).replace(/\s/g, '').replaceAll(',', '.'));
     return Number.isFinite(value) ? priceFormatter.format(value) : String(price);
 }
 
-export const ProductCard = ({ id, title, price, image_url: imageUrl, has_delivery: hasDelivery }: Listing) => (
+export const ProductCard = ({ id, title, price, image_url: imageUrl, has_delivery: hasDelivery }: AdCard) => (
     <article class="product-card" data-ad-id={id}>
         <div class="product-card__img">
             {imageUrl && <img src={imageUrl} alt={title} loading="lazy" />}
