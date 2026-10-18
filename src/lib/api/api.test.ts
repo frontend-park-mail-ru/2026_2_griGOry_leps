@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
     ApiError, addToCart, createOrder, deleteListing, getListing, getMe, login, logout,
     resetCsrfToken, uploadListingPhoto,
-} from './api';
+} from '.';
 
 interface Call {
     url: string;

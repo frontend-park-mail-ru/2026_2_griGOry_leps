@@ -1,0 +1,47 @@
+import { ensureOk, json } from './errors';
+import { resetCsrfToken } from './csrf';
+import { request } from './request';
+import { jsonBody } from './utils';
+import type { Profile } from './profile';
+import type { User } from './types';
+
+export interface RegisterData {
+    email: string;
+    password: string;
+    first_name: string;
+    phone: string;
+}
+
+/** null, если не авторизован */
+export async function getMe(): Promise<Profile | null> {
+    const response = await request('/me');
+
+    if (response.status >= 400 && response.status < 500) {
+        return null;
+    }
+
+    return json(response);
+}
+
+export async function login({ login, password }: { login: string; password: string }): Promise<User> {
+    const response = await request('/login', { method: 'POST', ...jsonBody({ login, password }) });
+    const user = await json<User>(response);
+    resetCsrfToken();
+    return user;
+}
+
+export async function register({ email, password, first_name, phone }: RegisterData): Promise<User> {
+    const response = await request('/register', {
+        method: 'POST',
+        ...jsonBody({ email, password, first_name, phone }),
+    });
+    const user = await json<User>(response);
+    resetCsrfToken();
+    return user;
+}
+
+export async function logout(): Promise<void> {
+    const response = await request('/logout', { method: 'POST' });
+    await ensureOk(response);
+    resetCsrfToken();
+}
