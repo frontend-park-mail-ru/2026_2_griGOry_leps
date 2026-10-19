@@ -14,7 +14,7 @@ interface Call {
 type Reply = { status?: number; body?: unknown };
 
 let calls: Call[];
-let replies: Array<(call: Call) => Reply>;
+let replies: Array<(call: Call) => Reply | Promise<Reply>>;
 
 function jsonResponse({ status = 200, body }: Reply): Response {
     return new Response(body === undefined ? null : JSON.stringify(body), { status });
@@ -34,7 +34,7 @@ beforeEach(() => {
         calls.push(call);
         const reply = replies.shift();
         if (!reply) throw new Error(`Нет ответа для ${call.method} ${call.url}`);
-        return jsonResponse(reply(call));
+        return jsonResponse(await reply(call));
     }));
 });
 
@@ -44,6 +44,7 @@ afterEach(() => {
 
 const csrf = (token: string) => () => ({ body: { csrf_token: token } });
 const ok = (body: unknown = { status: 'ok' }) => () => ({ body });
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('CSRF', () => {
     it('GET уходит без токена и без запроса /csrf', async () => {
@@ -100,6 +101,27 @@ describe('CSRF', () => {
         await login({ login: 'a@b.ru', password: 'Secret123' });
 
         expect(calls[3].headers.get('X-CSRF-Token')).toBe('guest');
+    });
+
+    it('токен, загруженный до сброса, не кешируется и не отдаётся новым запросам', async () => {
+        let answerOld!: () => void;
+        replies.push(() => new Promise<Reply>((resolve) => {
+            answerOld = () => resolve({ body: { csrf_token: 'old' } });
+        }));
+        replies.push(csrf('new'), ok({ items_count: 1 }), ok({ items_count: 2 }), ok({ items_count: 3 }));
+
+        const first = addToCart(1);
+        await flush();
+        resetCsrfToken();
+        const second = addToCart(2);
+        await flush();
+        answerOld();
+        await Promise.all([first, second]);
+        await addToCart(3);
+
+        const tokens = calls.filter((c) => c.url === '/cart/items').map((c) => c.headers.get('X-CSRF-Token'));
+        expect(tokens.sort()).toEqual(['new', 'new', 'old']);
+        expect(calls.filter((c) => c.url === '/csrf')).toHaveLength(2);
     });
 
     it('если бэк отверг токен, берёт новый и повторяет запрос один раз', async () => {

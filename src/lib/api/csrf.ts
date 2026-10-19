@@ -7,31 +7,42 @@ const CSRF_ERROR = 'invalid csrf token';
 /** Токен для изменяющих запросов. Привязан к сессии, поэтому сбрасывается при входе и выходе */
 let csrfToken: string | null = null;
 let csrfLoading: Promise<string> | null = null;
+/** Растёт при каждом сбросе: загрузка, начатая до сброса, не сохранит устаревший токен */
+let csrfVersion = 0;
 
 /** Забыть CSRF-токен: следующий изменяющий запрос получит новый */
 export function resetCsrfToken(): void {
     csrfToken = null;
+    csrfLoading = null;
+    csrfVersion++;
 }
 
 /**
- * Запрашивает CSRF-токен. Параллельные запросы ждут один и тот же ответ.
+ * Запрашивает токен у бэка и кеширует его, если за время запроса не было сброса.
  * Если бэк ещё не умеет CSRF (404), запросы уходят без токена.
  */
-export async function getCsrfToken(): Promise<string> {
-    if (csrfToken !== null) return csrfToken;
+async function loadCsrfToken(): Promise<string> {
+    const version = csrfVersion;
+    const response = await send('/csrf', { method: 'GET' });
+    const token = response.status === 404
+        ? ''
+        : (await json<{ csrf_token: string }>(response)).csrf_token;
 
-    csrfLoading ??= (async () => {
-        const response = await send('/csrf', { method: 'GET' });
-        if (response.status === 404) return '';
+    if (version === csrfVersion) csrfToken = token;
+    return token;
+}
 
-        const { csrf_token: token } = await json<{ csrf_token: string }>(response);
-        return token;
-    })().finally(() => {
-        csrfLoading = null;
-    });
+/** Токен из кеша или новый. Параллельные запросы ждут одну загрузку */
+export function getCsrfToken(): Promise<string> {
+    if (csrfToken !== null) return Promise.resolve(csrfToken);
 
-    csrfToken = await csrfLoading;
-    return csrfToken;
+    if (!csrfLoading) {
+        const loading = loadCsrfToken().finally(() => {
+            if (csrfLoading === loading) csrfLoading = null;
+        });
+        csrfLoading = loading;
+    }
+    return csrfLoading;
 }
 
 /** Бэк отверг запрос из-за неверного или устаревшего токена */
