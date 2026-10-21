@@ -56,4 +56,11 @@
         line-height: 24px;
         color: $color-text-secondary;
     }
+
+    &__meta {
+        margin: 0;
+        font-size: 12px;
+        line-height: 16px;
+        color: $color-text-muted;
+    }
 }
