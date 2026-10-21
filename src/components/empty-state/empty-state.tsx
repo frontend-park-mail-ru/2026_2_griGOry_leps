@@ -15,7 +15,7 @@ export interface EmptyStateProps {
 export const EmptyState = ({ title, text, action }: EmptyStateProps) => (
     <div class="empty-state">
         <div class="empty-state__icon" aria-hidden="true">
-            <img src="/img/sparkles.svg" alt="" />
+            <img class="empty-state__icon-image" src="/img/sparkles.svg" alt="" />
         </div>
         <h2 class="empty-state__title">{title}</h2>
         <p class="empty-state__text">{text}</p>
