@@ -1,3 +1,4 @@
+import { checkPasswordRules } from '@/lib/validators';
 import './password-rules.scss';
 
 const RULE_TEXTS = [
@@ -19,3 +20,10 @@ export const PasswordRules = ({ states = [] }: { states?: RuleState[] }) => (
         ))}
     </ul>
 );
+
+export function getPasswordRuleStates(password: string): RuleState[] {
+    return checkPasswordRules(password).map((isMet) => {
+        if (isMet) return 'ok';
+        return password ? 'fail' : 'neutral';
+    });
+}

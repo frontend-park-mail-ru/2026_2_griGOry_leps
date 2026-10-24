@@ -7,13 +7,12 @@ import { AuthForm } from '@/components/auth-form/auth-form';
 import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
 import { FormNote } from '@/components/form-note/form-note';
-import { PasswordRules, type RuleState } from '@/components/password-rules/password-rules';
+import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { register } from '@/lib/api';
 import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
-    checkPasswordRules,
     sanitizePhone,
     validateEmail,
     validateName,
@@ -34,14 +33,6 @@ const RULES: Record<string, FieldRule> = {
         validate: (value, values) => validatePasswordRepeat(value, values.password ?? ''),
     },
 };
-
-/** Обновляются сразу при вводе, без паузы */
-function getPasswordRuleStates(password: string): RuleState[] {
-    return checkPasswordRules(password).map((isMet) => {
-        if (isMet) return 'ok';
-        return password ? 'fail' : 'neutral';
-    });
-}
 
 export interface RegisterState {
     values: FormValues;

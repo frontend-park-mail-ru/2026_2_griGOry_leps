@@ -1,5 +1,17 @@
+@use '@/shared/styles/variables' as *;
 @use '@/shared/styles/mixins' as *;
 
 .login-page {
     @include auth-page;
+
+    &__forgot {
+        align-self: flex-start;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $goget-blue;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }

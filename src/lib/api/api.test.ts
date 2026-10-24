@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-    ApiError, addToCart, createOrder, deleteListing, getListing, getMe, login, logout,
-    resetCsrfToken, uploadListingPhoto,
+    ApiError, addToCart, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
+    requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
 interface Call {
@@ -195,5 +195,43 @@ describe('запросы', () => {
 
         expect(calls[1].headers.get('Idempotency-Key')).toBe('key-1');
         expect(calls[1].headers.get('X-CSRF-Token')).toBe('t1');
+    });
+});
+
+describe('восстановление пароля', () => {
+    it('запрос ссылки отправляет логин с CSRF-токеном', async () => {
+        replies.push(csrf('t1'), ok());
+
+        await requestPasswordReset('+79990000001');
+
+        expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual(['GET /csrf', 'POST /password/forgot']);
+        expect(calls[1].headers.get('X-CSRF-Token')).toBe('t1');
+        expect(JSON.parse(calls[1].body as string)).toEqual({ login: '+79990000001' });
+    });
+
+    it('проверка ссылки отдаёт email аккаунта', async () => {
+        replies.push(ok({ email: 'anna@goget.pw' }));
+
+        await expect(checkResetToken('abc&x')).resolves.toBe('anna@goget.pw');
+        expect(calls[0].url).toBe('/password/reset?token=abc%26x');
+    });
+
+    it('устаревшая ссылка — ApiError с полем token', async () => {
+        replies.push(() => ({ status: 400, body: { error: 'invalid or expired token', field: 'token' } }));
+
+        const err = await checkResetToken('old').catch((e: unknown) => e);
+
+        expect(err).toBeInstanceOf(ApiError);
+        expect((err as ApiError).field).toBe('token');
+    });
+
+    it('после смены пароля CSRF-токен запрашивается заново', async () => {
+        replies.push(csrf('t1'), ok(), csrf('t2'), ok({ items_count: 1 }));
+
+        await resetPassword('abc', 'NewPass123');
+        await addToCart(1);
+
+        expect(JSON.parse(calls[1].body as string)).toEqual({ token: 'abc', password: 'NewPass123' });
+        expect(calls[3].headers.get('X-CSRF-Token')).toBe('t2');
     });
 });
