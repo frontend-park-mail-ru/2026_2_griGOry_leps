@@ -2,19 +2,21 @@ import { Component } from '@/vdom';
 import './listing-form-page.scss';
 
 import { Button } from '@/components/button/button';
+import { CategorySelect } from '@/components/category-select/category-select';
+import { CheckboxField } from '@/components/checkbox-field/checkbox-field';
+import { ConditionField } from '@/components/condition-field/condition-field';
+import { DescriptionField } from '@/components/description-field/description-field';
 import { FormField } from '@/components/form-field/form-field';
+import { ListingPreview } from '@/components/listing-preview/listing-preview';
+import { ListingPublished } from '@/components/listing-published/listing-published';
 import { PhotoUploader, type PhotoItem } from '@/components/photo-uploader/photo-uploader';
-import { ProductCard } from '@/components/product-card/product-card';
+import { SellingTips } from '@/components/selling-tips/selling-tips';
+import { ApiError, createListing, updateListing, uploadListingPhoto, type CategoryNode, type Listing } from '@/lib/api';
 import {
-    ApiError, createListing, updateListing, uploadListingPhoto,
-    type CategoryNode, type Condition, type Listing, type ListingData,
-} from '@/lib/api';
-import { plural } from '@/lib/format';
-import {
-    CONDITION_LABELS, DESCRIPTION_MAX, PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, TITLE_MAX,
-    categoryGroups, normalizePrice, sanitizePrice, validateListing,
+    PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
+    buildListingData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
     type ListingFormErrors, type ListingFormValues,
-} from '@/lib/listing';
+} from '@/lib/listing-form';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { navigate } from '@/router/router';
@@ -33,67 +35,6 @@ export interface ListingFormState {
     formError: string;
     submitting: boolean;
     published: Listing | null;
-}
-
-type TextField = 'title' | 'description' | 'price' | 'address' | 'category_id' | 'condition';
-type FlagField = 'is_free' | 'is_negotiable' | 'has_delivery';
-
-const CONDITIONS = Object.keys(CONDITION_LABELS) as Condition[];
-
-const TIPS = [
-    'Сделайте 3–5 фото при дневном свете',
-    'В названии — модель и состояние',
-    'Цена чуть ниже рынка — продаётся в 2 раза быстрее',
-    'Отвечайте на сообщения в течение часа',
-];
-
-const SERVER_FIELDS: Record<string, keyof ListingFormErrors> = {
-    category_id: 'category_id',
-    title: 'title',
-    photo_ids: 'photos',
-    description: 'description',
-    price: 'price',
-    condition: 'condition',
-    address: 'address',
-};
-
-const SERVER_MESSAGES: Partial<Record<keyof ListingFormErrors, string>> = {
-    category_id: 'Выберите категорию из списка',
-    title: `Название от 1 до ${TITLE_MAX} символов`,
-    photos: 'Загрузите фото заново',
-    description: `Описание не длиннее ${DESCRIPTION_MAX} символов`,
-    price: 'Укажите цену в рублях',
-    condition: 'Выберите состояние',
-    address: 'Укажите адрес',
-};
-
-function initialValues(listing?: Listing): ListingFormValues {
-    return {
-        category_id: listing?.category ? String(listing.category.id) : '',
-        title: listing?.title ?? '',
-        description: listing?.description ?? '',
-        price: listing && listing.price !== null && !listing.is_free ? listing.price.replace(/\.00$/, '') : '',
-        is_free: listing?.is_free ?? false,
-        is_negotiable: listing?.is_negotiable ?? false,
-        condition: listing?.condition ?? '',
-        address: listing?.address ?? '',
-        has_delivery: listing?.has_delivery ?? false,
-    };
-}
-
-function photoError(err: unknown): string {
-    if (!(err instanceof ApiError)) return 'Не загрузилось';
-    if (err.status === 413) return 'Больше 5 МБ';
-    if (err.status === 415) return 'Только JPG или PNG';
-    if (err.status === 400) return 'Файл повреждён';
-    if (err.network || err.timeout) return 'Нет связи с сервером';
-    return 'Не загрузилось';
-}
-
-function summaryText(count: number): string {
-    if (!count) return '';
-    return `Не получилось опубликовать: заполните ${count} ${plural(count, ['обязательное поле', 'обязательных поля', 'обязательных полей'])}, `
-        + `${count === 1 ? 'оно отмечено' : 'они отмечены'} красным`;
 }
 
 let photoKey = 0;
@@ -148,27 +89,27 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         return photos.filter((p) => p.id !== null && !p.uploading && !p.error).map((p) => p.id as number);
     }
 
-    handleText = (e: Event) => {
+    setField = <K extends keyof ListingFormValues>(name: K) => (value: ListingFormValues[K]) => {
+        this.update({ [name]: value } as Partial<ListingFormValues>);
+    };
+
+    handleInput = (e: Event) => {
         const input = e.target as HTMLInputElement;
-        const name = input.name as TextField;
-        const value = name === 'price' ? sanitizePrice(input.value) : input.value;
-        if (name === 'price') input.value = value;
-        this.update({ [name]: value });
+        this.update({ [input.name]: input.value });
+    };
+
+    handlePriceInput = (e: Event) => {
+        const input = e.target as HTMLInputElement;
+        input.value = sanitizePrice(input.value);
+        this.update({ price: input.value });
     };
 
     handlePriceChange = () => {
         this.update({ price: normalizePrice(this.state.values.price) });
     };
 
-    handleFlag = (e: Event) => {
-        const input = e.target as HTMLInputElement;
-        const name = input.name as FlagField;
-        const patch: Partial<ListingFormValues> = { [name]: input.checked };
-        if (name === 'is_free' && input.checked) {
-            patch.price = '';
-            patch.is_negotiable = false;
-        }
-        this.update(patch);
+    handleFree = (isFree: boolean) => {
+        this.update(isFree ? { is_free: true, price: '', is_negotiable: false } : { is_free: false });
     };
 
     handleAddPhotos = (files: File[]) => {
@@ -243,27 +184,6 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         this.update({}, photos);
     };
 
-    collect(onlyFilled: boolean): ListingData {
-        const { values } = this.state;
-        const photoIds = this.readyPhotos();
-        const data: ListingData = {
-            title: values.title.trim(),
-            description: values.description.trim(),
-            is_free: values.is_free,
-            is_negotiable: values.is_free ? false : values.is_negotiable,
-            has_delivery: values.has_delivery,
-        };
-
-        if (values.category_id) data.category_id = Number(values.category_id);
-        if (values.condition) data.condition = values.condition;
-        if (values.address.trim()) data.address = values.address.trim();
-        if (!values.is_free && values.price) data.price = normalizePrice(values.price);
-        if (photoIds.length || !onlyFilled) data.photo_ids = photoIds;
-        if (onlyFilled && !data.description) delete data.description;
-
-        return data;
-    }
-
     submit = async (asDraft: boolean) => {
         this.submitted = true;
         this.setState({ formError: '', summary: '' });
@@ -290,7 +210,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
         this.setState({ submitting: true });
         try {
-            const data = this.collect(loose);
+            const data = buildListingData(values, this.readyPhotos(), loose);
             if (this.props.listing) {
                 const saved = await updateListing(this.props.listing.id, data);
                 showToast('Изменения сохранены');
@@ -312,30 +232,19 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
     };
 
     showServerError(err: unknown) {
-        if (!(err instanceof ApiError)) {
-            this.setState({ formError: 'Не удалось сохранить объявление. Попробуйте ещё раз' });
+        if (err instanceof ApiError && err.status === 401) {
+            navigate('/login');
             return;
         }
 
-        const field = SERVER_FIELDS[err.field];
-        if (err.status === 400 && field) {
+        const field = err instanceof ApiError && err.status === 400 ? SERVER_FIELDS[err.field] : undefined;
+        if (field) {
             this.setState({ errors: { ...this.state.errors, [field]: SERVER_MESSAGES[field] } });
             this.focusFirstError();
             return;
         }
 
-        if (err.status === 401) {
-            navigate('/login');
-            return;
-        }
-
-        let message = 'Не удалось сохранить объявление. Попробуйте ещё раз';
-        if (err.network) message = 'Нет соединения с сервером. Проверьте интернет';
-        else if (err.timeout) message = 'Сервер не отвечает. Попробуйте ещё раз';
-        else if (err.status === 409) message = 'Проданное объявление нельзя изменить';
-        else if (err.status === 403) message = 'Это объявление нельзя редактировать';
-        else if (err.status === 404) message = 'Объявление не найдено. Возможно, его удалили';
-        this.setState({ formError: message });
+        this.setState({ formError: saveErrorText(err) });
     }
 
     focusFirstError() {
@@ -366,186 +275,43 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         window.scrollTo(0, 0);
     };
 
-    renderCategory() {
-        const { values, errors } = this.state;
-        const error = errors.category_id ?? '';
+    renderActions() {
+        const { photos, submitting } = this.state;
+        const { listing } = this.props;
+        const disabled = submitting || photos.some((p) => p.uploading);
 
-        return (
-            <div class={error ? 'form-field form-field--error' : 'form-field'}>
-                <div class="form-field__control listing-form__select">
-                    <select
-                        id="listing-category"
-                        name="category_id"
-                        class={values.category_id ? 'form-field__input' : 'form-field__input listing-form__placeholder'}
-                        value={values.category_id}
-                        aria-label="Категория"
-                        aria-invalid={String(Boolean(error))}
-                        onChange={this.handleText}
-                    >
-                        <option value="" disabled>Выберите категорию</option>
-                        {categoryGroups(this.props.categories).map((group) => (
-                            <optgroup key={group.name} label={group.name}>
-                                {group.options.map((opt) => (
-                                    <option key={opt.id} value={String(opt.id)}>{opt.label}</option>
-                                ))}
-                            </optgroup>
-                        ))}
-                    </select>
-                </div>
-                <p class="form-field__error" data-error-for="category_id">{error || null}</p>
-            </div>
-        );
-    }
+        if (listing) {
+            return [
+                <Button type="submit" text={submitting ? 'Сохраняем…' : 'Сохранить изменения'} disabled={disabled} />,
+                <a href={`/listing/${listing.id}`} data-link class="listing-form__cancel">Отмена</a>,
+            ];
+        }
 
-    renderDescription() {
-        const { values, errors } = this.state;
-        const error = errors.description ?? '';
-
-        return (
-            <div class={error ? 'form-field form-field--error' : 'form-field'}>
-                <div class="form-field__control listing-form__textarea">
-                    <textarea
-                        id="listing-description"
-                        name="description"
-                        class="form-field__input"
-                        rows="4"
-                        aria-label="Описание"
-                        placeholder="Расскажите о товаре: состояние, комплектация, причина продажи"
-                        value={values.description}
-                        aria-invalid={String(Boolean(error))}
-                        onInput={this.handleText}
-                    />
-                    <span class="listing-form__counter">{values.description.length} / {DESCRIPTION_MAX}</span>
-                </div>
-                <p class="form-field__error" data-error-for="description">{error || null}</p>
-            </div>
-        );
-    }
-
-    renderCondition() {
-        const { values, errors } = this.state;
-        const error = errors.condition ?? '';
-
-        return (
-            <fieldset class={error ? 'listing-form__group listing-form__group--error' : 'listing-form__group'}>
-                <legend class="form-field__label">Состояние</legend>
-                <div class="listing-form__options">
-                    {CONDITIONS.map((condition) => (
-                        <label key={condition} class="listing-form__option">
-                            <input
-                                type="radio"
-                                name="condition"
-                                value={condition}
-                                checked={values.condition === condition}
-                                aria-invalid={String(Boolean(error))}
-                                onChange={this.handleText}
-                            />
-                            {CONDITION_LABELS[condition]}
-                        </label>
-                    ))}
-                </div>
-                <p class="form-field__error" data-error-for="condition">{error || null}</p>
-            </fieldset>
-        );
-    }
-
-    renderCheckbox(name: FlagField, label: string, hint?: string) {
-        return (
-            <label class="listing-form__check">
-                <input
-                    type="checkbox"
-                    name={name}
-                    checked={this.state.values[name]}
-                    onChange={this.handleFlag}
-                />
-                <span class="listing-form__check-text">
-                    {label}
-                    {hint && <span class="listing-form__check-hint">{hint}</span>}
-                </span>
-            </label>
-        );
-    }
-
-    renderPreview() {
-        const { values, photos } = this.state;
-        const cover = photos.find((p) => !p.error);
-        const filled = values.title.trim() || cover || values.price || values.is_free;
-
-        return (
-            <section class="listing-aside__card">
-                <h2 class="listing-aside__title">Так увидят покупатели</h2>
-                {filled ? (
-                    <ProductCard
-                        id={this.props.listing?.id ?? 0}
-                        link={false}
-                        title={values.title.trim() || 'Название объявления'}
-                        price={normalizePrice(values.price) || '0'}
-                        is_free={values.is_free}
-                        image_url={cover?.preview ?? null}
-                        city=""
-                        has_delivery={values.has_delivery}
-                        created_at=""
-                        meta={values.address.trim() ? `${values.address.trim()} · размещено сегодня` : 'Размещено сегодня'}
-                    />
-                ) : (
-                    <div class="listing-aside__skeleton" aria-hidden="true">
-                        <span class="listing-aside__skeleton-img" />
-                        <span class="listing-aside__skeleton-line listing-aside__skeleton-line--short" />
-                        <span class="listing-aside__skeleton-line" />
-                        <span class="listing-aside__skeleton-line listing-aside__skeleton-line--mid" />
-                    </div>
-                )}
-            </section>
-        );
-    }
-
-    renderPublished(listing: Listing) {
-        const onModeration = listing.status === 'moderation';
-        const cover = listing.photos[0];
-
-        return (
-            <div class="listing-form-page listing-form-page--done">
-                <section class="listing-done">
-                    <span class="listing-done__icon" aria-hidden="true">✓</span>
-                    <h1 class="listing-done__title">
-                        {onModeration ? 'Объявление отправлено на проверку' : 'Объявление опубликовано'}
-                    </h1>
-                    <p class="listing-done__text">
-                        {onModeration
-                            ? 'Обычно проверка занимает до 30 минут. Как только она пройдёт, объявление появится в поиске.'
-                            : 'Объявление уже в поиске — покупатели могут его найти.'}
-                    </p>
-                    <div class="listing-done__card">
-                        <ProductCard
-                            id={listing.id}
-                            link={false}
-                            title={listing.title}
-                            price={listing.price ?? '0'}
-                            is_free={listing.is_free}
-                            image_url={cover?.thumb_url ?? null}
-                            city={listing.city}
-                            has_delivery={listing.has_delivery}
-                            created_at={listing.created_at}
-                            meta={`${listing.city} · размещено сегодня`}
-                        />
-                    </div>
-                    <div class="listing-done__actions">
-                        <a href={`/listing/${listing.id}`} data-link class="listing-done__primary">Перейти к объявлению</a>
-                        <Button text="Разместить ещё" variant="secondary" onClick={this.handleCreateAnother} />
-                    </div>
-                </section>
-            </div>
-        );
+        return [
+            <Button type="submit" text={submitting ? 'Публикуем…' : 'Опубликовать'} disabled={disabled} />,
+            <Button text="Сохранить черновик" variant="outline" disabled={disabled} onClick={() => this.submit(true)} />,
+            <p class="listing-form__terms">
+                Нажимая «Опубликовать», вы соглашаетесь с{' '}
+                <a href="/terms" data-link>правилами размещения</a>
+            </p>,
+        ];
     }
 
     render() {
-        const { values, errors, photos, summary, formError, submitting, published } = this.state;
-        if (published) return this.renderPublished(published);
+        const { values, errors, photos, summary, formError, published } = this.state;
 
-        const { listing } = this.props;
-        const uploading = photos.some((p) => p.uploading);
+        if (published) {
+            return (
+                <div class="listing-form-page listing-form-page--done">
+                    <ListingPublished listing={published} onCreateAnother={this.handleCreateAnother} />
+                </div>
+            );
+        }
+
+        const { listing, categories } = this.props;
         const title = this.isEdit ? 'Редактирование объявления' : 'Новое объявление';
         const titleLength = values.title.length;
+        const cover = photos.find((p) => !p.error)?.preview ?? null;
 
         return (
             <div class="listing-form-page">
@@ -565,7 +331,12 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
                         <section class="listing-form__section">
                             <h2 class="listing-form__section-title">Категория</h2>
-                            {this.renderCategory()}
+                            <CategorySelect
+                                categories={categories}
+                                value={values.category_id}
+                                error={errors.category_id}
+                                onChange={this.setField('category_id')}
+                            />
                         </section>
 
                         <section class="listing-form__section">
@@ -580,7 +351,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                                     ? `${titleLength} / ${TITLE_MAX} символов`
                                     : `Коротко: что это и в каком состоянии. До ${TITLE_MAX} символов`}
                                 error={errors.title}
-                                onInput={this.handleText}
+                                onInput={this.handleInput}
                             />
                         </section>
 
@@ -601,7 +372,11 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
                         <section class="listing-form__section">
                             <h2 class="listing-form__section-title">Описание</h2>
-                            {this.renderDescription()}
+                            <DescriptionField
+                                value={values.description}
+                                error={errors.description}
+                                onChange={this.setField('description')}
+                            />
                         </section>
 
                         <section class="listing-form__section">
@@ -616,16 +391,27 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                                         inputmode="decimal"
                                         value={values.price}
                                         error={errors.price}
-                                        onInput={this.handleText}
+                                        onInput={this.handlePriceInput}
                                         onChange={this.handlePriceChange}
                                     />
                                 </div>
                                 <div class="listing-form__flags">
-                                    {!values.is_free && this.renderCheckbox('is_negotiable', 'Торг уместен')}
-                                    {this.renderCheckbox('is_free', 'Отдам даром')}
+                                    {!values.is_free && (
+                                        <CheckboxField
+                                            name="is_negotiable"
+                                            label="Торг уместен"
+                                            value={values.is_negotiable}
+                                            onChange={this.setField('is_negotiable')}
+                                        />
+                                    )}
+                                    <CheckboxField name="is_free" label="Отдам даром" value={values.is_free} onChange={this.handleFree} />
                                 </div>
                             </div>
-                            {this.renderCondition()}
+                            <ConditionField
+                                value={values.condition}
+                                error={errors.condition}
+                                onChange={this.setField('condition')}
+                            />
                         </section>
 
                         <section class="listing-form__section">
@@ -638,45 +424,25 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                                 autocomplete="street-address"
                                 value={values.address}
                                 error={errors.address}
-                                onInput={this.handleText}
+                                onInput={this.handleInput}
                             />
-                            {this.renderCheckbox(
-                                'has_delivery',
-                                'Отправлю через GoGET Доставку',
-                                'Покупатель оплатит доставку, деньги придут вам после получения',
-                            )}
+                            <CheckboxField
+                                name="has_delivery"
+                                label="Отправлю через GoGET Доставку"
+                                hint="Покупатель оплатит доставку, деньги придут вам после получения"
+                                value={values.has_delivery}
+                                onChange={this.setField('has_delivery')}
+                            />
                         </section>
 
                         {formError && <p class="listing-form__error" role="alert">{formError}</p>}
 
-                        <div class="listing-form__actions">
-                            {this.isEdit ? [
-                                <Button type="submit" text={submitting ? 'Сохраняем…' : 'Сохранить изменения'} disabled={submitting || uploading} />,
-                                <a href={`/listing/${listing!.id}`} data-link class="listing-form__cancel">Отмена</a>,
-                            ] : [
-                                <Button type="submit" text={submitting ? 'Публикуем…' : 'Опубликовать'} disabled={submitting || uploading} />,
-                                <Button
-                                    text="Сохранить черновик"
-                                    variant="outline"
-                                    disabled={submitting || uploading}
-                                    onClick={() => this.submit(true)}
-                                />,
-                                <p class="listing-form__terms">
-                                    Нажимая «Опубликовать», вы соглашаетесь с{' '}
-                                    <a href="/terms" data-link>правилами размещения</a>
-                                </p>,
-                            ]}
-                        </div>
+                        <div class="listing-form__actions">{this.renderActions()}</div>
                     </form>
 
-                    <aside class="listing-aside">
-                        {this.renderPreview()}
-                        <section class="listing-aside__card">
-                            <h2 class="listing-aside__tips-title">Как продать быстрее</h2>
-                            <ul class="listing-aside__tips">
-                                {TIPS.map((tip) => <li key={tip}>{tip}</li>)}
-                            </ul>
-                        </section>
+                    <aside class="listing-form-page__aside">
+                        <ListingPreview values={values} cover={cover} />
+                        <SellingTips />
                     </aside>
                 </div>
             </div>

@@ -29,15 +29,24 @@
         font-size: 2rem;
     }
 
+    &__aside {
+        position: sticky;
+        top: 104px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 56px;
+
+        @media (max-width: 1024px) {
+            display: none;
+        }
+    }
+
     &--done {
         display: flex;
         justify-content: center;
         padding-top: 40px;
     }
-}
-
-.breadcrumbs__current {
-    color: $color-text-strong;
 }
 
 .listing-form {
@@ -88,52 +97,6 @@
         margin: -8px 0 0;
     }
 
-    &__select {
-        position: relative;
-
-        select {
-            height: 100%;
-            appearance: none;
-            cursor: pointer;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            right: 16px;
-            width: 7px;
-            height: 7px;
-            border-right: 1.5px solid $color-text-secondary;
-            border-bottom: 1.5px solid $color-text-secondary;
-            transform: translateY(-2px) rotate(45deg);
-            pointer-events: none;
-        }
-    }
-
-    &__placeholder {
-        color: $color-text-placeholder;
-    }
-
-    &__textarea {
-        position: relative;
-        height: auto;
-        padding: 12px 16px 28px;
-
-        textarea {
-            min-height: 96px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-    }
-
-    &__counter {
-        position: absolute;
-        right: 16px;
-        bottom: 10px;
-        font-size: 0.75rem;
-        color: $color-text-placeholder;
-    }
-
     &__price-row {
         display: flex;
         flex-wrap: wrap;
@@ -150,59 +113,6 @@
         flex-direction: column;
         gap: 10px;
         padding-top: 4px;
-    }
-
-    &__group {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin: 0;
-        padding: 0;
-        border: none;
-
-        legend {
-            margin-bottom: 10px;
-        }
-
-        &--error input[type='radio'] {
-            outline: 1.5px solid $color-status-error;
-            outline-offset: 1px;
-        }
-    }
-
-    &__options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 24px;
-    }
-
-    &__option,
-    &__check {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        font-size: 0.9375rem;
-        color: $color-text-strong;
-        cursor: pointer;
-
-        input {
-            flex: none;
-            width: 18px;
-            height: 18px;
-            margin: 1px 0 0;
-            accent-color: $goget-blue;
-            cursor: pointer;
-        }
-    }
-
-    &__check-text {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    &__check-hint {
-        @include typo-small;
     }
 
     &__error {
@@ -250,184 +160,6 @@
 
         &:hover {
             background: $surface-1;
-        }
-    }
-}
-
-.listing-aside {
-    position: sticky;
-    top: 104px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 56px;
-
-    @media (max-width: 1024px) {
-        display: none;
-    }
-
-    &__card {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding: 20px 24px;
-        background: $surface-0;
-        border: 1px solid $color-border;
-        border-radius: $radius-xl;
-
-        .product-card {
-            gap: 8px;
-            border-radius: $radius-lg;
-
-            &__img {
-                height: 160px;
-                border-radius: $radius-lg;
-            }
-
-            &__body {
-                padding: 0;
-            }
-        }
-    }
-
-    &__title {
-        @include typo-h5;
-        margin: 0;
-        font-size: 0.875rem;
-    }
-
-    &__skeleton {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    &__skeleton-img,
-    &__skeleton-line {
-        display: block;
-        background: $gray-200;
-        border-radius: $radius-md;
-    }
-
-    &__skeleton-img {
-        height: 160px;
-        margin-bottom: 4px;
-    }
-
-    &__skeleton-line {
-        height: 14px;
-
-        &--short {
-            width: 40%;
-        }
-
-        &--mid {
-            width: 55%;
-        }
-    }
-
-    &__tips-title {
-        @include typo-h4;
-        margin: 0;
-    }
-
-    &__tips {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-
-        li {
-            position: relative;
-            padding-left: 14px;
-            font-size: 0.875rem;
-            line-height: 1.45;
-            color: $color-text-secondary;
-
-            &::before {
-                content: '•';
-                position: absolute;
-                left: 0;
-            }
-        }
-    }
-}
-
-.listing-done {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    max-width: 480px;
-    padding: 32px;
-    text-align: center;
-    background: $surface-0;
-    border-radius: $radius-2xl;
-
-    @media (max-width: 640px) {
-        padding: 24px 16px;
-    }
-
-    &__icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 56px;
-        height: 56px;
-        font-size: 26px;
-        color: $color-status-success;
-        background: rgba(33, 161, 82, 0.12);
-        border-radius: 50%;
-    }
-
-    &__title {
-        @include typo-h3;
-        margin: 4px 0 0;
-        font-size: 1.5rem;
-    }
-
-    &__text {
-        @include typo-p;
-        margin: 0;
-        color: $color-text-secondary;
-    }
-
-    &__card {
-        width: 200px;
-        margin: 8px 0;
-        text-align: left;
-
-        .product-card__img {
-            height: 150px;
-            border-radius: $radius-lg;
-        }
-
-        .product-card__body {
-            padding: 0;
-        }
-    }
-
-    &__actions {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    &__primary {
-        padding: 12px 24px;
-        font-size: 0.9375rem;
-        font-weight: 600;
-        line-height: 20px;
-        color: $white;
-        background: $goget-blue;
-        border-radius: $radius-lg;
-
-        &:hover {
-            background: $goget-blue-hover;
         }
     }
 }
