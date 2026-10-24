@@ -1,0 +1,27 @@
+@use '@/shared/styles/variables' as *;
+
+.category-select {
+    position: relative;
+
+    select {
+        height: 100%;
+        appearance: none;
+        cursor: pointer;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        width: 7px;
+        height: 7px;
+        border-right: 1.5px solid $color-text-secondary;
+        border-bottom: 1.5px solid $color-text-secondary;
+        transform: translateY(-2px) rotate(45deg);
+        pointer-events: none;
+    }
+
+    &__empty {
+        color: $color-text-placeholder;
+    }
+}

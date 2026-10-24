@@ -1,0 +1,79 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.listing-published {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+    text-align: center;
+    background: $surface-0;
+    border-radius: $radius-2xl;
+
+    @media (max-width: 640px) {
+        padding: 24px 16px;
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+        color: $color-status-success;
+        background: rgba(33, 161, 82, 0.12);
+        border-radius: 50%;
+    }
+
+    &__title {
+        @include typo-h3;
+        margin: 4px 0 0;
+        font-size: 1.5rem;
+    }
+
+    &__text {
+        @include typo-p;
+        margin: 0;
+        color: $color-text-secondary;
+    }
+
+    &__card {
+        width: 200px;
+        margin: 8px 0;
+        text-align: left;
+
+        .product-card__img {
+            height: 150px;
+            border-radius: $radius-lg;
+        }
+
+        .product-card__body {
+            padding: 0;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    &__primary {
+        padding: 12px 24px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 20px;
+        color: $white;
+        background: $goget-blue;
+        border-radius: $radius-lg;
+
+        &:hover {
+            background: $goget-blue-hover;
+        }
+    }
+}

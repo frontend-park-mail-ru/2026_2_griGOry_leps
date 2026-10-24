@@ -1,0 +1,21 @@
+@use '@/shared/styles/variables' as *;
+
+.description-field {
+    position: relative;
+    height: auto;
+    padding: 12px 16px 28px;
+
+    textarea {
+        min-height: 96px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    &__counter {
+        position: absolute;
+        right: 16px;
+        bottom: 10px;
+        font-size: 0.75rem;
+        color: $color-text-placeholder;
+    }
+}

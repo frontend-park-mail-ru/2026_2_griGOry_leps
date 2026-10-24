@@ -30,4 +30,11 @@
     &__sep {
         color: $gray-200;
     }
+
+    &__current {
+        color: $color-text-strong;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }

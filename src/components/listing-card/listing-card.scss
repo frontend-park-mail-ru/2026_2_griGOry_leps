@@ -1,0 +1,32 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.listing-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 24px;
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    @media (max-width: 640px) {
+        padding: 16px;
+    }
+
+    &__title {
+        @include typo-h4;
+        margin: 0;
+    }
+
+    &--accent {
+        gap: 6px;
+        background: #eaf2ff;
+        border-color: #d4e4ff;
+
+        .listing-card__title {
+            @include typo-h5;
+            font-size: 0.875rem;
+        }
+    }
+}

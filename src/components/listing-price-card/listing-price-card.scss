@@ -1,0 +1,96 @@
+@use '@/shared/styles/variables' as *;
+
+.listing-price-card {
+    &__status {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-start;
+        gap: 6px;
+        padding: 3px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: $color-text-secondary;
+        background: $surface-1;
+        border-radius: $radius-pill;
+
+        &::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+
+        &--active {
+            color: $color-status-success;
+            background: rgba(33, 161, 82, 0.1);
+        }
+
+        &--moderation {
+            color: #b26b00;
+            background: #fff4e0;
+        }
+
+        &--sold {
+            color: $goget-blue;
+            background: rgba(8, 102, 255, 0.08);
+        }
+    }
+
+    &__price {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: $color-text-strong;
+    }
+
+    &__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__tag {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        color: $color-text-secondary;
+        background: $surface-1;
+        border-radius: $radius-sm;
+
+        &--delivery {
+            color: #8a5a00;
+            background: #fff1d6;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    &__link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        line-height: 20px;
+        color: $white;
+        background: $goget-blue;
+        border-radius: $radius-lg;
+        transition: background-color $timing-animation-short;
+
+        &:hover {
+            background: $goget-blue-hover;
+        }
+    }
+
+    &__error {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: $color-status-error;
+    }
+}
