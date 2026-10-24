@@ -18,20 +18,12 @@ describe('Breadcrumbs', () => {
             { label: 'Авто' },
         ]} />);
 
-        expect(root.innerHTML).toBe(
-            '<nav class="breadcrumbs" aria-label="Хлебные крошки">'
-            + '<a class="breadcrumbs__link" href="/" data-link="">Главная</a>'
-            + '<span class="breadcrumbs__sep" aria-hidden="true">/</span>'
-            + '<a class="breadcrumbs__link" href="/categories" data-link="">Все категории</a>'
-            + '<span class="breadcrumbs__sep" aria-hidden="true">/</span>'
-            + '<span aria-current="page">Авто</span>'
-            + '</nav>',
-        );
+        expect(root.firstElementChild).toMatchSnapshot();
     });
 
     it('добавляет модификатор flush', () => {
         render(root, <Breadcrumbs flush items={[{ label: 'Главная', href: '/' }]} />);
 
-        expect(root.querySelector('nav')?.className).toBe('breadcrumbs breadcrumbs--flush');
+        expect(root.firstElementChild).toMatchSnapshot();
     });
 });
