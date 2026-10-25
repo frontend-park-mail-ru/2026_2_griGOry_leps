@@ -15,12 +15,12 @@
         justify-content: center;
         height: 72px;
         padding: 0 16px;
+    }
 
-        img {
-            display: block;
-            width: 32px;
-            height: 32px;
-        }
+    &__icon-image {
+        display: block;
+        width: 32px;
+        height: 32px;
     }
 
     &__title {

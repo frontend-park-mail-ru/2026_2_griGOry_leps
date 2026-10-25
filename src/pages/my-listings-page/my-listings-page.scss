@@ -1,0 +1,168 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.my-listings-page {
+    flex: 1;
+    width: 100%;
+    padding: 32px 64px 96px;
+    background-color: $surface-1;
+
+    @media (max-width: 960px) {
+        padding: 24px 16px 64px;
+    }
+
+    &__layout {
+        display: flex;
+        align-items: flex-start;
+        gap: 32px;
+
+        @media (max-width: 960px) {
+            flex-direction: column;
+            gap: 24px;
+        }
+    }
+}
+
+.my-listings {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+
+    @media (max-width: 960px) {
+        width: 100%;
+    }
+
+    &__title {
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 44px;
+        color: $color-text-strong;
+
+        @media (max-width: 640px) {
+            font-size: 28px;
+            line-height: 32px;
+        }
+    }
+
+    &__tabs {
+        display: flex;
+        gap: 32px;
+        overflow-x: auto;
+        border-bottom: 1px solid $color-border;
+    }
+
+    &__tab {
+        flex-shrink: 0;
+        padding-bottom: 10px;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-placeholder;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-strong;
+        }
+
+        &--active {
+            color: $color-text-strong;
+            border-bottom-color: $goget-primary;
+        }
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__skeleton {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 20px;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+    }
+
+    &__skeleton-photo,
+    &__skeleton-bar {
+        display: block;
+        background-color: $gray-200;
+        animation: my-listings-pulse 1.2s ease-in-out infinite;
+    }
+
+    &__skeleton-photo {
+        flex-shrink: 0;
+        width: 144px;
+        height: 108px;
+        border-radius: $radius-lg;
+    }
+
+    &__skeleton-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    &__skeleton-bar {
+        height: 16px;
+        border-radius: $radius-sm;
+
+        &--title {
+            height: 28px;
+        }
+
+        &--short {
+            width: 200px;
+            max-width: 100%;
+        }
+    }
+
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 64px 32px;
+        text-align: center;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+    }
+
+    &__empty-icon {
+        font-size: 40px;
+        line-height: 44px;
+    }
+
+    &__empty-title {
+        font-weight: 700;
+        font-size: 20px;
+        line-height: 26px;
+        color: $color-text-strong;
+    }
+
+    &__empty-text {
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-secondary;
+    }
+
+    &__empty-action {
+        @include button-blue;
+    }
+}
+
+@keyframes my-listings-pulse {
+    50% {
+        opacity: 0.5;
+    }
+}

@@ -1,4 +1,4 @@
-import { Component, type Child } from '@/vdom';
+import { Component, type Child, type VNode } from '@/vdom';
 import type { AdCard, User } from '@/lib/api';
 import type { Category, Promo } from '@/lib/data';
 import './home-page.scss';
@@ -66,7 +66,7 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
         return (
             <section class="home-section">
                 <div class="home-section__head">
-                    <h2>{title}</h2>
+                    <h2 class="home-section__title">{title}</h2>
                     <div class="home-section__arrows">
                         <button
                             type="button"
@@ -74,18 +74,20 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
                             aria-label="Назад"
                             disabled={!canPrev}
                             onClick={() => this.scrollPage(-1)}
-                        ><img src="/img/chevron.svg" alt="" /></button>
+                        ><img class="arrow__icon" src="/img/chevron.svg" alt="" /></button>
                         <button
                             type="button"
                             class="arrow arrow--next"
                             aria-label="Вперёд"
                             disabled={!canNext}
                             onClick={() => this.scrollPage(1)}
-                        ><img src="/img/chevron.svg" alt="" /></button>
+                        ><img class="arrow__icon" src="/img/chevron.svg" alt="" /></button>
                     </div>
                 </div>
                 <div class={scrollerClass} ref={this.setScroller} onScroll={this.updateArrows}>
-                    {children}
+                    {(children as VNode[]).map((item) => (
+                        <div key={item.key} class="home-section__item">{item}</div>
+                    ))}
                 </div>
             </section>
         );

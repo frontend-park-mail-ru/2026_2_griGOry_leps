@@ -14,17 +14,17 @@
         border: 1px solid $gray-200;
         border-radius: $radius-xl;
         overflow: hidden;
-
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.25s;
-        }
     }
 
-    &:hover &__img img {
+    &__photo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.25s;
+    }
+
+    &:hover &__photo {
         transform: scale(1.05);
     }
 

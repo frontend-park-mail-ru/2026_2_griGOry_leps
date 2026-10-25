@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Breadcrumbs > добавляет модификатор flush 1`] = `
+<nav
+  aria-label="Хлебные крошки"
+  class="breadcrumbs breadcrumbs--flush"
+>
+  <a
+    class="breadcrumbs__link"
+    data-link=""
+    href="/"
+  >
+    Главная
+  </a>
+</nav>
+`;
+
+exports[`Breadcrumbs > рисует ссылки, текущую страницу и разделители между ними 1`] = `
+<nav
+  aria-label="Хлебные крошки"
+  class="breadcrumbs"
+>
+  <a
+    class="breadcrumbs__link"
+    data-link=""
+    href="/"
+  >
+    Главная
+  </a>
+  <span
+    aria-hidden="true"
+    class="breadcrumbs__sep"
+  >
+    /
+  </span>
+  <a
+    class="breadcrumbs__link"
+    data-link=""
+    href="/categories"
+  >
+    Все категории
+  </a>
+  <span
+    aria-hidden="true"
+    class="breadcrumbs__sep"
+  >
+    /
+  </span>
+  <span
+    aria-current="page"
+  >
+    Авто
+  </span>
+</nav>
+`;

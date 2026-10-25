@@ -1,48 +1,23 @@
 @use '@/shared/styles/variables' as *;
 @use '@/shared/styles/mixins' as *;
 
-.breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1.5rem 0 0;
-    font-size: 0.8125rem;
-    color: $color-text-muted;
-
-    a {
-        color: $color-text-muted;
-        transition: color $timing-animation-short;
-
-        &:hover {
-            color: $color-text-main;
-        }
-    }
-
-    &__sep {
-        color: $gray-200;
-    }
-}
-
 .categories-page {
     width: 100%;
     padding: 32px 64px 64px;
-
-    .breadcrumbs {
-        padding: 0;
-    }
 
     &__head {
         display: flex;
         align-items: baseline;
         gap: 16px;
         margin: 64px 0 32px;
+    }
 
-        h1 {
-            font-weight: 700;
-            font-size: 40px;
-            line-height: 48px;
-            color: $color-text-main;
-        }
+    &__title {
+        margin-block: 0.67em;
+        font-weight: 700;
+        font-size: 40px;
+        line-height: 48px;
+        color: $color-text-main;
     }
 
     &__count {

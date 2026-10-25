@@ -76,6 +76,12 @@ export class Header extends Component<HeaderProps, HeaderState> {
                     </button>
                     <div class="header__menu">
                         <span class="header__menu-name">{userName}</span>
+                        <a
+                            href="/profile/listings"
+                            data-link
+                            class="header__menu-item"
+                            onClick={() => this.setState({ menuOpen: false })}
+                        >Мои объявления</a>
                         <button
                             type="button"
                             class="header__menu-item"
