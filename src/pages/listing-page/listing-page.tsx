@@ -136,7 +136,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
             case 'delete':
                 return (
                     <DeleteListingModal
-                        title={listing.title || 'Без названия'}
+                        title={listing.title}
                         pending={busy}
                         error={dialogError}
                         onConfirm={this.handleDelete}
