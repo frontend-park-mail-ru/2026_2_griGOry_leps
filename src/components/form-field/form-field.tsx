@@ -26,6 +26,7 @@ export interface FormFieldProps {
     error?: string;
     /** Красная рамка без текста, когда ошибка показана у соседнего поля */
     invalid?: boolean;
+    large?: boolean;
     onInput?: (event: Event) => void;
     /** Нативный change: срабатывает, когда ушли из поля */
     onChange?: (event: Event) => void;
@@ -42,7 +43,7 @@ export class FormField extends Component<FormFieldProps, { passwordVisible: bool
     render() {
         const {
             id, name, label, type = 'text', placeholder, autocomplete, inputmode,
-            password = false, value = '', hint, error = '', invalid = false,
+            password = false, value = '', hint, error = '', invalid = false, large = false,
             onInput, onChange, children,
         } = this.props;
         const visible = this.state.passwordVisible;
@@ -50,6 +51,7 @@ export class FormField extends Component<FormFieldProps, { passwordVisible: bool
         const classes = ['form-field'];
         if (error) classes.push('form-field--error');
         if (invalid) classes.push('form-field--invalid');
+        if (large) classes.push('form-field--large');
 
         let inputType = type;
         if (password) inputType = visible ? 'text' : 'password';

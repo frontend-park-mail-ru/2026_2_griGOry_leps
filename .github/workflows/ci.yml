@@ -21,6 +21,9 @@ jobs:
       - name: lint
         run: npm run lint
 
+      - name: lint css
+        run: npm run lint:css
+
       - name: test
         run: npm test
 

@@ -100,6 +100,39 @@
     }
 }
 
+@mixin button-gray {
+    @include button-base;
+    color: $color-text-strong;
+    background-color: $surface-1;
+    border-color: $color-border;
+
+    &:hover:not(:disabled) {
+        background-color: $gray-200;
+    }
+}
+
+@mixin button-blue {
+    @include button-base;
+    border: none;
+    color: $white;
+    background-color: $goget-blue;
+
+    &:hover:not(:disabled) {
+        background-color: $goget-blue-hover;
+    }
+}
+
+@mixin button-danger {
+    @include button-base;
+    border: none;
+    color: $white;
+    background-color: $color-status-error;
+
+    &:hover:not(:disabled) {
+        opacity: 0.85;
+    }
+}
+
 @mixin button-primary {
     @include typo-p;
     display: inline-flex;

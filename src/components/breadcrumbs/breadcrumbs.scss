@@ -1,0 +1,44 @@
+@use '@/shared/styles/variables' as *;
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 0 0;
+    font-size: 0.8125rem;
+    color: $color-text-muted;
+
+    &--flush {
+        padding: 0;
+    }
+
+    &__link {
+        color: $color-text-muted;
+        transition: color $timing-animation-short;
+
+        &:hover {
+            color: $color-text-main;
+        }
+    }
+
+    &__sep {
+        color: $gray-200;
+    }
+
+    &--strong {
+        color: $color-text-strong;
+        line-height: 17px;
+    }
+
+    &--strong &__link {
+        color: $color-text-secondary;
+
+        &:hover {
+            color: $color-text-strong;
+        }
+    }
+
+    &--strong &__sep {
+        color: $color-text-placeholder;
+    }
+}

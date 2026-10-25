@@ -1,0 +1,116 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.report-seller-modal {
+    &__reasons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        cursor: pointer;
+        transition: border-color $timing-animation-short;
+
+        &:hover {
+            border-color: $color-text-placeholder;
+        }
+
+        &--selected,
+        &--selected:hover {
+            padding: 14px;
+            border: 2px solid $goget-primary;
+        }
+    }
+
+    &__radio {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        background-color: $surface-0;
+        border: 1.5px solid $color-text-placeholder;
+        border-radius: 50%;
+        appearance: none;
+        cursor: pointer;
+
+        &:checked {
+            border: 6px solid $goget-primary;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $goget-primary;
+            outline-offset: 2px;
+        }
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+    }
+
+    &__textarea-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 100px;
+        padding: 12px 16px;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        transition: border-color $timing-animation-short, box-shadow $timing-animation-short;
+
+        &:focus-within {
+            border-color: $goget-blue;
+            box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.16);
+        }
+    }
+
+    &__textarea {
+        flex: 1;
+        min-height: 0;
+        padding: 0;
+        font-family: $font-body;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        resize: none;
+
+        &::placeholder {
+            color: $color-text-placeholder;
+        }
+    }
+
+    &__counter {
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-placeholder;
+        text-align: right;
+    }
+
+    &__error {
+        font-size: 13px;
+        line-height: 18px;
+        color: $color-status-error;
+    }
+
+    &__confirm {
+        @include button-blue;
+    }
+
+    &__cancel {
+        @include button-gray;
+    }
+}

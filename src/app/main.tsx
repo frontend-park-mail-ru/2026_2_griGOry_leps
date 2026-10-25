@@ -13,7 +13,7 @@ import {
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
-import { getMe, getCategories, getPromos, getProducts, logout, type User } from '@/lib/api';
+import { getMe, getCategories, getPromos, getProducts, logout, type Profile, type User } from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 
@@ -24,6 +24,10 @@ import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
+import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
+import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
+import { AddressesPage } from '@/pages/addresses-page/addresses-page';
+import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -125,6 +129,28 @@ async function loadHome(): Promise<HomeData> {
     return { categories, promos, products };
 }
 
+async function loadProfile(): Promise<Profile> {
+    const profile = await getMe();
+    if (!profile) throw new Error('Пользователь не авторизован');
+    setUser(profile);
+    return profile;
+}
+
+function sellerRoute(path: string, tab: SellerTab) {
+    route(path, {
+        name: 'seller',
+        view: (_, { id }) => <SellerPage sellerId={Number(id)} tab={tab} />,
+    });
+}
+
+function myListingsRoute(path: string, tab: MyListingsTab) {
+    route(path, {
+        name: 'my-listings',
+        load: loadProfile,
+        view: (profile) => <MyListingsPage tab={tab} profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+}
+
 async function start() {
     render(app, <div class="app-loader" aria-label="Загрузка" />);
 
@@ -149,6 +175,21 @@ async function start() {
     route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
     route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
+    myListingsRoute('/profile/listings', 'active');
+    myListingsRoute('/profile/listings/closed', 'closed');
+    myListingsRoute('/profile/listings/drafts', 'drafts');
+    route('/profile/edit', {
+        name: 'profile-edit',
+        load: loadProfile,
+        view: (profile) => <ProfileEditPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+    route('/profile/addresses', {
+        name: 'profile-addresses',
+        load: loadProfile,
+        view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+    sellerRoute('/seller/:id', 'listings');
+    sellerRoute('/seller/:id/reviews', 'reviews');
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
     initRouter();

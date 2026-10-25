@@ -1,5 +1,6 @@
 import { Component } from '@/vdom';
 import type { User } from '@/lib/api';
+import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './header.scss';
 
 export interface HeaderProps {
@@ -12,10 +13,6 @@ export interface HeaderState {
     menuOpen: boolean;
     loggingOut: boolean;
     logoutError: string;
-}
-
-function getInitials(user: User): string {
-    return (user?.first_name || '').trim().slice(0, 2).toUpperCase();
 }
 
 export class Header extends Component<HeaderProps, HeaderState> {
@@ -71,11 +68,23 @@ export class Header extends Component<HeaderProps, HeaderState> {
                         aria-expanded={String(menuOpen)}
                         onClick={this.toggleMenu}
                     >
-                        <span class="header__avatar">{getInitials(user)}</span>
+                        <UserAvatar user={user} class="header__avatar" />
                         <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true" />
                     </button>
                     <div class="header__menu">
                         <span class="header__menu-name">{userName}</span>
+                        <a
+                            href="/profile/listings"
+                            data-link
+                            class="header__menu-item"
+                            onClick={() => this.setState({ menuOpen: false })}
+                        >Мои объявления</a>
+                        <a
+                            href="/profile/edit"
+                            data-link
+                            class="header__menu-item"
+                            onClick={() => this.setState({ menuOpen: false })}
+                        >Настройки профиля</a>
                         <button
                             type="button"
                             class="header__menu-item"

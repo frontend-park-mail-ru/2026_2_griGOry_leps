@@ -1,7 +1,7 @@
 /** Общие типы, которые используются в нескольких разделах API */
 
 export type Price = string;
-export type ListingStatus = 'draft' | 'moderation' | 'active' | 'closed' | 'sold';
+export type ListingStatus = 'draft' | 'moderation' | 'rejected' | 'active' | 'closed' | 'sold';
 export type CloseReason = 'sold_on_goget' | 'sold_elsewhere' | 'changed_mind' | 'other';
 export type Condition = 'new' | 'used_good' | 'used_repair';
 export type Sort = 'newest' | 'price_asc' | 'price_desc';

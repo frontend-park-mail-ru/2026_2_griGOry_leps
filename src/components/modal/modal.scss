@@ -1,0 +1,87 @@
+@use '@/shared/styles/variables' as *;
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 220px 16px 32px;
+    overflow-y: auto;
+    background-color: rgba(20, 20, 23, 0.5);
+
+    @media (max-width: 640px) {
+        padding-top: 64px;
+    }
+
+    &__dialog {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+        max-width: 520px;
+        padding: 32px;
+        background-color: $surface-0;
+        border-radius: 20px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+
+        @media (max-width: 640px) {
+            padding: 24px;
+        }
+    }
+
+    &__head {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    &__title {
+        flex: 1;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 32px;
+        color: $color-text-strong;
+    }
+
+    &__close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: $radius-sm;
+        cursor: pointer;
+        transition: background-color $timing-animation-short;
+
+        &:hover {
+            background-color: $surface-1;
+        }
+    }
+
+    &__close-icon {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: $color-text-placeholder;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+    }
+
+    &__description {
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-secondary;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
