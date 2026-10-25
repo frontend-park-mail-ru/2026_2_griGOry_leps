@@ -20,6 +20,7 @@ import {
     getProducts,
     logout,
     type User,
+    ApiError,
 } from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
@@ -31,24 +32,22 @@ import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
-import { request } from '@/lib/api/request';
-import { ensureOk } from '@/lib/api/errors';
 
 export type Layout = 'main' | 'auth';
 
 export interface PageView {
-    /** При смене name страница создаётся заново, а не сравнивается со старой */
-    name: string;
-    layout: Layout;
-    view: () => Child;
+	/** При смене name страница создаётся заново, а не сравнивается со старой */
+	name: string;
+	layout: Layout;
+	view: () => Child;
 }
 
 export interface Page<T> {
-    name: string;
-    layout?: Layout;
-    /** Грузится до показа страницы; если упадёт, вместо страницы будет PageError */
-    load?: (params: RouteParams) => Promise<T>;
-    view: (data: T, params: RouteParams) => Child;
+	name: string;
+	layout?: Layout;
+	/** Грузится до показа страницы; если упадёт, вместо страницы будет PageError */
+	load?: (params: RouteParams) => Promise<T>;
+	view: (data: T, params: RouteParams) => Child;
 }
 
 const app = document.getElementById('app')!;
@@ -57,15 +56,6 @@ let currentPage: PageView | null = null;
 
 /** Чтобы медленный ответ старой страницы не перерисовал новую */
 let navigationId = 0;
-
-async function checkConnection(): Promise<void> {
-    const response = await request('/health', {
-        cache: 'no-store',
-        timeout: 3000,
-    });
-
-    await ensureOk(response);
-}
 
 function renderApp() {
     app.dataset.layout = currentPage?.layout ?? 'main';
@@ -92,18 +82,16 @@ function route<T = undefined>(
 
         let data = undefined as T;
         try {
-            /** проверяем подключение к интернету при переходе на новую страницу*/
-            await checkConnection(); 
-            if (id !== navigationId) return;
             if (load) data = await load(params);
         } catch (err) {
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
-
+            
+            const network = err instanceof ApiError && err.network;
             currentPage = {
                 name: `${name}-error`,
                 layout,
-                view: () => <PageError onRetry={() => handler(params)} />,
+                view: () => <PageError network={network} onRetry={() => handler(params)}/>,
             };
             renderApp();
             return;

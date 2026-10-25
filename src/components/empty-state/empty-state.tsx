@@ -3,6 +3,7 @@ import './empty-state.scss';
 export interface EmptyStateProps {
     title: string;
     text: string;
+    iconSrc?: string;
     /** С href — ссылка, иначе кнопка */
     action?: {
         label: string;
@@ -12,10 +13,10 @@ export interface EmptyStateProps {
     };
 }
 
-export const EmptyState = ({ title, text, action }: EmptyStateProps) => (
+export const EmptyState = ({ title, text, action, iconSrc = '/img/sparkles.svg' }: EmptyStateProps) => (
     <div class="empty-state">
         <div class="empty-state__icon" aria-hidden="true">
-            <img src="/img/sparkles.svg" alt="" />
+            <img src={iconSrc} alt="" />
         </div>
         <h2 class="empty-state__title">{title}</h2>
         <p class="empty-state__text">{text}</p>

@@ -1,12 +1,19 @@
 const CACHE_PREFIX = 'goget-offline-';
-const CACHE_NAME = `${CACHE_PREFIX}v3`;
+const CACHE_NAME = `${CACHE_PREFIX}v4`;
 const OFFLINE_URL = '/offline.html';
-const OFFLINE_ICON_URL = '/img/sparkles.svg';
+const OFFLINE_ASSETS = [
+    '/img/antenna.png',
+    '/img/goget.svg',
+    '/img/goget-mono.svg',
+    '/img/search_icon.svg',
+];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll([OFFLINE_URL, OFFLINE_ICON_URL]);
+            const requests = [OFFLINE_URL, ...OFFLINE_ASSETS].map((url) =>
+                new Request(url, { cache: 'reload' }));
+            return cache.addAll(requests);
         }),
     );
 });
@@ -21,6 +28,7 @@ self.addEventListener('activate', (event) => {
                     await caches.delete(name);
                 }
             }
+            await self.clients.claim();
         })(),
     );
 });
@@ -32,14 +40,14 @@ self.addEventListener('fetch', (event) => {
     if (request.method !== 'GET') return;
     if (url.origin !== self.location.origin) return;
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return;
-    if (url.pathname === OFFLINE_ICON_URL) {
+    if (OFFLINE_ASSETS.includes(url.pathname)) {
         event.respondWith(
-            (async () =>{
+            (async () => {
                 const cache = await caches.open(CACHE_NAME);
-                const cached = await cache.match(OFFLINE_ICON_URL);
+                const cached = await cache.match(url.pathname);
                 return cached ?? fetch(request);
             })(),
-        ); 
+        );
         return;
     }
 
