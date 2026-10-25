@@ -3,15 +3,7 @@ import './categories-page.scss';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { CategoryCardFull } from '@/components/category-card-full/category-card-full';
 import type { Category } from '@/lib/data';
-
-function pluralizeCategories(count: number): string {
-    const mod10 = count % 10;
-    const mod100 = count % 100;
-
-    if (mod10 === 1 && mod100 !== 11) return `${count} категория`;
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${count} категории`;
-    return `${count} категорий`;
-}
+import { plural } from '@/lib/format';
 
 export const CategoriesPage = ({ categories }: { categories: Category[] }) => (
     <div class="categories-page">
@@ -19,7 +11,7 @@ export const CategoriesPage = ({ categories }: { categories: Category[] }) => (
 
         <div class="categories-page__head">
             <h1 class="categories-page__title">Все категории</h1>
-            <span class="categories-page__count">{pluralizeCategories(categories.length)}</span>
+            <span class="categories-page__count">{`${categories.length} ${plural(categories.length, ['категория', 'категории', 'категорий'])}`}</span>
         </div>
 
         <div class="categories-page__grid">

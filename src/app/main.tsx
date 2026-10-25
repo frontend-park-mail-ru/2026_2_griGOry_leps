@@ -83,6 +83,7 @@ function route<T = undefined>(
 ) {
     const handler = async (params: RouteParams = {}) => {
         const id = ++navigationId;
+        const key = [name, ...Object.values(params)].join(':');
 
         let data = undefined as T;
         try {
@@ -91,13 +92,13 @@ function route<T = undefined>(
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${name}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
+            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
             renderApp();
             return;
         }
         if (id !== navigationId) return;
 
-        currentPage = { name, layout, tone, view: () => view(data, params) };
+        currentPage = { name: key, layout, tone, view: () => view(data, params) };
         renderApp();
     };
 

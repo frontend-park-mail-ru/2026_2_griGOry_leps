@@ -16,7 +16,7 @@ export const CategorySelect = ({ categories, value, error = '', onChange }: Cate
             <select
                 id="listing-category"
                 name="category_id"
-                class={value ? 'form-field__input category-select__input' : 'form-field__input category-select__input category-select__empty'}
+                class={value ? 'form-field__input category-select__input' : 'form-field__input category-select__input category-select__input--empty'}
                 value={value}
                 aria-label="Категория"
                 aria-invalid={String(Boolean(error))}
