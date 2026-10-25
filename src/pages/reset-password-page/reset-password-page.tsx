@@ -118,7 +118,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
             <AuthCard
                 icon="expired"
                 title="Ссылка больше не действует"
-                subtitle="Ссылка для сброса пароля действует 30 минут и только один раз. Запросите новую — это займёт минуту."
+                subtitle="Ссылка действует 30 минут и только один раз, а после смены пароля или почты перестаёт работать. Запросите новую — это займёт минуту."
             >
                 <div class="reset-password-page__actions">
                     <Button text="Запросить новую ссылку" block onClick={() => navigate('/forgot-password')} />
@@ -133,7 +133,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
             <AuthCard
                 icon="success"
                 title="Пароль обновлён"
-                subtitle="Теперь войдите с новым паролем. На других устройствах мы вышли из аккаунта."
+                subtitle="Теперь войдите с новым паролем. Мы вышли из аккаунта на всех устройствах."
             >
                 <Button text="Войти" block onClick={() => navigate('/login')} />
             </AuthCard>
