@@ -3,7 +3,7 @@
 .category-select {
     position: relative;
 
-    select {
+    &__input {
         height: 100%;
         appearance: none;
         cursor: pointer;

@@ -1,5 +1,5 @@
 import { Component } from '@/vdom';
-import type { ListingPhoto } from '@/lib/api';
+import { assetUrl, type ListingPhoto } from '@/lib/api';
 import './listing-gallery.scss';
 
 export interface ListingGalleryProps {
@@ -25,7 +25,7 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
             <div class="listing-gallery">
                 <div class="listing-gallery__main">
                     {current
-                        ? <img src={current.url} alt={title} />
+                        ? <img class="listing-gallery__image" src={assetUrl(current.url) ?? ''} alt={title} />
                         : <span class="listing-gallery__empty">Нет фото</span>}
                     {many && [
                         <button
@@ -54,7 +54,7 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
                                 aria-pressed={String(i === index)}
                                 onClick={() => this.show(i)}
                             >
-                                <img src={photo.thumb_url} alt="" />
+                                <img class="listing-gallery__thumb-image" src={assetUrl(photo.thumb_url) ?? ''} alt="" />
                             </button>
                         ))}
                     </div>

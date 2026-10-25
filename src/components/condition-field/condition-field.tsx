@@ -12,11 +12,12 @@ export interface ConditionFieldProps {
 
 export const ConditionField = ({ value, error = '', onChange }: ConditionFieldProps) => (
     <fieldset class={error ? 'condition-field condition-field--error' : 'condition-field'}>
-        <legend class="form-field__label">Состояние</legend>
+        <legend class="form-field__label condition-field__legend">Состояние</legend>
         <div class="condition-field__options">
             {CONDITIONS.map((condition) => (
                 <label key={condition} class="condition-field__option">
                     <input
+                        class="condition-field__input"
                         type="radio"
                         name="condition"
                         value={condition}

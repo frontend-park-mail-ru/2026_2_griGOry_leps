@@ -11,13 +11,13 @@
     &__img {
         height: 180px;
         background-color: $surface-1;
+    }
 
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    &__photo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     &__body {
@@ -55,12 +55,5 @@
         font-size: 16px;
         line-height: 24px;
         color: $color-text-secondary;
-    }
-
-    &__meta {
-        margin: 0;
-        font-size: 12px;
-        line-height: 16px;
-        color: $color-text-muted;
     }
 }

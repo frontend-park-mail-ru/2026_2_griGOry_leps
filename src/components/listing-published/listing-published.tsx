@@ -1,6 +1,6 @@
 import { Button } from '@/components/button/button';
 import { ProductCard } from '@/components/product-card/product-card';
-import type { Listing } from '@/lib/api';
+import { assetUrl, type Listing } from '@/lib/api';
 import './listing-published.scss';
 
 export interface ListingPublishedProps {
@@ -25,16 +25,15 @@ export const ListingPublished = ({ listing, onCreateAnother }: ListingPublishedP
             <div class="listing-published__card">
                 <ProductCard
                     id={listing.id}
-                    link={false}
                     title={listing.title}
                     price={listing.price ?? '0'}
                     is_free={listing.is_free}
-                    image_url={listing.photos[0]?.thumb_url ?? null}
+                    image_url={assetUrl(listing.photos[0]?.thumb_url)}
                     city={listing.city}
                     has_delivery={listing.has_delivery}
                     created_at={listing.created_at}
-                    meta={`${listing.city} · размещено сегодня`}
                 />
+                <p class="listing-published__meta">{listing.city} · размещено сегодня</p>
             </div>
             <div class="listing-published__actions">
                 <a href={`/listing/${listing.id}`} data-link class="listing-published__primary">Перейти к объявлению</a>

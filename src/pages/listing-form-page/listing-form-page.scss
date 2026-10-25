@@ -141,11 +141,11 @@
         margin: 0;
         font-size: 0.75rem;
         color: $color-text-placeholder;
+    }
 
-        a {
-            color: $goget-blue;
-            text-decoration: underline;
-        }
+    &__terms-link {
+        color: $goget-blue;
+        text-decoration: underline;
     }
 
     &__cancel {

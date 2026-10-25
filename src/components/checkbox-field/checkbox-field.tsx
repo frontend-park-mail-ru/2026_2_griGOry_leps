@@ -11,6 +11,7 @@ export interface CheckboxFieldProps {
 export const CheckboxField = ({ name, label, hint, value, onChange }: CheckboxFieldProps) => (
     <label class="checkbox-field">
         <input
+            class="checkbox-field__input"
             type="checkbox"
             name={name}
             checked={value}

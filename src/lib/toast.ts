@@ -1,37 +1,18 @@
-export type ToastKind = 'success' | 'info' | 'error';
+import { ToastTimer, type ToastState, type ToastType } from '@/components/toast/toast';
 
-export interface ToastMessage {
-    id: number;
-    text: string;
-    kind: ToastKind;
-}
-
-const TOAST_MS = 4000;
-
-let current: ToastMessage | null = null;
-let timer: ReturnType<typeof setTimeout> | null = null;
-let seq = 0;
+let current: ToastState | null = null;
 const listeners = new Set<() => void>();
 
-function emit() {
+const timer = new ToastTimer((toast) => {
+    current = toast;
     listeners.forEach((fn) => fn());
+});
+
+export function showToast(message: string, type: ToastType = 'success'): void {
+    timer.show(type, message);
 }
 
-export function showToast(text: string, kind: ToastKind = 'success'): void {
-    current = { id: ++seq, text, kind };
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(hideToast, TOAST_MS);
-    emit();
-}
-
-export function hideToast(): void {
-    if (timer) clearTimeout(timer);
-    timer = null;
-    current = null;
-    emit();
-}
-
-export function getToast(): ToastMessage | null {
+export function getToast(): ToastState | null {
     return current;
 }
 

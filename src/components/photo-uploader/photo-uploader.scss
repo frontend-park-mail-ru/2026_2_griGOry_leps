@@ -32,28 +32,13 @@
         cursor: grab;
         transition: opacity $timing-animation-short, box-shadow $timing-animation-short;
 
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-        }
-
         &--loading {
             cursor: default;
-
-            img {
-                opacity: 0.5;
-            }
         }
 
         &--failed {
             outline: 2px solid $color-status-error;
             outline-offset: -2px;
-
-            img {
-                opacity: 0.3;
-            }
         }
 
         &--dragging {
@@ -63,6 +48,21 @@
         &--over {
             box-shadow: 0 0 0 3px $goget-blue;
         }
+    }
+
+    &__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        pointer-events: none;
+    }
+
+    &__item--loading &__image {
+        opacity: 0.5;
+    }
+
+    &__item--failed &__image {
+        opacity: 0.3;
     }
 
     &__badge {

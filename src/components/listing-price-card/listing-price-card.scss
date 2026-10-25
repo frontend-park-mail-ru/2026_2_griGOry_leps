@@ -17,7 +17,7 @@
             content: '';
             width: 6px;
             height: 6px;
-            background: currentColor;
+            background: currentcolor;
             border-radius: 50%;
         }
 
@@ -29,6 +29,11 @@
         &--moderation {
             color: #b26b00;
             background: #fff4e0;
+        }
+
+        &--rejected {
+            color: $color-status-error;
+            background: rgba(219, 38, 38, 0.08);
         }
 
         &--sold {

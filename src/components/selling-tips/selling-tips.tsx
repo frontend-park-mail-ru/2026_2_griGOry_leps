@@ -11,7 +11,7 @@ export const SellingTips = () => (
     <section class="selling-tips">
         <h2 class="selling-tips__title">Как продать быстрее</h2>
         <ul class="selling-tips__list">
-            {TIPS.map((tip) => <li key={tip}>{tip}</li>)}
+            {TIPS.map((tip) => <li key={tip} class="selling-tips__item">{tip}</li>)}
         </ul>
     </section>
 );

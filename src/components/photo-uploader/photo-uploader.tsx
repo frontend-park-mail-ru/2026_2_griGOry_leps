@@ -81,7 +81,7 @@ export class PhotoUploader extends Component<PhotoUploaderProps, { dragKey: stri
                 onDrop={this.handleDrop(photo.key)}
                 onDragEnd={this.handleDragEnd}
             >
-                <img src={photo.preview} alt={`Фото ${index + 1}`} draggable="false" />
+                <img class="photo-uploader__image" src={photo.preview} alt={`Фото ${index + 1}`} draggable="false" />
                 {index === 0 && !photo.error && <span class="photo-uploader__badge">Главное</span>}
                 {photo.uploading && <span class="photo-uploader__spinner" aria-label="Загрузка" />}
                 {photo.error && <span class="photo-uploader__failed">{photo.error}</span>}

@@ -1,6 +1,7 @@
 import { Component } from '@/vdom';
 import './listing-form-page.scss';
 
+import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { Button } from '@/components/button/button';
 import { CategorySelect } from '@/components/category-select/category-select';
 import { CheckboxField } from '@/components/checkbox-field/checkbox-field';
@@ -11,7 +12,9 @@ import { ListingPreview } from '@/components/listing-preview/listing-preview';
 import { ListingPublished } from '@/components/listing-published/listing-published';
 import { PhotoUploader, type PhotoItem } from '@/components/photo-uploader/photo-uploader';
 import { SellingTips } from '@/components/selling-tips/selling-tips';
-import { ApiError, createListing, updateListing, uploadListingPhoto, type CategoryNode, type Listing } from '@/lib/api';
+import {
+    ApiError, assetUrl, createListing, updateListing, uploadListingPhoto, type CategoryNode, type Listing,
+} from '@/lib/api';
 import {
     PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
     buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
@@ -50,7 +53,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
             photos: (props.listing?.photos ?? []).map((photo) => ({
                 key: `p${++photoKey}`,
                 id: photo.id,
-                preview: photo.thumb_url,
+                preview: assetUrl(photo.thumb_url) ?? '',
                 uploading: false,
                 error: '',
             })),
@@ -146,7 +149,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         let patch: Partial<PhotoItem>;
         try {
             const uploaded = await uploadListingPhoto(file);
-            patch = { id: uploaded.id, preview: uploaded.thumb_url, uploading: false };
+            patch = { id: uploaded.id, preview: assetUrl(uploaded.thumb_url) ?? '', uploading: false };
         } catch (err) {
             logWarn('Не удалось загрузить фото:', err);
             if (err instanceof ApiError && err.status === 401) {
@@ -310,7 +313,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
             <Button text="Сохранить черновик" variant="outline" disabled={disabled} onClick={() => this.submit(true)} />,
             <p class="listing-form__terms">
                 Нажимая «Опубликовать», вы соглашаетесь с{' '}
-                <a href="/terms" data-link>правилами размещения</a>
+                <a class="listing-form__terms-link" href="/terms" data-link>правилами размещения</a>
             </p>,
         ];
     }
@@ -334,13 +337,13 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
         return (
             <div class="listing-form-page">
-                <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                    <a href="/" data-link>Главная</a>
-                    <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                    {listing
-                        ? <a href={`/listing/${listing.id}`} data-link>{listing.title || 'Объявление'}</a>
-                        : <span class="breadcrumbs__current">{title}</span>}
-                </nav>
+                <Breadcrumbs
+                    items={[
+                        { label: 'Главная', href: '/' },
+                        ...(listing ? [{ label: listing.title || 'Объявление', href: `/listing/${listing.id}` }] : []),
+                        { label: title },
+                    ]}
+                />
 
                 <div class="listing-form-page__layout">
                     <form class="listing-form" novalidate onSubmit={this.handleSubmit}>

@@ -1,9 +1,10 @@
 import { Component } from '@/vdom';
 import './listing-page.scss';
 
-import { CloseListingDialog } from '@/components/listing-dialogs/close-listing-dialog';
-import { DeleteBlockedDialog } from '@/components/listing-dialogs/delete-blocked-dialog';
-import { DeleteListingDialog } from '@/components/listing-dialogs/delete-listing-dialog';
+import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
+import { CloseListingModal } from '@/components/close-listing-modal/close-listing-modal';
+import { DeleteBlockedModal } from '@/components/delete-blocked-modal/delete-blocked-modal';
+import { DeleteListingModal } from '@/components/delete-listing-modal/delete-listing-modal';
 import { ListingCard } from '@/components/listing-card/listing-card';
 import { ListingGallery } from '@/components/listing-gallery/listing-gallery';
 import { ListingPriceCard } from '@/components/listing-price-card/listing-price-card';
@@ -13,7 +14,7 @@ import {
     ApiError, addToCart, closeListing, deleteListing,
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
-import { formatDate } from '@/lib/format';
+import { formatDay } from '@/lib/format';
 import { CONDITION_LABELS, statusNotice } from '@/lib/listing';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
@@ -92,7 +93,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
         this.setState({ busy: true, dialogError: '' });
         try {
             await deleteListing(this.state.listing.id);
-            showToast('Объявление удалено', 'info');
+            showToast('Объявление удалено');
             navigate('/');
         } catch (err) {
             logWarn('Не удалось удалить объявление:', err);
@@ -131,20 +132,19 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
 
         switch (dialog) {
             case 'close':
-                return <CloseListingDialog busy={busy} error={dialogError} onSubmit={this.handleClose} onCancel={this.closeDialog} />;
+                return <CloseListingModal pending={busy} error={dialogError} onConfirm={this.handleClose} onClose={this.closeDialog} />;
             case 'delete':
                 return (
-                    <DeleteListingDialog
-                        title={listing.title}
-                        active={listing.status === 'active'}
-                        busy={busy}
+                    <DeleteListingModal
+                        title={listing.title || 'Без названия'}
+                        pending={busy}
                         error={dialogError}
                         onConfirm={this.handleDelete}
-                        onCancel={this.closeDialog}
+                        onClose={this.closeDialog}
                     />
                 );
             case 'blocked':
-                return <DeleteBlockedDialog onClose={this.closeDialog} />;
+                return <DeleteBlockedModal onClose={this.closeDialog} />;
             default:
                 return null;
         }
@@ -157,15 +157,11 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
         const notice = statusNotice(listing);
         const specs = listingSpecs(listing);
         const meta = [`Объявление № ${listing.id}`];
-        if (listing.published_at) meta.push(`Размещено ${formatDate(listing.published_at)}`);
+        if (listing.published_at) meta.push(`Размещено ${formatDay(listing.published_at)}`);
 
         return (
             <div class="listing-page">
-                <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                    <a href="/" data-link>Главная</a>
-                    <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                    <span class="breadcrumbs__current">{title}</span>
-                </nav>
+                <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: title }]} />
 
                 {notice && (
                     <p class={`listing-page__notice listing-page__notice--${listing.status}`} role="status">{notice}</p>
@@ -188,8 +184,8 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                                 <dl class="listing-specs">
                                     {specs.map((spec) => (
                                         <div key={spec.key} class="listing-specs__row">
-                                            <dt>{spec.name}</dt>
-                                            <dd>{spec.value}</dd>
+                                            <dt class="listing-specs__name">{spec.name}</dt>
+                                            <dd class="listing-specs__value">{spec.value}</dd>
                                         </div>
                                     ))}
                                 </dl>
@@ -223,7 +219,11 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                     <section class="listing-page__similar">
                         <h2 class="listing-page__similar-title">Похожие объявления</h2>
                         <div class="listing-page__similar-grid">
-                            {similar.map((item) => <ProductCard key={item.id} {...item} />)}
+                            {similar.map((item) => (
+                                <a key={item.id} href={`/listing/${item.id}`} data-link class="listing-page__similar-link">
+                                    <ProductCard {...item} />
+                                </a>
+                            ))}
                         </div>
                     </section>
                 )}

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Listing } from '@/lib/api';
 import { priceText, statusNotice } from './listing';
-import { formatMonthSince, formatPrice, plural } from './format';
+import { formatDay, formatPrice, formatSince, plural } from './format';
 
 const listing = (patch: Partial<Listing>) => ({
     is_owner: false, status: 'active', close_reason: null, is_free: false, price: '15000.00', ...patch,
@@ -34,7 +34,7 @@ describe('priceText', () => {
 });
 
 describe('format', () => {
-    it('копейки показываются, только если они есть', () => {
+    it('цена без лишних нулей', () => {
         expect(formatPrice('15000.00').replace(/\s/g, ' ')).toBe('15 000');
         expect(formatPrice('13500.5').replace(/\s/g, ' ')).toBe('13 500,50');
     });
@@ -44,7 +44,8 @@ describe('format', () => {
             .toEqual(['отзыв', 'отзыва', 'отзывов', 'отзывов', 'отзыв', 'отзыва']);
     });
 
-    it('месяц в родительном падеже', () => {
-        expect(formatMonthSince('2025-03-14T10:00:00Z')).toBe('марта 2025');
+    it('даты для объявления и продавца', () => {
+        expect(formatDay('2026-10-21T10:00:00Z')).toBe('21 октября');
+        expect(formatSince('2025-03-14T10:00:00Z')).toBe('марта 2025');
     });
 });

@@ -56,6 +56,11 @@ const app = document.getElementById('app')!;
 let currentPage: PageView | null = null;
 let navigationId = 0;
 
+function toastView() {
+    const toast = getToast();
+    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} /> : null;
+}
+
 function renderApp() {
     app.dataset.layout = currentPage?.layout ?? 'main';
     app.dataset.tone = currentPage?.tone ?? 'white';
@@ -67,7 +72,7 @@ function renderApp() {
         <Header user={getUser()} onLogout={handleLogout} />,
         <main id="page">{page}</main>,
         <Footer />,
-        <Toast toast={getToast()} />,
+        toastView(),
     ]);
 }
 

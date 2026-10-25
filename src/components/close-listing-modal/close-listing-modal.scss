@@ -1,0 +1,87 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.close-listing-modal {
+    &__reasons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        cursor: pointer;
+        transition: border-color $timing-animation-short;
+
+        &:hover {
+            border-color: $color-text-placeholder;
+        }
+
+        &--selected,
+        &--selected:hover {
+            padding: 15px;
+            border: 2px solid $goget-primary;
+        }
+    }
+
+    &__radio {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        background-color: $surface-0;
+        border: 1.5px solid $color-text-placeholder;
+        border-radius: 50%;
+        appearance: none;
+        cursor: pointer;
+
+        &:checked {
+            border: 6px solid $goget-primary;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $goget-primary;
+            outline-offset: 2px;
+        }
+    }
+
+    &__text {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+    }
+
+    &__description {
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-placeholder;
+    }
+
+    &__error {
+        font-size: 13px;
+        line-height: 18px;
+        color: $color-status-error;
+    }
+
+    &__confirm {
+        @include button-blue;
+    }
+
+    &__cancel {
+        @include button-gray;
+    }
+}

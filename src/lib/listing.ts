@@ -10,6 +10,7 @@ export const CONDITION_LABELS: Record<Condition, string> = {
 export const STATUS_LABELS: Record<ListingStatus, string> = {
     draft: 'Черновик',
     moderation: 'На проверке',
+    rejected: 'Отклонено',
     active: 'Активно',
     closed: 'Снято с продажи',
     sold: 'Продано',
@@ -27,6 +28,7 @@ export function statusNotice(listing: Listing): string {
         switch (listing.status) {
             case 'draft': return 'Черновик. Объявление видно только вам';
             case 'moderation': return 'Объявление на проверке. Обычно это занимает до 30 минут, потом оно появится в поиске';
+            case 'rejected': return 'Объявление не прошло проверку. Исправьте его и сохраните снова';
             case 'closed': {
                 const reason = listing.close_reason ? ` · ${CLOSE_REASON_LABELS[listing.close_reason]}` : '';
                 return `Снято с продажи${reason}. Покупатели его не видят в поиске`;

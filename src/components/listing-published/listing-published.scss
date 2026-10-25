@@ -56,6 +56,13 @@
         }
     }
 
+    &__meta {
+        margin: 4px 0 0;
+        font-size: 12px;
+        line-height: 16px;
+        color: $color-text-muted;
+    }
+
     &__actions {
         display: flex;
         flex-wrap: wrap;

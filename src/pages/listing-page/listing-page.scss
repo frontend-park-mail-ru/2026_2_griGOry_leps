@@ -107,6 +107,10 @@
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 16px;
     }
+
+    &__similar-link {
+        display: block;
+    }
 }
 
 .listing-specs {
@@ -125,13 +129,14 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        dt {
-            color: $color-text-placeholder;
-        }
+    }
 
-        dd {
-            margin: 0;
-            color: $color-text-strong;
-        }
+    &__name {
+        color: $color-text-placeholder;
+    }
+
+    &__value {
+        margin: 0;
+        color: $color-text-strong;
     }
 }

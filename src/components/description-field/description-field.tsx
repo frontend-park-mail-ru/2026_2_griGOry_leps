@@ -13,7 +13,7 @@ export const DescriptionField = ({ value, error = '', onChange }: DescriptionFie
             <textarea
                 id="listing-description"
                 name="description"
-                class="form-field__input"
+                class="form-field__input description-field__input"
                 rows="4"
                 aria-label="Описание"
                 placeholder="Расскажите о товаре: состояние, комплектация, причина продажи"

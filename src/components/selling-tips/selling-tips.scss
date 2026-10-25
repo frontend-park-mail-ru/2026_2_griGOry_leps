@@ -22,19 +22,19 @@
         margin: 0;
         padding: 0;
         list-style: none;
+    }
 
-        li {
-            position: relative;
-            padding-left: 14px;
-            font-size: 0.875rem;
-            line-height: 1.45;
-            color: $color-text-secondary;
+    &__item {
+        position: relative;
+        padding-left: 14px;
+        font-size: 0.875rem;
+        line-height: 1.45;
+        color: $color-text-secondary;
 
-            &::before {
-                content: '•';
-                position: absolute;
-                left: 0;
-            }
+        &::before {
+            content: '•';
+            position: absolute;
+            left: 0;
         }
     }
 }
