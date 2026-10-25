@@ -13,7 +13,14 @@ import {
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
-import { getMe, getCategories, getPromos, getProducts, logout, type User } from '@/lib/api';
+import {
+    getMe,
+    getCategories,
+    getPromos,
+    getProducts,
+    logout,
+    type User,
+} from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 
@@ -24,6 +31,8 @@ import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
+import { request } from '@/lib/api/request';
+import { ensureOk } from '@/lib/api/errors';
 
 export type Layout = 'main' | 'auth';
 
@@ -49,11 +58,21 @@ let currentPage: PageView | null = null;
 /** Чтобы медленный ответ старой страницы не перерисовал новую */
 let navigationId = 0;
 
+async function checkConnection(): Promise<void> {
+    const response = await request('/health', {
+        cache: 'no-store',
+        timeout: 3000,
+    });
+
+    await ensureOk(response);
+}
+
 function renderApp() {
     app.dataset.layout = currentPage?.layout ?? 'main';
 
     const page = currentPage?.view() ?? null;
-    if (currentPage && page && typeof page === 'object' && !Array.isArray(page)) page.key = currentPage.name;
+    if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
+        page.key = currentPage.name;
 
     render(app, [
         <Header user={getUser()} onLogout={handleLogout} />,
@@ -73,12 +92,19 @@ function route<T = undefined>(
 
         let data = undefined as T;
         try {
+            /** проверяем подключение к интернету при переходе на новую страницу*/
+            await checkConnection(); 
+            if (id !== navigationId) return;
             if (load) data = await load(params);
         } catch (err) {
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${name}-error`, layout, view: () => <PageError onRetry={() => handler(params)} /> };
+            currentPage = {
+                name: `${name}-error`,
+                layout,
+                view: () => <PageError onRetry={() => handler(params)} />,
+            };
             renderApp();
             return;
         }
@@ -146,8 +172,16 @@ async function start() {
         name: 'category',
         view: (_, { slug }) => <CategoryPage slug={slug} />,
     });
-    route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
-    route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
+    route(
+        '/login',
+        { name: 'login', layout: 'auth', view: () => <LoginPage /> },
+        { guestOnly: true },
+    );
+    route(
+        '/register',
+        { name: 'register', layout: 'auth', view: () => <RegisterPage /> },
+        { guestOnly: true },
+    );
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
@@ -155,3 +189,9 @@ async function start() {
 }
 
 if (app) void start();
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/serv_work.js').catch((error) => {
+        logWarn('Не удалось зарегистрировать service worker:', error);
+    });
+}
