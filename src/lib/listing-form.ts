@@ -1,4 +1,6 @@
-import { ApiError, type CategoryNode, type Condition, type Listing, type ListingData } from '@/lib/api';
+import {
+    ApiError, type CategoryNode, type Condition, type CreateListingData, type Listing, type UpdateListingData,
+} from '@/lib/api';
 import { plural } from '@/lib/format';
 
 export const TITLE_MAX = 80;
@@ -42,7 +44,6 @@ export const SERVER_MESSAGES: Partial<Record<keyof ListingFormErrors, string>> =
     address: 'Укажите адрес',
 };
 
-/** Без listing — пустая форма создания */
 export function initialValues(listing?: Listing): ListingFormValues {
     return {
         category_id: listing?.category ? String(listing.category.id) : '',
@@ -57,7 +58,6 @@ export function initialValues(listing?: Listing): ListingFormValues {
     };
 }
 
-/** Только цифры и один разделитель, до 10 знаков в рублях и 2 в копейках */
 export function sanitizePrice(value: string): string {
     const cleaned = value.replace(/\s/g, '').replace(',', '.').replace(/[^\d.]/g, '');
     const [rub = '', ...rest] = cleaned.split('.');
@@ -71,7 +71,6 @@ export function normalizePrice(value: string): string {
     return value.replace(/\.$/, '');
 }
 
-/** Для черновика проверяются только заполненные поля, но название нужно всегда */
 export function validateListing(values: ListingFormValues, photosCount: number, draft: boolean): ListingFormErrors {
     const errors: ListingFormErrors = {};
     const title = values.title.trim();
@@ -97,29 +96,48 @@ export function validateListing(values: ListingFormValues, photosCount: number, 
     return errors;
 }
 
-/** Плашка над формой: сколько обязательных полей не заполнено */
 export function summaryText(count: number): string {
     if (!count) return '';
     return `Не получилось опубликовать: заполните ${count} ${plural(count, ['обязательное поле', 'обязательных поля', 'обязательных полей'])}, `
         + `${count === 1 ? 'оно отмечено' : 'они отмечены'} красным`;
 }
 
-/** В черновик уходят только заполненные поля, иначе бэк отклонит пустые */
-export function buildListingData(values: ListingFormValues, photoIds: number[], onlyFilled: boolean): ListingData {
-    const data: ListingData = {
+export function buildCreateData(values: ListingFormValues, photoIds: number[], draft: boolean): CreateListingData {
+    const data: CreateListingData = {
         title: values.title.trim(),
         description: values.description.trim(),
         is_free: values.is_free,
         is_negotiable: values.is_free ? false : values.is_negotiable,
         has_delivery: values.has_delivery,
+        publish: !draft,
     };
 
     if (values.category_id) data.category_id = Number(values.category_id);
     if (values.condition) data.condition = values.condition;
     if (values.address.trim()) data.address = values.address.trim();
     if (!values.is_free && values.price) data.price = normalizePrice(values.price);
-    if (photoIds.length || !onlyFilled) data.photo_ids = photoIds;
-    if (onlyFilled && !data.description) delete data.description;
+    if (photoIds.length || !draft) data.photo_ids = photoIds;
+    if (draft && !data.description) delete data.description;
+
+    return data;
+}
+
+export function buildUpdateData(values: ListingFormValues, photoIds: number[], publish = false): UpdateListingData {
+    const address = values.address.trim();
+    const data: UpdateListingData = {
+        category_id: values.category_id ? Number(values.category_id) : null,
+        title: values.title.trim(),
+        photo_ids: photoIds,
+        description: values.description.trim(),
+        is_free: values.is_free,
+        is_negotiable: values.is_free ? false : values.is_negotiable,
+        condition: values.condition || null,
+        address: address || null,
+        has_delivery: values.has_delivery,
+    };
+
+    if (!values.is_free) data.price = values.price ? normalizePrice(values.price) : null;
+    if (publish) data.publish = true;
 
     return data;
 }
@@ -133,11 +151,11 @@ export function photoError(err: unknown): string {
     return 'Не загрузилось';
 }
 
-/** Текст общей ошибки формы, когда бэк не указал поле */
 export function saveErrorText(err: unknown): string {
     if (!(err instanceof ApiError)) return 'Не удалось сохранить объявление. Попробуйте ещё раз';
     if (err.network) return 'Нет соединения с сервером. Проверьте интернет';
     if (err.timeout) return 'Сервер не отвечает. Попробуйте ещё раз';
+    if (err.status === 409 && err.reason === 'listing is not a draft') return 'Объявление уже опубликовано. Обновите страницу';
     if (err.status === 409) return 'Проданное объявление нельзя изменить';
     if (err.status === 403) return 'Это объявление нельзя редактировать';
     if (err.status === 404) return 'Объявление не найдено. Возможно, его удалили';
@@ -154,7 +172,6 @@ export interface CategoryGroup {
     options: CategoryOption[];
 }
 
-/** Дерево → группы по корню; выбрать можно только лист, в подписи полный путь */
 export function categoryGroups(tree: CategoryNode[]): CategoryGroup[] {
     const leaves = (node: CategoryNode, path: string[]): CategoryOption[] => (
         node.children.length

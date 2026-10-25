@@ -14,7 +14,7 @@ import { SellingTips } from '@/components/selling-tips/selling-tips';
 import { ApiError, createListing, updateListing, uploadListingPhoto, type CategoryNode, type Listing } from '@/lib/api';
 import {
     PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
-    buildListingData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
+    buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
     type ListingFormErrors, type ListingFormValues,
 } from '@/lib/listing-form';
 import { logWarn } from '@/lib/logger';
@@ -23,7 +23,6 @@ import { navigate } from '@/router/router';
 
 export interface ListingFormPageProps {
     categories: CategoryNode[];
-    /** Без listing — создание */
     listing?: Listing;
 }
 
@@ -41,6 +40,7 @@ let photoKey = 0;
 
 export class ListingFormPage extends Component<ListingFormPageProps, ListingFormState> {
     submitted = false;
+    savingDraft = false;
     blobUrls = new Set<string>();
 
     constructor(props: ListingFormPageProps) {
@@ -78,7 +78,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         const next = { ...this.state.values, ...values };
         const patch: Partial<ListingFormState> = { values: next, photos };
         if (this.submitted) {
-            const errors = validateListing(next, this.readyPhotos(photos).length, this.isDraft);
+            const errors = validateListing(next, this.readyPhotos(photos).length, this.savingDraft);
             patch.errors = errors;
             if (this.state.summary) patch.summary = summaryText(Object.keys(errors).length);
         }
@@ -186,6 +186,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
     submit = async (asDraft: boolean) => {
         this.submitted = true;
+        this.savingDraft = asDraft;
         this.setState({ formError: '', summary: '' });
 
         const { photos, values } = this.state;
@@ -199,10 +200,9 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
             return;
         }
 
-        const loose = asDraft || this.isDraft;
-        const errors = validateListing(values, this.readyPhotos().length, loose);
+        const errors = validateListing(values, this.readyPhotos().length, asDraft);
         const count = Object.keys(errors).length;
-        this.setState({ errors, summary: loose ? '' : summaryText(count) });
+        this.setState({ errors, summary: asDraft ? '' : summaryText(count) });
         if (count) {
             this.focusFirstError();
             return;
@@ -210,26 +210,39 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
         this.setState({ submitting: true });
         try {
-            const data = buildListingData(values, this.readyPhotos(), loose);
-            if (this.props.listing) {
-                const saved = await updateListing(this.props.listing.id, data);
-                showToast('Изменения сохранены');
-                navigate(`/listing/${saved.id}`);
-            } else if (asDraft) {
-                const saved = await createListing({ ...data, publish: false });
-                showToast('Черновик сохранён');
-                navigate(`/listing/${saved.id}`);
-            } else {
-                const saved = await createListing({ ...data, publish: true });
-                this.setState({ published: saved, submitting: false });
-                window.scrollTo(0, 0);
-            }
+            await this.save(asDraft);
         } catch (err) {
             logWarn('Не удалось сохранить объявление:', err);
             this.setState({ submitting: false });
             this.showServerError(err);
         }
     };
+
+    async save(asDraft: boolean) {
+        const { values } = this.state;
+        const { listing } = this.props;
+        const photoIds = this.readyPhotos();
+
+        if (listing && (asDraft || !this.isDraft)) {
+            await updateListing(listing.id, buildUpdateData(values, photoIds));
+            showToast(asDraft ? 'Черновик сохранён' : 'Изменения сохранены');
+            navigate(`/listing/${listing.id}`);
+            return;
+        }
+
+        if (!listing && asDraft) {
+            const saved = await createListing(buildCreateData(values, photoIds, true));
+            showToast('Черновик сохранён');
+            navigate(`/listing/${saved.id}`);
+            return;
+        }
+
+        const saved = listing
+            ? await updateListing(listing.id, buildUpdateData(values, photoIds, true))
+            : await createListing(buildCreateData(values, photoIds, false));
+        this.setState({ published: saved, submitting: false });
+        window.scrollTo(0, 0);
+    }
 
     showServerError(err: unknown) {
         if (err instanceof ApiError && err.status === 401) {
@@ -263,7 +276,12 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
     };
 
     handleCreateAnother = () => {
+        if (this.isEdit) {
+            navigate('/listing/new');
+            return;
+        }
         this.submitted = false;
+        this.savingDraft = false;
         this.setState({
             values: initialValues(),
             photos: [],
@@ -280,7 +298,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         const { listing } = this.props;
         const disabled = submitting || photos.some((p) => p.uploading);
 
-        if (listing) {
+        if (listing && !this.isDraft) {
             return [
                 <Button type="submit" text={submitting ? 'Сохраняем…' : 'Сохранить изменения'} disabled={disabled} />,
                 <a href={`/listing/${listing.id}`} data-link class="listing-form__cancel">Отмена</a>,
@@ -309,7 +327,8 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         }
 
         const { listing, categories } = this.props;
-        const title = this.isEdit ? 'Редактирование объявления' : 'Новое объявление';
+        let title = 'Новое объявление';
+        if (this.isEdit) title = this.isDraft ? 'Редактирование черновика' : 'Редактирование объявления';
         const titleLength = values.title.length;
         const cover = photos.find((p) => !p.error)?.preview ?? null;
 

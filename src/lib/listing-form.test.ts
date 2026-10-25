@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-    buildListingData, categoryGroups, initialValues, normalizePrice, sanitizePrice, summaryText, validateListing,
+    buildCreateData, buildUpdateData, categoryGroups, initialValues, normalizePrice, sanitizePrice, summaryText, validateListing,
     type ListingFormValues,
 } from './listing-form';
 
@@ -86,18 +86,35 @@ describe('summaryText', () => {
     });
 });
 
-describe('buildListingData', () => {
+describe('buildCreateData', () => {
     it('публикация отправляет все поля, бесплатное — без цены и торга', () => {
-        expect(buildListingData({ ...filled, is_free: true, is_negotiable: true }, [5], false)).toEqual({
+        expect(buildCreateData({ ...filled, is_free: true, is_negotiable: true }, [5], false)).toEqual({
             category_id: 12, title: 'Велосипед', description: '', photo_ids: [5], is_free: true,
-            is_negotiable: false, condition: 'used_good', address: 'м. Сокол', has_delivery: false,
+            is_negotiable: false, condition: 'used_good', address: 'м. Сокол', has_delivery: false, publish: true,
         });
     });
 
-    it('черновик отправляет только заполненное', () => {
+    it('новый черновик отправляет только заполненное', () => {
         const draft = { ...initialValues(), title: ' Гитара ' };
-        expect(buildListingData(draft, [], true)).toEqual({
-            title: 'Гитара', is_free: false, is_negotiable: false, has_delivery: false,
+        expect(buildCreateData(draft, [], true)).toEqual({
+            title: 'Гитара', is_free: false, is_negotiable: false, has_delivery: false, publish: false,
         });
+    });
+});
+
+describe('buildUpdateData', () => {
+    it('стёртые поля уходят как null, чтобы бэк их очистил', () => {
+        const draft = { ...filled, category_id: '', price: '', condition: '' as const, address: '  ', description: '' };
+        expect(buildUpdateData(draft, [])).toEqual({
+            category_id: null, title: 'Велосипед', photo_ids: [], description: '', is_free: false,
+            is_negotiable: false, condition: null, address: null, has_delivery: false, price: null,
+        });
+    });
+
+    it('у бесплатного цену не отправляет, а publish добавляет только при публикации', () => {
+        const data = buildUpdateData({ ...filled, is_free: true, price: '' }, [5], true);
+        expect(data).not.toHaveProperty('price');
+        expect(data.publish).toBe(true);
+        expect(buildUpdateData(filled, [5])).not.toHaveProperty('publish');
     });
 });
