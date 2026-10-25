@@ -14,6 +14,7 @@ export const LIMITS = {
     emailMax: 254,
     passwordMin: 8,
     passwordMax: 72,
+    aboutMax: 500,
 } as const;
 
 /** «8 (900) 123-45-67» → «+79001234567» */
@@ -69,6 +70,11 @@ export function validateEmail(value: string): string {
         return 'Email: только латиница, цифры и символы «._%+-»';
     }
     if (!EMAIL_PATTERN.test(email)) return 'Введите корректный email';
+    return '';
+}
+
+export function validateAbout(value: string): string {
+    if (value.length > LIMITS.aboutMax) return `Не более ${LIMITS.aboutMax} символов`;
     return '';
 }
 

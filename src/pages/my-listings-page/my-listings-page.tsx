@@ -10,7 +10,7 @@ import {
     type Profile,
 } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { ProfileSidebar } from '@/components/profile-sidebar/profile-sidebar';
+import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { MyAdCard } from '@/components/my-ad-card/my-ad-card';
 import { PageError } from '@/components/page-error/page-error';
 import { CloseListingModal } from '@/components/close-listing-modal/close-listing-modal';
@@ -255,23 +255,14 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         const { counts } = this.state;
 
         return (
-            <div class="my-listings-page">
-                <div class="my-listings-page__layout">
-                    <ProfileSidebar
-                        profile={profile}
-                        active="listings"
-                        listingsCount={counts ? counts.all : null}
-                        onLogout={onLogout}
-                    />
-
-                    <section class="my-listings">
-                        <h1 class="my-listings__title">Мои объявления</h1>
-                        {this.renderTabs()}
-                        {this.renderList()}
-                    </section>
-                </div>
+            <ProfileLayout profile={profile} active="listings" listingsCount={counts ? counts.all : null} onLogout={onLogout}>
+                <section class="my-listings">
+                    <h1 class="my-listings__title">Мои объявления</h1>
+                    {this.renderTabs()}
+                    {this.renderList()}
+                </section>
                 {this.renderModal()}
-            </div>
+            </ProfileLayout>
         );
     }
 }

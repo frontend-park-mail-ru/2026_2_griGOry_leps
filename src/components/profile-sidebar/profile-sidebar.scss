@@ -27,19 +27,8 @@
     &__avatar {
         width: 96px;
         height: 96px;
-        object-fit: cover;
-        border-radius: 50%;
-
-        &--empty {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 32px;
-            color: $goget-primary;
-            background-color: $surface-1;
-            border: 1px solid $color-border;
-        }
+        font-size: 40px;
+        line-height: 44px;
     }
 
     &__name {

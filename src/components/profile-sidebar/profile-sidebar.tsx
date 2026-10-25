@@ -1,9 +1,10 @@
 import { Component } from '@/vdom';
 import type { Profile } from '@/lib/api';
 import { formatRating, formatSince, plural } from '@/lib/format';
+import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './profile-sidebar.scss';
 
-export type ProfileSection = 'listings';
+export type ProfileSection = 'listings' | 'settings';
 
 export interface ProfileSidebarProps {
     profile: Profile;
@@ -30,12 +31,8 @@ const MENU: MenuItem[] = [
     { label: 'Заказы' },
     { label: 'Покупки' },
     { label: 'Отзывы' },
-    { label: 'Настройки' },
+    { label: 'Настройки', href: '/profile/edit', section: 'settings' },
 ];
-
-function getInitials(profile: Profile): string {
-    return (profile.first_name || profile.email || '').trim().slice(0, 2).toUpperCase();
-}
 
 export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSidebarState> {
     state: ProfileSidebarState = { loggingOut: false, logoutError: '' };
@@ -104,15 +101,20 @@ export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSideba
         return (
             <aside class="profile-sidebar">
                 <div class="profile-sidebar__user">
-                    {profile.avatar_url
-                        ? <img class="profile-sidebar__avatar" src={profile.avatar_url} alt={name} />
-                        : <span class="profile-sidebar__avatar profile-sidebar__avatar--empty" aria-hidden="true">{getInitials(profile)}</span>}
+                    <UserAvatar user={profile} class="profile-sidebar__avatar" />
                     <h2 class="profile-sidebar__name">{name}</h2>
                     {this.renderRating(profile)}
                     {since && <span class="profile-sidebar__since">На GoGet с {since}</span>}
                 </div>
 
-                <button type="button" class="profile-sidebar__edit" disabled>Редактировать профиль</button>
+                <a
+                    href="/profile/edit"
+                    data-link
+                    class="profile-sidebar__edit"
+                    aria-current={this.props.active === 'settings' ? 'page' : undefined}
+                >
+                    Редактировать профиль
+                </a>
 
                 <hr class="profile-sidebar__divider" />
 

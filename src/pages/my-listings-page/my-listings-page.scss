@@ -1,28 +1,6 @@
 @use '@/shared/styles/variables' as *;
 @use '@/shared/styles/mixins' as *;
 
-.my-listings-page {
-    flex: 1;
-    width: 100%;
-    padding: 32px 64px 96px;
-    background-color: $surface-1;
-
-    @media (max-width: 960px) {
-        padding: 24px 16px 64px;
-    }
-
-    &__layout {
-        display: flex;
-        align-items: flex-start;
-        gap: 32px;
-
-        @media (max-width: 960px) {
-            flex-direction: column;
-            gap: 24px;
-        }
-    }
-}
-
 .my-listings {
     display: flex;
     flex: 1;

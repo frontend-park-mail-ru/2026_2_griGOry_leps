@@ -25,6 +25,7 @@ import { RegisterPage } from '@/pages/register-page/register-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
+import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -168,6 +169,11 @@ async function start() {
     myListingsRoute('/profile/listings', 'active');
     myListingsRoute('/profile/listings/closed', 'closed');
     myListingsRoute('/profile/listings/drafts', 'drafts');
+    route('/profile/edit', {
+        name: 'profile-edit',
+        load: loadProfile,
+        view: (profile) => <ProfileEditPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
     initRouter();

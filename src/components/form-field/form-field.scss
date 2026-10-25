@@ -112,4 +112,21 @@
             box-shadow: 0 0 0 3px rgba(219, 38, 38, 0.16);
         }
     }
+
+    &--large {
+        gap: 8px;
+
+        .form-field__label {
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 22px;
+        }
+
+        .form-field__hint,
+        .form-field__error {
+            margin-top: 0;
+            font-size: 13px;
+            line-height: 17px;
+        }
+    }
 }

@@ -1,0 +1,19 @@
+@use '@/shared/styles/variables' as *;
+
+.user-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 50%;
+
+    &--letter {
+        font-family: $font-body;
+        font-weight: 700;
+        color: $white;
+        user-select: none;
+    }
+}
