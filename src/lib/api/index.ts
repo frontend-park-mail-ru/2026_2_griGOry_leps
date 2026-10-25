@@ -2,6 +2,7 @@ export * from './types';
 export { ApiError, type ApiErrorOptions } from './errors';
 export { resetCsrfToken } from './csrf';
 export { request } from './request';
+export { assetUrl } from './utils';
 export type { RequestOptions } from './utils';
 
 export * from './auth';

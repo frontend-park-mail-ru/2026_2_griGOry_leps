@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-    ApiError, addToCart, createOrder, deleteListing, getListing, getMe, login, logout,
+    ApiError, addToCart, assetUrl, createOrder, deleteListing, getListing, getMe, login, logout,
     resetCsrfToken, uploadListingPhoto,
 } from '.';
 
@@ -195,5 +195,17 @@ describe('запросы', () => {
 
         expect(calls[1].headers.get('Idempotency-Key')).toBe('key-1');
         expect(calls[1].headers.get('X-CSRF-Token')).toBe('t1');
+    });
+});
+
+describe('assetUrl', () => {
+    it('достраивает относительную ссылку до адреса бэка', () => {
+        expect(assetUrl('/uploads/avatars/a.png')).toBe('http://localhost:8080/uploads/avatars/a.png');
+    });
+
+    it('не трогает полную ссылку и пустое значение', () => {
+        expect(assetUrl('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
+        expect(assetUrl(null)).toBeNull();
+        expect(assetUrl('')).toBeNull();
     });
 });

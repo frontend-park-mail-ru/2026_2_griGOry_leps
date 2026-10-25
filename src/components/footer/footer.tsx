@@ -20,7 +20,7 @@ export const Footer = () => (
         <div class="footer__top">
             <div class="footer__brand">
                 <a href="/" data-link class="footer__logo">
-                    <img src="/img/goget-mono.svg" alt="GoGET" width="89" height="40" />
+                    <img class="footer__logo-image" src="/img/goget-mono.svg" alt="GoGET" width="89" height="40" />
                 </a>
                 <p class="footer__tagline">Покупайте и продавайте рядом с домом — быстро и без посредников</p>
             </div>

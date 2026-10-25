@@ -29,13 +29,13 @@
         border: 1px solid $gray-200;
         border-radius: $radius-lg;
         overflow: hidden;
+    }
 
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    &__icon-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     &__title {
@@ -50,16 +50,16 @@
         flex-direction: column;
         flex-grow: 1;
         gap: 8px;
+    }
 
-        a {
-            font-size: 16px;
-            line-height: 24px;
-            color: $color-text-secondary;
-            transition: color $timing-animation-short;
+    &__link {
+        font-size: 16px;
+        line-height: 24px;
+        color: $color-text-secondary;
+        transition: color $timing-animation-short;
 
-            &:hover {
-                color: $goget-primary;
-            }
+        &:hover {
+            color: $goget-primary;
         }
     }
 

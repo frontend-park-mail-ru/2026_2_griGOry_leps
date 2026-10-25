@@ -1,0 +1,20 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.delete-listing-modal {
+    &__confirm {
+        @include button-danger;
+        flex: 1;
+    }
+
+    &__cancel {
+        @include button-gray;
+        flex: 1;
+    }
+
+    &__error {
+        font-size: 13px;
+        line-height: 18px;
+        color: $color-status-error;
+    }
+}
