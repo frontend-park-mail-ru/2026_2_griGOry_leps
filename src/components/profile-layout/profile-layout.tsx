@@ -6,7 +6,7 @@ import './profile-layout.scss';
 export interface ProfileLayoutProps {
     profile: Profile;
     active: ProfileSection;
-    listingsCount: number | null;
+    listingsCount?: number | null;
     onLogout: () => Promise<void>;
     children?: Child;
 }

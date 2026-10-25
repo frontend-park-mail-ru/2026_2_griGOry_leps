@@ -6,7 +6,8 @@ import { ProfileEditPage } from './profile-edit-page';
 
 const api = vi.hoisted(() => ({
     getCities: vi.fn(),
-    getMyListings: vi.fn(),
+    getMyListingsCount: vi.fn(),
+    getAddresses: vi.fn(),
     updateProfile: vi.fn(),
     uploadAvatar: vi.fn(),
 }));
@@ -64,7 +65,10 @@ function chooseFile(file: File) {
 beforeEach(() => {
     vi.clearAllMocks();
     api.getCities.mockResolvedValue([{ id: 1, name: 'Москва' }, { id: 2, name: 'Казань' }]);
-    api.getMyListings.mockResolvedValue({ items: [], counts: { all: 4 }, total: 4, limit: 1, offset: 0 });
+    api.getMyListingsCount.mockResolvedValue(4);
+    api.getAddresses.mockResolvedValue([
+        { id: 1, street: 'Москва, ул. Тверская', house: 'д. 12, кв. 34', comment: '', is_default: true },
+    ]);
     root = document.createElement('div');
     document.body.innerHTML = '';
     document.body.appendChild(root);
@@ -77,7 +81,7 @@ describe('ProfileEditPage', () => {
 
         expect(query<HTMLInputElement>('#profile-first-name').value).toBe('иван');
         expect(query<HTMLInputElement>('#profile-phone').value).toBe('+79990000000');
-        expect(query<HTMLSelectElement>('#profile-city').value).toBe('1');
+        expect(query('#profile-city').textContent).toBe('Москва');
         expect(query('.profile-edit__counter').textContent).toBe('26 / 500');
         expect(query('.profile-sidebar__menu-item--active').textContent).toBe('Настройки');
         expect(query('.profile-sidebar__menu-count').textContent).toBe('4');
@@ -93,9 +97,10 @@ describe('ProfileEditPage', () => {
         await tick();
 
         type('#profile-first-name', '  Пётр  ');
-        const select = query<HTMLSelectElement>('#profile-city');
-        select.value = '2';
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+        query<HTMLButtonElement>('#profile-city').click();
+        await tick();
+        [...root.querySelectorAll<HTMLElement>('.select__option')].find((el) => el.textContent === 'Казань')!.click();
+        await tick();
         await submit();
 
         expect(api.updateProfile).toHaveBeenCalledWith({
@@ -227,8 +232,8 @@ describe('ProfileEditPage', () => {
         await tick();
 
         expect(api.uploadAvatar).toHaveBeenCalledTimes(1);
-        expect(query<HTMLImageElement>('img.profile-edit__avatar').getAttribute('src')).toBe('/uploads/avatar.png');
-        expect(query<HTMLImageElement>('img.profile-sidebar__avatar').getAttribute('src')).toBe('/uploads/avatar.png');
+        expect(query<HTMLImageElement>('img.profile-edit__avatar').getAttribute('src')).toBe('http://localhost:8080/uploads/avatar.png');
+        expect(query<HTMLImageElement>('img.profile-sidebar__avatar').getAttribute('src')).toBe('http://localhost:8080/uploads/avatar.png');
     });
 
     it('не загружает файл неподходящего формата', async () => {
@@ -240,6 +245,68 @@ describe('ProfileEditPage', () => {
 
         expect(api.uploadAvatar).not.toHaveBeenCalled();
         expect(query('.profile-edit__avatar-hint--error').textContent).toBe('Можно загрузить только JPG или PNG');
+    });
+});
+
+describe('ProfileEditPage: город и адреса', () => {
+    it('открывает список городов и отмечает выбранный', async () => {
+        renderPage();
+        await tick();
+
+        const control = query<HTMLButtonElement>('#profile-city');
+        control.click();
+        await tick();
+
+        expect(control.getAttribute('aria-expanded')).toBe('true');
+        expect(root.querySelectorAll('.select__option')).toHaveLength(2);
+        expect(query('.select__option--selected').textContent).toBe('Москва');
+        expect(root.querySelector('.select__option--selected .select__check')).not.toBeNull();
+
+        control.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        control.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        await tick();
+
+        expect(root.querySelector('.select__list')).toBeNull();
+        expect(control.textContent).toBe('Казань');
+    });
+
+    it('закрывает список по Escape и по клику мимо', async () => {
+        renderPage();
+        await tick();
+
+        const control = query<HTMLButtonElement>('#profile-city');
+        control.click();
+        await tick();
+        control.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        await tick();
+        expect(root.querySelector('.select__list')).toBeNull();
+
+        control.click();
+        await tick();
+        document.body.click();
+        await tick();
+        expect(root.querySelector('.select__list')).toBeNull();
+        expect(control.textContent).toBe('Москва');
+    });
+
+    it('показывает основной адрес и ведёт на страницу адресов', async () => {
+        renderPage();
+        await tick();
+
+        const sections = [...root.querySelectorAll('.profile-edit__section')];
+        const addresses = sections.find((el) => el.textContent?.includes('Адреса доставки'))!;
+        expect(addresses.querySelector('.profile-edit__section-caption')?.textContent)
+            .toBe('Москва, ул. Тверская, д. 12, кв. 34 (основной)');
+        expect(addresses.querySelector('a.profile-edit__section-action')?.getAttribute('href')).toBe('/profile/addresses');
+    });
+
+    it('предлагает добавить адрес, если адресов нет', async () => {
+        api.getAddresses.mockResolvedValue([]);
+        renderPage();
+        await tick();
+
+        expect(root.textContent).toContain('Пока нет сохранённых адресов');
+        expect(query('a.profile-edit__section-action').textContent).toBe('Добавить адрес');
     });
 });
 

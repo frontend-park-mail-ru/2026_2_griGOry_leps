@@ -42,3 +42,7 @@ export function plural(count: number, [one, few, many]: [string, string, string]
     if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
     return many;
 }
+
+export function formatAddress({ street, house }: { street: string; house: string }): string {
+    return [street.trim(), house.trim()].filter(Boolean).join(', ');
+}

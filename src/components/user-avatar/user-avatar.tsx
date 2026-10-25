@@ -1,4 +1,4 @@
-import type { User } from '@/lib/api';
+import { assetUrl, type User } from '@/lib/api';
 import './user-avatar.scss';
 
 export const AVATAR_COLORS = [
@@ -33,8 +33,10 @@ export function getAvatarColor(id: number): string {
 export const UserAvatar = ({ user, class: className }: UserAvatarProps) => {
     const mix = className ? ` ${className}` : '';
 
-    if (user.avatar_url) {
-        return <img class={`user-avatar${mix}`} src={user.avatar_url} alt={user.first_name || user.email} />;
+    const src = assetUrl(user.avatar_url);
+
+    if (src) {
+        return <img class={`user-avatar${mix}`} src={src} alt={user.first_name || user.email} />;
     }
 
     return (

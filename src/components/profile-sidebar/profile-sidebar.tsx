@@ -1,21 +1,23 @@
 import { Component } from '@/vdom';
-import type { Profile } from '@/lib/api';
+import { getMyListingsCount, type Profile } from '@/lib/api';
+import { logWarn } from '@/lib/logger';
 import { formatRating, formatSince, plural } from '@/lib/format';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './profile-sidebar.scss';
 
-export type ProfileSection = 'listings' | 'settings';
+export type ProfileSection = 'listings' | 'addresses' | 'settings';
 
 export interface ProfileSidebarProps {
     profile: Profile;
     active: ProfileSection;
-    listingsCount: number | null;
+    listingsCount?: number | null;
     onLogout: () => Promise<void>;
 }
 
 export interface ProfileSidebarState {
     loggingOut: boolean;
     logoutError: string;
+    loadedCount: number | null;
 }
 
 interface MenuItem {
@@ -28,14 +30,26 @@ const MENU: MenuItem[] = [
     { label: 'Мои объявления', href: '/profile/listings', section: 'listings' },
     { label: 'Избранное' },
     { label: 'Сообщения' },
-    { label: 'Заказы' },
+    { label: 'Адреса доставки', href: '/profile/addresses', section: 'addresses' },
     { label: 'Покупки' },
     { label: 'Отзывы' },
     { label: 'Настройки', href: '/profile/edit', section: 'settings' },
 ];
 
 export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSidebarState> {
-    state: ProfileSidebarState = { loggingOut: false, logoutError: '' };
+    state: ProfileSidebarState = { loggingOut: false, logoutError: '', loadedCount: null };
+
+    componentDidMount() {
+        if (this.props.listingsCount === undefined) void this.loadListingsCount();
+    }
+
+    async loadListingsCount() {
+        try {
+            this.setState({ loadedCount: await getMyListingsCount() });
+        } catch (err) {
+            logWarn('Не удалось загрузить число объявлений:', err);
+        }
+    }
 
     handleLogout = async () => {
         this.setState({ loggingOut: true, logoutError: '' });
@@ -62,7 +76,8 @@ export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSideba
     }
 
     renderMenuItem({ label, href, section }: MenuItem) {
-        const { active, listingsCount } = this.props;
+        const { active } = this.props;
+        const listingsCount = this.props.listingsCount === undefined ? this.state.loadedCount : this.props.listingsCount;
 
         if (!href) {
             return (

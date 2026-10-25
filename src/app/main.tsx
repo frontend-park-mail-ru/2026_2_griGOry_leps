@@ -26,6 +26,7 @@ import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
+import { AddressesPage } from '@/pages/addresses-page/addresses-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -173,6 +174,11 @@ async function start() {
         name: 'profile-edit',
         load: loadProfile,
         view: (profile) => <ProfileEditPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+    route('/profile/addresses', {
+        name: 'profile-addresses',
+        load: loadProfile,
+        view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
     }, { requireAuth: true });
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 

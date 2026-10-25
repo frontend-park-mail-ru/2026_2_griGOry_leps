@@ -1,9 +1,10 @@
 import { Component } from '@/vdom';
 import {
+    getAddresses,
     getCities,
-    getMyListings,
     updateProfile,
     uploadAvatar,
+    type Address,
     type City,
     type Profile,
 } from '@/lib/api';
@@ -16,12 +17,14 @@ import {
     validateName,
     validatePhone,
 } from '@/lib/validators';
+import { formatAddress } from '@/lib/format';
 import { logError, logWarn } from '@/lib/logger';
 import { setUser } from '@/store';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
-import { Toast, type ToastType } from '@/components/toast/toast';
+import { Select } from '@/components/select/select';
+import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
 import './profile-edit-page.scss';
 
 const RULES: Record<string, FieldRule> = {
@@ -40,8 +43,6 @@ const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 const AVATAR_TYPE_ERROR = 'Можно загрузить только JPG или PNG';
 
 const AVATAR_SIZE_ERROR = 'Файл больше 5 МБ. Выберите фото поменьше';
-
-const TOAST_DURATION_MS = 4000;
 
 const CameraIcon = () => (
     <svg viewBox="0 0 20 20" width="20" height="20" fill="none"
@@ -81,11 +82,12 @@ export interface ProfileEditPageState {
     errors: FormValues;
     cityId: string;
     cities: City[];
-    listingsCount: number | null;
+    addresses: Address[] | null;
+    addressesError: boolean;
     saving: boolean;
     avatarUploading: boolean;
     avatarError: string;
-    toast: { id: number; type: ToastType; message: string } | null;
+    toast: ToastState | null;
 }
 
 export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEditPageState> {
@@ -93,9 +95,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
 
     fileInput: HTMLInputElement | null = null;
 
-    toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-    toastId = 0;
+    toasts = new ToastTimer((toast) => this.setState({ toast }));
 
     constructor(props: ProfileEditPageProps) {
         super(props);
@@ -108,7 +108,8 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             errors: {},
             cityId: profileCityId(props.profile),
             cities: mergeCities([], props.profile.city),
-            listingsCount: null,
+            addresses: null,
+            addressesError: false,
             saving: false,
             avatarUploading: false,
             avatarError: '',
@@ -118,12 +119,12 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
 
     componentDidMount() {
         void this.loadCities();
-        void this.loadListingsCount();
+        void this.loadAddresses();
     }
 
     componentWillUnmount() {
         this.validation.destroy();
-        if (this.toastTimer) clearTimeout(this.toastTimer);
+        this.toasts.stop();
     }
 
     async loadCities() {
@@ -135,12 +136,12 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         }
     }
 
-    async loadListingsCount() {
+    async loadAddresses() {
         try {
-            const page = await getMyListings({ limit: 1 });
-            this.setState({ listingsCount: page.counts?.all ?? page.total ?? null });
+            this.setState({ addresses: await getAddresses(), addressesError: false });
         } catch (err) {
-            logWarn('Не удалось загрузить число объявлений:', err);
+            logWarn('Не удалось загрузить адреса:', err);
+            this.setState({ addressesError: true });
         }
     }
 
@@ -165,16 +166,6 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         });
     }
 
-    showToast(type: ToastType, message: string) {
-        if (this.toastTimer) clearTimeout(this.toastTimer);
-        this.toastId += 1;
-        this.setState({ toast: { id: this.toastId, type, message } });
-        this.toastTimer = setTimeout(() => {
-            this.toastTimer = null;
-            this.setState({ toast: null });
-        }, TOAST_DURATION_MS);
-    }
-
     applyProfile(profile: Profile) {
         setUser(profile);
         this.setState(({ cities }) => ({ profile, cities: mergeCities(cities, profile.city) }));
@@ -189,8 +180,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         this.validation.change((e.target as HTMLInputElement | HTMLTextAreaElement).name);
     };
 
-    handleCityChange = (e: Event) => {
-        const cityId = (e.target as HTMLSelectElement).value;
+    handleCityChange = (cityId: string) => {
         this.validation.errors.city_id = '';
         this.setState(({ errors }) => ({ cityId, errors: { ...errors, city_id: '' } }));
     };
@@ -214,7 +204,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             });
             this.applyProfile(profile);
             this.fillForm(profile);
-            this.showToast('success', 'Изменения сохранены');
+            this.toasts.show('success', 'Изменения сохранены');
         } catch (err) {
             logError('Не удалось сохранить профиль:', err);
             const { field, message } = describeApiError(err, {
@@ -227,7 +217,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                 byStatus: { 409: 'Email или телефон уже заняты другим пользователем' },
             });
             if (field) this.validation.setError(field, message);
-            else this.showToast('error', message);
+            else this.toasts.show('error', message);
         } finally {
             this.setState({ saving: false });
         }
@@ -260,7 +250,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         try {
             const { avatar_url } = await uploadAvatar(file);
             this.applyProfile({ ...this.state.profile, avatar_url });
-            this.showToast('success', 'Фото обновлено');
+            this.toasts.show('success', 'Фото обновлено');
         } catch (err) {
             logError('Не удалось загрузить аватарку:', err);
             const { message } = describeApiError(err, {
@@ -329,18 +319,14 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         return (
             <div class={error ? 'profile-edit__field profile-edit__field--error' : 'profile-edit__field'}>
                 <label class="profile-edit__label" for="profile-city">Город</label>
-                <select
+                <Select
                     id="profile-city"
-                    class="profile-edit__select"
-                    name="city_id"
-                    aria-invalid={String(Boolean(error))}
+                    options={cities.map(({ id, name }) => ({ value: String(id), label: name }))}
+                    value={cityId}
+                    placeholder="Выберите город"
+                    invalid={Boolean(error)}
                     onChange={this.handleCityChange}
-                >
-                    {!cityId && <option key="none" value="" selected disabled>Выберите город</option>}
-                    {cities.map(({ id, name }) => (
-                        <option key={id} value={String(id)} selected={String(id) === cityId}>{name}</option>
-                    ))}
-                </select>
+                />
                 {error && <p class="profile-edit__error">{error}</p>}
             </div>
         );
@@ -373,24 +359,52 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         );
     }
 
-    renderSection(title: string, caption: string, action: string) {
+    renderPassword() {
         return (
             <section class="profile-edit__section">
                 <div class="profile-edit__section-text">
-                    <h2 class="profile-edit__section-title">{title}</h2>
-                    <p class="profile-edit__section-caption">{caption}</p>
+                    <h2 class="profile-edit__section-title">Пароль</h2>
+                    <p class="profile-edit__section-caption">Используется для входа по email или телефону</p>
                 </div>
-                <button type="button" class="profile-edit__section-action" disabled>{action}</button>
+                <button type="button" class="profile-edit__section-action" disabled>Сменить пароль</button>
+            </section>
+        );
+    }
+
+    addressesCaption(): string {
+        const { addresses, addressesError } = this.state;
+        if (addressesError) return 'Не удалось загрузить адреса';
+        if (!addresses) return 'Загружаем адреса…';
+        if (addresses.length === 0) return 'Пока нет сохранённых адресов';
+
+        const main = addresses.find(({ is_default }) => is_default) ?? addresses[0];
+        const rest = addresses.length - 1;
+        const suffix = rest > 0 ? ` и ещё ${rest}` : '';
+        return `${formatAddress(main)}${main.is_default ? ' (основной)' : ''}${suffix}`;
+    }
+
+    renderAddresses() {
+        const { addresses } = this.state;
+
+        return (
+            <section class="profile-edit__section">
+                <div class="profile-edit__section-text">
+                    <h2 class="profile-edit__section-title">Адреса доставки</h2>
+                    <p class="profile-edit__section-caption">{this.addressesCaption()}</p>
+                </div>
+                <a href="/profile/addresses" data-link class="profile-edit__section-action">
+                    {addresses?.length === 0 ? 'Добавить адрес' : 'Изменить адреса'}
+                </a>
             </section>
         );
     }
 
     render() {
         const { onLogout } = this.props;
-        const { profile, listingsCount, saving, toast } = this.state;
+        const { profile, saving, toast } = this.state;
 
         return (
-            <ProfileLayout profile={profile} active="settings" listingsCount={listingsCount} onLogout={onLogout}>
+            <ProfileLayout profile={profile} active="settings" onLogout={onLogout}>
                 <form class="profile-edit" novalidate onSubmit={this.handleSubmit}>
                     <h1 class="profile-edit__title">Редактирование профиля</h1>
 
@@ -430,8 +444,8 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                         {this.renderAbout()}
                     </section>
 
-                    {this.renderSection('Пароль', 'Используется для входа по email или телефону', 'Сменить пароль')}
-                    {this.renderSection('Адреса доставки', 'Сохраняются при оформлении заказа', 'Изменить адреса')}
+                    {this.renderPassword()}
+                    {this.renderAddresses()}
 
                     <div class="profile-edit__actions">
                         <button type="submit" class="profile-edit__save" disabled={saving}>

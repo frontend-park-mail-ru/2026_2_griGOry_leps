@@ -9,7 +9,10 @@ const api = vi.hoisted(() => ({
     deleteListing: vi.fn(),
 }));
 
-vi.mock('@/lib/api', () => api);
+vi.mock('@/lib/api', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/api')>()),
+    ...api,
+}));
 
 const profile: Profile = {
     id: 1,
@@ -164,5 +167,37 @@ describe('MyListingsPage', () => {
 
         expect(root.querySelector('.delete-listing-modal__error')?.textContent).toBe('Не удалось удалить объявление. Попробуйте ещё раз');
         expect(root.querySelectorAll('.my-ad-card')).toHaveLength(1);
+    });
+
+    it('считает вкладки по реальным объявлениям, а не по counts бэка', async () => {
+        api.getMyListings.mockResolvedValue({
+            items: [],
+            counts: { all: 6, draft: 1, moderation: 1, rejected: 0, active: 3, closed: 1, sold: 0 },
+            total: 0,
+            limit: 60,
+            offset: 0,
+        });
+        renderPage();
+        await tick();
+
+        const tabs = [...root.querySelectorAll('.my-listings__tab')].map((el) => el.textContent);
+        expect(tabs).toEqual(['Активные · 0', 'Снятые · 0', 'Черновики · 0']);
+        expect(root.querySelector('.profile-sidebar__menu-count')?.textContent).toBe('0');
+        expect(root.querySelector('.my-listings__empty-title')?.textContent).toBe('У вас пока нет объявлений');
+    });
+
+    it('берёт counts бэка, если загружены не все объявления', async () => {
+        api.getMyListings.mockResolvedValue({
+            items: [ad(1, 'active')],
+            counts: { all: 80, draft: 5, moderation: 0, rejected: 0, active: 70, closed: 5, sold: 0 },
+            total: 80,
+            limit: 60,
+            offset: 0,
+        });
+        renderPage();
+        await tick();
+
+        expect(root.querySelector('.my-listings__tab--active')?.textContent).toBe('Активные · 70');
+        expect(root.querySelector('.profile-sidebar__menu-count')?.textContent).toBe('80');
     });
 });

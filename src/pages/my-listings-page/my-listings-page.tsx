@@ -31,6 +31,7 @@ export interface MyListingsPageState {
     status: 'loading' | 'error' | 'ready';
     items: MyAd[];
     counts: Counts | null;
+    complete: boolean;
     modal: { type: 'close' | 'delete'; ad: MyAd } | null;
     pending: boolean;
     actionError: string;
@@ -56,6 +57,12 @@ function countStatuses(counts: Counts | null, statuses: ListingStatus[]): number
     return counts ? statuses.reduce((sum, status) => sum + (counts[status] ?? 0), 0) : 0;
 }
 
+function countItems(items: MyAd[]): Counts {
+    const counts: Counts = { all: items.length, draft: 0, moderation: 0, rejected: 0, active: 0, closed: 0, sold: 0 };
+    items.forEach(({ status }) => { counts[status] = (counts[status] ?? 0) + 1; });
+    return counts;
+}
+
 function moveCount(counts: Counts | null, from: ListingStatus, to: ListingStatus | null): Counts | null {
     if (!counts) return counts;
     const next = { ...counts, [from]: Math.max((counts[from] ?? 0) - 1, 0) };
@@ -69,6 +76,7 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         status: 'loading',
         items: [],
         counts: null,
+        complete: false,
         modal: null,
         pending: false,
         actionError: '',
@@ -82,7 +90,13 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         this.setState({ status: 'loading' });
         try {
             const page = await getMyListings({ limit: LISTINGS_LIMIT });
-            this.setState({ status: 'ready', items: page.items ?? [], counts: page.counts ?? null });
+            const items = page.items ?? [];
+            this.setState({
+                status: 'ready',
+                items,
+                counts: page.counts ?? null,
+                complete: items.length >= (page.total ?? 0),
+            });
         } catch (err) {
             logError('Не удалось загрузить мои объявления:', err);
             this.setState({ status: 'error' });
@@ -137,8 +151,14 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         }
     };
 
+    getCounts(): Counts | null {
+        const { status, items, counts, complete } = this.state;
+        if (status !== 'ready') return null;
+        return complete || !counts ? countItems(items) : counts;
+    }
+
     renderTabs() {
-        const { counts } = this.state;
+        const counts = this.getCounts();
 
         return (
             <nav class="my-listings__tabs" aria-label="Статус объявлений">
@@ -179,7 +199,7 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
     }
 
     renderEmpty() {
-        if (!this.state.counts?.all) {
+        if (!this.getCounts()?.all) {
             return (
                 <div class="my-listings__empty">
                     <span class="my-listings__empty-icon" aria-hidden="true">📦</span>
@@ -252,7 +272,7 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
 
     render() {
         const { profile, onLogout } = this.props;
-        const { counts } = this.state;
+        const counts = this.getCounts();
 
         return (
             <ProfileLayout profile={profile} active="listings" listingsCount={counts ? counts.all : null} onLogout={onLogout}>
