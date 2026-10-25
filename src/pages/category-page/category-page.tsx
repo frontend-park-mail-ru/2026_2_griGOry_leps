@@ -1,4 +1,5 @@
 import './category-page.scss';
+import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { CategoryNames } from '@/lib/data';
 
 export const CategoryPage = ({ slug }: { slug: string }) => {
@@ -6,13 +7,11 @@ export const CategoryPage = ({ slug }: { slug: string }) => {
 
     return (
         <div class="category-page">
-            <nav class="breadcrumbs" aria-label="Хлебные крошки">
-                <a href="/" data-link>Главная</a>
-                <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                <a href="/categories" data-link>Все категории</a>
-                <span class="breadcrumbs__sep" aria-hidden="true">/</span>
-                <span>{name}</span>
-            </nav>
+            <Breadcrumbs items={[
+                { label: 'Главная', href: '/' },
+                { label: 'Все категории', href: '/categories' },
+                { label: name },
+            ]} />
 
             <section class="category-page__section">
                 <h1>{name}</h1>

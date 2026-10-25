@@ -15,19 +15,25 @@
         align-items: center;
         gap: 8px;
         margin-bottom: 16px;
+    }
 
-        h2 {
-            flex: 1;
-            font-weight: 700;
-            font-size: 28px;
-            line-height: 36px;
-            color: $color-text-main;
-        }
+    &__title {
+        flex: 1;
+        margin-block: 24px;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 36px;
+        color: $color-text-main;
     }
 
     &__arrows {
         display: flex;
         gap: 8px;
+    }
+
+    &__item {
+        width: 100%;
+        scroll-snap-align: start;
     }
 }
 
@@ -52,7 +58,7 @@
         cursor: default;
     }
 
-    &--prev img {
+    &--prev &__icon {
         transform: rotate(180deg);
     }
 }
@@ -67,10 +73,6 @@
 
     &::-webkit-scrollbar {
         display: none;
-    }
-
-    > * {
-        scroll-snap-align: start;
     }
 }
 
@@ -87,10 +89,6 @@
         display: flex;
         justify-content: center;
         overflow: hidden;
-
-        .empty-state {
-            width: 100%;
-        }
     }
 }
 
