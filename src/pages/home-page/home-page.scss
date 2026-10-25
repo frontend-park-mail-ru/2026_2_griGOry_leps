@@ -85,6 +85,10 @@
     grid-auto-columns: max(240px, calc((100% - 5 * 24px) / 6));
     gap: 24px;
 
+    &__link {
+        display: block;
+    }
+
     &--empty {
         display: flex;
         justify-content: center;

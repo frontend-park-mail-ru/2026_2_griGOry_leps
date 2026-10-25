@@ -4,6 +4,17 @@ export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/a
 export const DEFAULT_TIMEOUT_MS = 10000;
 export const UPLOAD_TIMEOUT_MS = 60000;
 
+const API_ORIGIN = new URL(BASE_URL, window.location.origin).origin;
+
+export function assetUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    try {
+        return new URL(url, API_ORIGIN).href;
+    } catch {
+        return url;
+    }
+}
+
 export type RequestOptions = RequestInit & { timeout?: number };
 
 /**
