@@ -102,3 +102,4 @@ Temporary Items
 # TypeDoc (генерируется командой npm run docs)
 
 docs/
+.vscode

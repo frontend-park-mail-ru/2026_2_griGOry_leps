@@ -25,6 +25,14 @@
         color: $gray-200;
     }
 
+    &__current {
+        min-width: 0;
+        overflow: hidden;
+        color: $color-text-strong;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     &--strong {
         color: $color-text-strong;
         line-height: 17px;

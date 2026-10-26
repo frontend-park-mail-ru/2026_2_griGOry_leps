@@ -25,6 +25,7 @@ import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { Select } from '@/components/select/select';
 import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
+import { ChangePasswordModal } from '@/components/change-password-modal/change-password-modal';
 import './profile-edit-page.scss';
 
 const RULES: Record<string, FieldRule> = {
@@ -68,6 +69,7 @@ export interface ProfileEditPageState {
     addresses: Address[] | null;
     addressesError: boolean;
     saving: boolean;
+    passwordModal: boolean;
     toast: ToastState | null;
 }
 
@@ -90,6 +92,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             addresses: null,
             addressesError: false,
             saving: false,
+            passwordModal: false,
             toast: null,
         };
     }
@@ -204,6 +207,11 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         this.fillForm(this.state.profile);
     };
 
+    handlePasswordChanged = () => {
+        this.setState({ passwordModal: false });
+        this.toasts.show('success', 'Пароль изменён. На других устройствах мы вышли из аккаунта');
+    };
+
     handleAvatarUploaded = (avatarUrl: string | null) => {
         this.applyProfile({ ...this.state.profile, avatar_url: avatarUrl });
         this.toasts.show('success', 'Фото обновлено');
@@ -266,7 +274,9 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                     <h2 class="profile-edit__section-title">Пароль</h2>
                     <p class="profile-edit__section-caption">Используется для входа по email или телефону</p>
                 </div>
-                <button type="button" class="profile-edit__section-action" disabled>Сменить пароль</button>
+                <button type="button" class="profile-edit__section-action" onClick={() => this.setState({ passwordModal: true })}>
+                    Сменить пароль
+                </button>
             </section>
         );
     }
@@ -301,7 +311,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
 
     render() {
         const { onLogout } = this.props;
-        const { profile, saving, toast } = this.state;
+        const { profile, saving, passwordModal, toast } = this.state;
 
         return (
             <ProfileLayout profile={profile} active="settings" onLogout={onLogout}>
@@ -356,6 +366,13 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                         </button>
                     </div>
                 </form>
+                {passwordModal && (
+                    <ChangePasswordModal
+                        email={profile.email}
+                        onChanged={this.handlePasswordChanged}
+                        onClose={() => this.setState({ passwordModal: false })}
+                    />
+                )}
                 {toast && <Toast key={toast.id} type={toast.type} message={toast.message} />}
             </ProfileLayout>
         );

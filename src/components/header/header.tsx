@@ -5,7 +5,6 @@ import './header.scss';
 
 export interface HeaderProps {
     user: User | null;
-    /** Бросает ошибку, если выйти не удалось */
     onLogout: () => Promise<void>;
 }
 
@@ -55,7 +54,7 @@ export class Header extends Component<HeaderProps, HeaderState> {
 
         return (
             <>
-                <button type="button" class="header__post" disabled>Разместить объявление</button>
+                <a href="/listing/new" data-link class="header__post">Разместить объявление</a>
                 <div
                     class={menuOpen ? 'header__user header__user--open' : 'header__user'}
                     ref={(el) => { this.userMenu = el; }}

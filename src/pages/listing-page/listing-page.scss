@@ -1,0 +1,142 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.listing-page {
+    width: 100%;
+    max-width: $container-max-width;
+    margin: 0 auto;
+    padding: 0 32px 64px;
+
+    @media (max-width: 640px) {
+        padding: 0 16px 48px;
+    }
+
+    &__notice {
+        @include typo-p;
+        margin: 16px 0 0;
+        padding: 12px 16px;
+        color: $color-text-strong;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+
+        &--sold,
+        &--closed {
+            background: #fff4e0;
+            border-color: #ffe0a8;
+        }
+    }
+
+    &__title {
+        @include typo-h1;
+        margin: 24px 0 0;
+        font-size: 2rem;
+        overflow-wrap: anywhere;
+
+        @media (max-width: 640px) {
+            font-size: 1.5rem;
+        }
+    }
+
+    &__layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 20px;
+        align-items: start;
+        margin-top: 20px;
+
+        @media (max-width: 960px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    &__main {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+    }
+
+    &__aside {
+        position: sticky;
+        top: 104px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        @media (max-width: 960px) {
+            position: static;
+            order: -1;
+        }
+    }
+
+    &__description {
+        @include typo-p;
+        margin: 0;
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+    }
+
+    &__safe-text {
+        margin: 0;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        color: $color-text-secondary;
+    }
+
+    &__meta {
+        @include typo-small;
+        margin: 0;
+    }
+
+    &__similar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 40px;
+    }
+
+    &__similar-title {
+        @include typo-h3;
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    &__similar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+    }
+
+    &__similar-link {
+        display: block;
+    }
+}
+
+.listing-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+
+    &__row {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 16px;
+        font-size: 0.875rem;
+
+        @media (max-width: 640px) {
+            grid-template-columns: 1fr 1fr;
+        }
+
+    }
+
+    &__name {
+        color: $color-text-placeholder;
+    }
+
+    &__value {
+        margin: 0;
+        color: $color-text-strong;
+    }
+}

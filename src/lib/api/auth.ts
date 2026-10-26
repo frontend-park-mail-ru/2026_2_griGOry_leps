@@ -1,7 +1,7 @@
 import { ensureOk, json } from './errors';
 import { resetCsrfToken } from './csrf';
 import { request } from './request';
-import { jsonBody } from './utils';
+import { jsonBody, query } from './utils';
 import type { Profile } from './profile';
 import type { User } from './types';
 
@@ -42,6 +42,22 @@ export async function register({ email, password, first_name, phone }: RegisterD
 
 export async function logout(): Promise<void> {
     const response = await request('/logout', { method: 'POST' });
+    await ensureOk(response);
+    resetCsrfToken();
+}
+
+export async function requestPasswordReset(login: string): Promise<void> {
+    const response = await request('/password/forgot', { method: 'POST', ...jsonBody({ login }) });
+    await ensureOk(response);
+}
+
+export async function checkResetToken(token: string): Promise<string> {
+    const { email } = await json<{ email: string }>(await request(`/password/reset${query({ token })}`));
+    return email;
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+    const response = await request('/password/reset', { method: 'POST', ...jsonBody({ token, password }) });
     await ensureOk(response);
     resetCsrfToken();
 }

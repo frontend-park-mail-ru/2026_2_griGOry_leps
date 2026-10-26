@@ -19,7 +19,7 @@
 
     &__title {
         flex: 1;
-        margin-block: 0.83em;
+        margin-block: 24px;
         font-weight: 700;
         font-size: 28px;
         line-height: 36px;
@@ -84,6 +84,10 @@
 .home-products {
     grid-auto-columns: max(240px, calc((100% - 5 * 24px) / 6));
     gap: 24px;
+
+    &__link {
+        display: block;
+    }
 
     &--empty {
         display: flex;

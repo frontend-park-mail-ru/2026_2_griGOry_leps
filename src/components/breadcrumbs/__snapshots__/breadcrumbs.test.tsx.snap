@@ -48,6 +48,7 @@ exports[`Breadcrumbs > рисует ссылки, текущую страниц�
   </span>
   <span
     aria-current="page"
+    class="breadcrumbs__current"
   >
     Авто
   </span>
