@@ -71,7 +71,8 @@ function renderApp() {
     app.dataset.tone = currentPage?.tone ?? 'white';
 
     const page = currentPage?.view() ?? null;
-    if (currentPage && page && typeof page === 'object' && !Array.isArray(page)) page.key = currentPage.name;
+    if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
+        page.key = currentPage.name;
 
     render(app, [
         <Header user={getUser()} onLogout={handleLogout} />,
@@ -97,7 +98,9 @@ function route<T = undefined>(
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
+            const network = err instanceof ApiError && err.network;
+
+            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError network={network} onRetry={() => handler(params)} /> };
             renderApp();
             return;
         }
@@ -261,3 +264,9 @@ async function start() {
 }
 
 if (app) void start();
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/serv_work.js').catch((error) => {
+        logWarn('Не удалось зарегистрировать service worker:', error);
+    });
+}

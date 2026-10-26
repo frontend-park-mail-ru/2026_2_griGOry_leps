@@ -3,6 +3,8 @@ import './empty-state.scss';
 export interface EmptyStateProps {
     title: string;
     text: string;
+    iconSrc?: string;
+    /** С href — ссылка, иначе кнопка */
     action?: {
         label: string;
         href?: string;
