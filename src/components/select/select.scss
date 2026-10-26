@@ -105,4 +105,29 @@
     &--invalid &__control:hover {
         border-color: $color-status-error;
     }
+
+    &--inline {
+        width: auto;
+    }
+
+    &--inline &__control,
+    &--inline &__control:hover {
+        width: auto;
+        height: auto;
+        padding: 0;
+        font-weight: 500;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    &--inline &__chevron {
+        filter: brightness(0.3);
+    }
+
+    &--inline &__list {
+        right: 0;
+        left: auto;
+        min-width: 240px;
+    }
 }

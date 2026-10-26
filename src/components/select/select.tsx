@@ -12,6 +12,8 @@ export interface SelectProps {
     value: string;
     placeholder?: string;
     invalid?: boolean;
+    inline?: boolean;
+    label?: string;
     onChange: (value: string) => void;
 }
 
@@ -105,13 +107,14 @@ export class Select extends Component<SelectProps, SelectState> {
     };
 
     render() {
-        const { id, options, value, placeholder = '', invalid = false } = this.props;
+        const { id, options, value, placeholder = '', invalid = false, inline = false, label } = this.props;
         const { open, active } = this.state;
         const selected = options.find((option) => option.value === value);
 
         const classes = ['select'];
         if (open) classes.push('select--open');
         if (invalid) classes.push('select--invalid');
+        if (inline) classes.push('select--inline');
 
         return (
             <div class={classes.join(' ')} ref={(el) => { this.root = el as HTMLElement | null; }}>
@@ -124,6 +127,7 @@ export class Select extends Component<SelectProps, SelectState> {
                     aria-controls={`${id}-list`}
                     aria-activedescendant={open && active >= 0 ? `${id}-option-${active}` : undefined}
                     aria-invalid={String(invalid)}
+                    aria-label={label}
                     onClick={this.toggle}
                     onKeyDown={this.handleKeyDown}
                 >

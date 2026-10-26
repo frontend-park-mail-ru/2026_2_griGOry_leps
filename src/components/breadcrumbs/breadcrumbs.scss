@@ -32,4 +32,21 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+
+    &--strong {
+        color: $color-text-strong;
+        line-height: 17px;
+    }
+
+    &--strong &__link {
+        color: $color-text-secondary;
+
+        &:hover {
+            color: $color-text-strong;
+        }
+    }
+
+    &--strong &__sep {
+        color: $color-text-placeholder;
+    }
 }

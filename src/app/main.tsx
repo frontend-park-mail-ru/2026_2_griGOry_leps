@@ -36,6 +36,7 @@ import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
+import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -71,7 +72,8 @@ function renderApp() {
     app.dataset.tone = currentPage?.tone ?? 'white';
 
     const page = currentPage?.view() ?? null;
-    if (currentPage && page && typeof page === 'object' && !Array.isArray(page)) page.key = currentPage.name;
+    if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
+        page.key = currentPage.name;
 
     render(app, [
         <Header user={getUser()} onLogout={handleLogout} />,
@@ -97,7 +99,9 @@ function route<T = undefined>(
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
+            const network = err instanceof ApiError && err.network;
+
+            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError network={network} onRetry={() => handler(params)} /> };
             renderApp();
             return;
         }
@@ -168,6 +172,13 @@ async function loadProfile(): Promise<Profile> {
     if (!profile) throw new Error('Пользователь не авторизован');
     setUser(profile);
     return profile;
+}
+
+function sellerRoute(path: string, tab: SellerTab) {
+    route(path, {
+        name: 'seller',
+        view: (_, { id }) => <SellerPage sellerId={Number(id)} tab={tab} authorized={getUser() !== null} />,
+    });
 }
 
 function myListingsRoute(path: string, tab: MyListingsTab) {
@@ -255,9 +266,17 @@ async function start() {
         load: loadProfile,
         view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
     }, { requireAuth: true });
+    sellerRoute('/seller/:id', 'listings');
+    sellerRoute('/seller/:id/reviews', 'reviews');
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
     initRouter();
 }
 
 if (app) void start();
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/serv_work.js').catch((error) => {
+        logWarn('Не удалось зарегистрировать service worker:', error);
+    });
+}

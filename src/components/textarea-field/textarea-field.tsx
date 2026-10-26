@@ -3,21 +3,23 @@ import './textarea-field.scss';
 export interface TextareaFieldProps {
     id: string;
     name: string;
-    label: string;
+    label?: string;
+    ariaLabel?: string;
     value: string;
     maxLength: number;
     height: number;
     placeholder?: string;
     error?: string;
+    disabled?: boolean;
     onInput?: (event: Event) => void;
     onChange?: (event: Event) => void;
 }
 
 export const TextareaField = ({
-    id, name, label, value, maxLength, height, placeholder, error = '', onInput, onChange,
+    id, name, label, ariaLabel, value, maxLength, height, placeholder, error = '', disabled, onInput, onChange,
 }: TextareaFieldProps) => (
     <div class={error ? 'textarea-field textarea-field--error' : 'textarea-field'}>
-        <label class="textarea-field__label" for={id}>{label}</label>
+        {label && <label class="textarea-field__label" for={id}>{label}</label>}
         <div class="textarea-field__box" style={{ height: `${height}px` }}>
             <textarea
                 id={id}
@@ -26,6 +28,8 @@ export const TextareaField = ({
                 maxlength={maxLength}
                 placeholder={placeholder}
                 value={value}
+                disabled={disabled}
+                aria-label={label ? undefined : ariaLabel}
                 aria-invalid={String(Boolean(error))}
                 onInput={onInput}
                 onChange={onChange}
