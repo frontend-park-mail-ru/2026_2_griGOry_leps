@@ -16,7 +16,7 @@ import {
 } from '@/router/router';
 import {
     ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts, logout,
-    type AdCard, type Listing, type User,
+    type AdCard, type Listing, type Profile, type User,
 } from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
@@ -33,6 +33,9 @@ import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
 import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
+import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
+import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
+import { AddressesPage } from '@/pages/addresses-page/addresses-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -160,6 +163,21 @@ async function loadSimilar(listing: Listing): Promise<AdCard[]> {
     }
 }
 
+async function loadProfile(): Promise<Profile> {
+    const profile = await getMe();
+    if (!profile) throw new Error('Пользователь не авторизован');
+    setUser(profile);
+    return profile;
+}
+
+function myListingsRoute(path: string, tab: MyListingsTab) {
+    route(path, {
+        name: 'my-listings',
+        load: loadProfile,
+        view: (profile) => <MyListingsPage tab={tab} profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+}
+
 async function start() {
     render(app, <div class="app-loader" aria-label="Загрузка" />);
 
@@ -224,6 +242,19 @@ async function start() {
         view: (data) => <ResetPasswordPage {...data} />,
     });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
+    myListingsRoute('/profile/listings', 'active');
+    myListingsRoute('/profile/listings/closed', 'closed');
+    myListingsRoute('/profile/listings/drafts', 'drafts');
+    route('/profile/edit', {
+        name: 'profile-edit',
+        load: loadProfile,
+        view: (profile) => <ProfileEditPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+    route('/profile/addresses', {
+        name: 'profile-addresses',
+        load: loadProfile,
+        view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
     initRouter();
