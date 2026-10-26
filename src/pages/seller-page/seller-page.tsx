@@ -14,7 +14,9 @@ import {
     type SellerProfile,
     type Sort,
 } from '@/lib/api';
+import { describeApiError } from '@/lib/form';
 import { logError, logWarn } from '@/lib/logger';
+import { getUser } from '@/store';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { SellerHeader } from '@/components/seller-header/seller-header';
 import { ProductCard } from '@/components/product-card/product-card';
@@ -394,7 +396,8 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
             this.toasts.show('success', 'Жалоба отправлена. Спасибо!');
         } catch (err) {
             logError('Не удалось отправить жалобу:', err);
-            this.setState({ reportPending: false, reportError: 'Не удалось отправить жалобу. Попробуйте ещё раз' });
+            const { message } = describeApiError(err, { fields: [], fallback: 'Не удалось отправить жалобу. Попробуйте ещё раз' });
+            this.setState({ reportPending: false, reportError: message });
         }
     };
 
@@ -529,7 +532,11 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                     class={refreshingListings ? 'seller-page__grid seller-page__grid--refreshing' : 'seller-page__grid'}
                     aria-busy={refreshingListings ? 'true' : undefined}
                 >
-                    {listings.map((ad) => <ProductCard key={ad.id} {...ad} />)}
+                    {listings.map((ad) => (
+                        <a key={ad.id} href={`/listing/${ad.id}`} data-link class="seller-page__card-link">
+                            <ProductCard {...ad} />
+                        </a>
+                    ))}
                 </div>
                 {this.renderListingsTail()}
             </>
@@ -615,7 +622,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                     reviewsHref={sellerUrl(seller.id, 'reviews')}
                     onShare={this.share}
                     onCopyLink={this.copyLink}
-                    onReport={this.props.authorized ? this.openReport : undefined}
+                    onReport={this.props.authorized && getUser()?.id !== seller.id ? this.openReport : undefined}
                 />
                 {this.renderTabs()}
                 {tab === 'listings' && this.renderListings()}
@@ -625,7 +632,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     }
 
     render() {
-        const { status, reportOpen, reportPending, reportError, toast } = this.state;
+        const { status, seller, reportOpen, reportPending, reportError, toast } = this.state;
 
         if (status === 'error') {
             return (
@@ -639,7 +646,11 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
 
         return (
             <div class="seller-page">
-                <Breadcrumbs flush strong items={[{ label: 'Главная', href: '/' }, { label: 'Все категории' }]} />
+                <Breadcrumbs
+                    flush
+                    strong
+                    items={[{ label: 'Главная', href: '/' }, { label: seller ? `Продавец ${seller.first_name}` : 'Продавец' }]}
+                />
                 {this.renderContent()}
                 {reportOpen && this.props.authorized && (
                     <ReportSellerModal
