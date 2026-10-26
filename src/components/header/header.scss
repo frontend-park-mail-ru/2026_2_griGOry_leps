@@ -122,19 +122,10 @@
     }
 
     &__avatar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 18px;
         line-height: 20px;
-        color: $goget-primary;
-        text-transform: uppercase;
-        background-color: $surface-1;
         border: 1px solid $gray-200;
-        border-radius: 50%;
         transition: border-color $timing-animation-short;
     }
 
