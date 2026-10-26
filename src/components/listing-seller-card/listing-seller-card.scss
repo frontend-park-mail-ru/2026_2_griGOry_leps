@@ -1,0 +1,33 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.listing-seller-card {
+    flex-direction: row;
+    align-items: center;
+
+    &__avatar {
+        width: 48px;
+        height: 48px;
+        font-size: 1.125rem;
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__name {
+        @include typo-h5;
+    }
+
+    &__rating {
+        font-size: 0.75rem;
+        color: $goget-accent;
+    }
+
+    &__since {
+        @include typo-small;
+    }
+}

@@ -4,6 +4,7 @@ import './styles/style.scss';
 import { Header } from '@/components/header/header';
 import { Footer } from '@/components/footer/footer';
 import { PageError } from '@/components/page-error/page-error';
+import { Toast } from '@/components/toast/toast';
 import {
     registerRoute,
     registerNotFound,
@@ -13,34 +14,44 @@ import {
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
-import { getMe, getCategories, getPromos, getProducts, logout, type Profile, type User } from '@/lib/api';
+import {
+    ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts, logout,
+    type AdCard, type Listing, type Profile, type User,
+} from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
+import { getToast, subscribeToast } from '@/lib/toast';
 
 import { HomePage, type HomeData } from '@/pages/home-page/home-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
 import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
+import { ForgotPasswordPage } from '@/pages/forgot-password-page/forgot-password-page';
+import { ResetPasswordPage, loadResetPassword } from '@/pages/reset-password-page/reset-password-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
+import { ListingPage } from '@/pages/listing-page/listing-page';
+import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
 
 export type Layout = 'main' | 'auth';
 
+export type Tone = 'white' | 'gray';
+
 export interface PageView {
-    /** При смене name страница создаётся заново, а не сравнивается со старой */
     name: string;
     layout: Layout;
+    tone: Tone;
     view: () => Child;
 }
 
 export interface Page<T> {
     name: string;
     layout?: Layout;
-    /** Грузится до показа страницы; если упадёт, вместо страницы будет PageError */
+    tone?: Tone;
     load?: (params: RouteParams) => Promise<T>;
     view: (data: T, params: RouteParams) => Child;
 }
@@ -48,12 +59,16 @@ export interface Page<T> {
 const app = document.getElementById('app')!;
 
 let currentPage: PageView | null = null;
-
-/** Чтобы медленный ответ старой страницы не перерисовал новую */
 let navigationId = 0;
+
+function toastView() {
+    const toast = getToast();
+    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} /> : null;
+}
 
 function renderApp() {
     app.dataset.layout = currentPage?.layout ?? 'main';
+    app.dataset.tone = currentPage?.tone ?? 'white';
 
     const page = currentPage?.view() ?? null;
     if (currentPage && page && typeof page === 'object' && !Array.isArray(page)) page.key = currentPage.name;
@@ -62,17 +77,18 @@ function renderApp() {
         <Header user={getUser()} onLogout={handleLogout} />,
         <main id="page">{page}</main>,
         <Footer />,
+        toastView(),
     ]);
 }
 
-/** path = null — страница 404 */
 function route<T = undefined>(
     path: string | null,
-    { name, layout = 'main', load, view }: Page<T>,
+    { name, layout = 'main', tone = 'white', load, view }: Page<T>,
     options?: RouteOptions,
 ) {
     const handler = async (params: RouteParams = {}) => {
         const id = ++navigationId;
+        const key = [name, ...Object.values(params)].join(':');
 
         let data = undefined as T;
         try {
@@ -81,13 +97,13 @@ function route<T = undefined>(
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${name}-error`, layout, view: () => <PageError onRetry={() => handler(params)} /> };
+            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
             renderApp();
             return;
         }
         if (id !== navigationId) return;
 
-        currentPage = { name, layout, view: () => view(data, params) };
+        currentPage = { name: key, layout, tone, view: () => view(data, params) };
         renderApp();
     };
 
@@ -95,7 +111,6 @@ function route<T = undefined>(
     else registerRoute(path, handler, options);
 }
 
-/** Бросает ошибку дальше: её покажет меню в шапке */
 async function handleLogout(): Promise<void> {
     try {
         await logout();
@@ -107,7 +122,6 @@ async function handleLogout(): Promise<void> {
     navigate('/');
 }
 
-/** null для гостя и когда бэк недоступен */
 async function loadCurrentUser(): Promise<User | null> {
     try {
         const user = await getMe();
@@ -126,6 +140,27 @@ async function loadHome(): Promise<HomeData> {
         getProducts(),
     ]);
     return { categories, promos, products };
+}
+
+async function loadListing(id: string): Promise<Listing | null> {
+    if (!/^\d+$/.test(id)) return null;
+    try {
+        return await getListing(Number(id));
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 404) return null;
+        throw err;
+    }
+}
+
+async function loadSimilar(listing: Listing): Promise<AdCard[]> {
+    if (!listing.category || listing.is_owner) return [];
+    try {
+        const { items } = await getListings({ category_id: listing.category.id, limit: 7 });
+        return items.filter((item) => item.id !== listing.id).slice(0, 6);
+    } catch (err) {
+        logWarn('Не удалось загрузить похожие объявления:', err);
+        return [];
+    }
 }
 
 async function loadProfile(): Promise<Profile> {
@@ -149,6 +184,7 @@ async function start() {
     setAuthCheck(() => getUser() !== null);
     await loadCurrentUser();
     subscribe(renderApp);
+    subscribeToast(renderApp);
 
     route('/', {
         name: 'home',
@@ -164,8 +200,47 @@ async function start() {
         name: 'category',
         view: (_, { slug }) => <CategoryPage slug={slug} />,
     });
+    route('/listing/new', {
+        name: 'listing-new',
+        tone: 'gray',
+        load: async () => ({ categories: await getCategoryTree() }),
+        view: ({ categories }) => <ListingFormPage categories={categories} />,
+    }, { requireAuth: true });
+    route('/listing/:id/edit', {
+        name: 'listing-edit',
+        tone: 'gray',
+        load: async ({ id }) => {
+            const [listing, categories] = await Promise.all([loadListing(id), getCategoryTree()]);
+            return { listing: listing?.is_owner && listing.status !== 'sold' ? listing : null, categories };
+        },
+        view: ({ listing, categories }) => (listing
+            ? <ListingFormPage listing={listing} categories={categories} />
+            : <NotFoundPage />),
+    }, { requireAuth: true });
+    route('/listing/:id', {
+        name: 'listing',
+        tone: 'gray',
+        load: async ({ id }) => {
+            const listing = await loadListing(id);
+            return { listing, similar: listing ? await loadSimilar(listing) : [] };
+        },
+        view: ({ listing, similar }) => (listing
+            ? <ListingPage listing={listing} similar={similar} user={getUser()} />
+            : <NotFoundPage />),
+    });
     route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
     route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
+    route('/forgot-password', {
+        name: 'forgot-password',
+        layout: 'auth',
+        view: () => <ForgotPasswordPage />,
+    }, { guestOnly: true });
+    route('/reset-password', {
+        name: 'reset-password',
+        layout: 'auth',
+        load: loadResetPassword,
+        view: (data) => <ResetPasswordPage {...data} />,
+    });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
     myListingsRoute('/profile/listings', 'active');
     myListingsRoute('/profile/listings/closed', 'closed');

@@ -1,0 +1,8 @@
+@use '@/shared/styles/mixins' as *;
+
+.delete-blocked-modal {
+    &__ok {
+        @include button-gray;
+        flex: 1;
+    }
+}

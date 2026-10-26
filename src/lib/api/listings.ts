@@ -38,15 +38,11 @@ export interface Listing {
     created_at: string;
     updated_at: string;
 }
-
-/** Поля формы объявления; при правке можно передать любое подмножество */
 export interface ListingData {
     category_id?: number;
     title?: string;
-    /** Порядок задаёт порядок фото, первое — главное */
     photo_ids?: number[];
     description?: string;
-    /** Рубли строкой: "1500" или "1500.50" */
     price?: string;
     is_free?: boolean;
     is_negotiable?: boolean;
@@ -56,7 +52,14 @@ export interface ListingData {
 }
 
 export interface CreateListingData extends ListingData {
-    /** true — на модерацию (по умолчанию), false — черновик */
+    publish?: boolean;
+}
+
+export interface UpdateListingData extends Omit<ListingData, 'category_id' | 'price' | 'condition' | 'address'> {
+    category_id?: number | null;
+    price?: string | null;
+    condition?: Condition | null;
+    address?: string | null;
     publish?: boolean;
 }
 
@@ -94,7 +97,7 @@ export async function createListing(data: CreateListingData): Promise<Listing> {
     return json(await request('/listings', { method: 'POST', ...jsonBody(data) }));
 }
 
-export async function updateListing(id: number, data: ListingData): Promise<Listing> {
+export async function updateListing(id: number, data: UpdateListingData): Promise<Listing> {
     return json(await request(`/listings/${id}`, { method: 'PATCH', ...jsonBody(data) }));
 }
 
@@ -106,7 +109,6 @@ export async function closeListing(id: number, reason: CloseReason): Promise<Lis
     return json(await request(`/listings/${id}/close`, { method: 'POST', ...jsonBody({ reason }) }));
 }
 
-/** Фото загружается до отправки формы, в форму уходит его id */
 export async function uploadListingPhoto(file: Blob): Promise<UploadedPhoto> {
     return json(await request('/listing-photos', { method: 'POST', ...fileBody(file) }));
 }

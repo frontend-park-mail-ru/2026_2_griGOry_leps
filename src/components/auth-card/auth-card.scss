@@ -33,6 +33,42 @@
         color: $color-text-secondary;
     }
 
+    &--status {
+        text-align: center;
+    }
+
+    &--status &__heading {
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &--status &__subtitle {
+        min-height: 0;
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        color: $goget-blue;
+        background: rgba(8, 102, 255, 0.1);
+    }
+
+    &--expired &__icon {
+        color: $color-status-error;
+        background: rgba(219, 38, 38, 0.1);
+    }
+
+    &--success &__icon {
+        color: $color-status-success;
+        background: rgba(33, 161, 82, 0.1);
+    }
+
     @media (max-width: 480px) {
         padding: 24px 16px;
     }

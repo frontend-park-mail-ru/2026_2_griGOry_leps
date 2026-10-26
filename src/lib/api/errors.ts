@@ -15,6 +15,7 @@ export interface ApiErrorOptions {
     listingIds?: number[];
     orderId?: number;
     orderNumber?: number;
+    retryAfter?: number;
 }
 
 export class ApiError extends Error {
@@ -31,6 +32,8 @@ export class ApiError extends Error {
     /** Заказ, из-за которого нельзя удалить объявление (409 "listing has active order") */
     orderId: number | null;
     orderNumber: number | null;
+    /** Через сколько секунд можно повторить запрос после 429, 0 — неизвестно */
+    retryAfter: number;
 
     constructor(status: number, options: ApiErrorOptions = {}) {
         const { network = false, timeout = false, field = '', reason = '' } = options;
@@ -50,6 +53,7 @@ export class ApiError extends Error {
         this.listingIds = options.listingIds ?? [];
         this.orderId = options.orderId ?? null;
         this.orderNumber = options.orderNumber ?? null;
+        this.retryAfter = options.retryAfter ?? 0;
     }
 }
 
@@ -69,6 +73,7 @@ export async function ensureOk(response: Response): Promise<void> {
         listingIds: body.listing_ids,
         orderId: body.order_id,
         orderNumber: body.order_number,
+        retryAfter: Number(response.headers.get('Retry-After')) || 0,
     });
 }
 

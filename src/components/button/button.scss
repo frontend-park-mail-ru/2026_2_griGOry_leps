@@ -19,6 +19,33 @@
         background-color: $goget-blue-hover;
     }
 
+    &--secondary {
+        color: $color-text-strong;
+        background-color: $surface-1;
+
+        &:hover {
+            background-color: $gray-150;
+        }
+    }
+
+    &--outline {
+        color: $color-text-strong;
+        background-color: $surface-0;
+        border: 1px solid $color-border;
+
+        &:hover {
+            background-color: $surface-1;
+        }
+    }
+
+    &--danger {
+        background-color: $color-status-error;
+
+        &:hover {
+            background-color: #b91c1c;
+        }
+    }
+
     &--block {
         width: 100%;
     }
