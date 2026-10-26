@@ -1,0 +1,15 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.skeleton {
+    @include skeleton;
+    display: block;
+    flex-shrink: 0;
+    max-width: 100%;
+}
+
+@keyframes skeleton-pulse {
+    50% {
+        opacity: 0.5;
+    }
+}

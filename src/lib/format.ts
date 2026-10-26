@@ -1,6 +1,6 @@
-const priceFormatter = new Intl.NumberFormat('ru-RU', {
-    maximumFractionDigits: 2,
-});
+const rublesFormatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
+
+const kopecksFormatter = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const dayFormatter = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' });
 
@@ -13,7 +13,8 @@ const ratingFormatter = new Intl.NumberFormat('ru-RU', {
 
 export function formatPrice(price: string | number): string {
     const value = Number(String(price).replace(/\s/g, '').replaceAll(',', '.'));
-    return Number.isFinite(value) ? priceFormatter.format(value) : String(price);
+    if (!Number.isFinite(value)) return String(price);
+    return Number.isInteger(value) ? rublesFormatter.format(value) : kopecksFormatter.format(value);
 }
 
 function toDate(value: string): Date | null {

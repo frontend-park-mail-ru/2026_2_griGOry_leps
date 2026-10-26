@@ -40,4 +40,31 @@
     &__action {
         @include button-orange;
     }
+
+    &__emoji {
+        font-size: 40px;
+        line-height: 44px;
+    }
+
+    &--card {
+        gap: 12px;
+        padding: 64px 32px;
+        background-color: $surface-0;
+        border-radius: $radius-xl;
+    }
+
+    &--card &__title {
+        line-height: 26px;
+        color: $color-text-strong;
+    }
+
+    &--card &__text {
+        max-width: none;
+        line-height: 22px;
+        color: $color-text-secondary;
+    }
+
+    &--card &__action {
+        @include button-blue;
+    }
 }

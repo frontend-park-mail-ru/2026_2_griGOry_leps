@@ -14,7 +14,9 @@ import { logError } from '@/lib/logger';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { PageError } from '@/components/page-error/page-error';
-import { Modal } from '@/components/modal/modal';
+import { Skeleton } from '@/components/skeleton/skeleton';
+import { TextareaField } from '@/components/textarea-field/textarea-field';
+import { DeleteAddressModal } from '@/components/delete-address-modal/delete-address-modal';
 import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
 import './addresses-page.scss';
 
@@ -212,6 +214,15 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
         if (!this.state.deleting) this.setState({ confirmDelete: false, deleteError: '' });
     };
 
+    async reloadAfterDelete(deletedId: number): Promise<Address[]> {
+        try {
+            return await getAddresses();
+        } catch (err) {
+            logError('Не удалось обновить адреса после удаления:', err);
+            return this.state.addresses.filter(({ id }) => id !== deletedId);
+        }
+    }
+
     confirmDelete = async () => {
         const address = this.selectedAddress();
         if (!address) return;
@@ -219,7 +230,7 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
         this.setState({ deleting: true, deleteError: '' });
         try {
             await deleteAddress(address.id);
-            const addresses = this.state.addresses.filter(({ id }) => id !== address.id);
+            const addresses = await this.reloadAfterDelete(address.id);
             this.setState({ addresses, confirmDelete: false, deleting: false });
             this.selectAddress(pickAddress(addresses));
             this.toasts.show('success', 'Адрес удалён');
@@ -284,8 +295,6 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
 
     renderForm() {
         const { values, errors, selectedId, isDefault, saving, addresses } = this.state;
-        const comment = values.comment ?? '';
-        const commentError = errors.comment ?? '';
         const isNew = selectedId === null;
         const selected = this.selectedAddress();
 
@@ -311,24 +320,18 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
                     placeholder="Например, д. 12, кв. 34"
                 />
 
-                <div class={commentError ? 'addresses__field addresses__field--error' : 'addresses__field'}>
-                    <label class="addresses__label" for="address-comment">Комментарий курьеру</label>
-                    <div class="addresses__textarea-box">
-                        <textarea
-                            id="address-comment"
-                            class="addresses__textarea"
-                            name="comment"
-                            maxlength={LIMITS.courierCommentMax}
-                            placeholder="Подъезд, домофон, этаж"
-                            value={comment}
-                            aria-invalid={String(Boolean(commentError))}
-                            onInput={this.handleInput}
-                            onChange={this.handleChange}
-                        />
-                        <span class="addresses__counter">{comment.length} / {LIMITS.courierCommentMax}</span>
-                    </div>
-                    {commentError && <p class="addresses__error">{commentError}</p>}
-                </div>
+                <TextareaField
+                    id="address-comment"
+                    name="comment"
+                    label="Комментарий курьеру"
+                    placeholder="Подъезд, домофон, этаж"
+                    value={values.comment ?? ''}
+                    maxLength={LIMITS.courierCommentMax}
+                    height={112}
+                    error={errors.comment}
+                    onInput={this.handleInput}
+                    onChange={this.handleChange}
+                />
 
                 {(addresses.length > 0 && !selected?.is_default) && (
                     <label class="addresses__default">
@@ -367,23 +370,13 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
         if (!confirmDelete || !address) return null;
 
         return (
-            <Modal
-                title="Удалить адрес?"
-                description={`«${address.street}, ${address.house}» пропадёт из списка адресов доставки.`}
+            <DeleteAddressModal
+                address={address}
+                pending={deleting}
+                error={deleteError}
+                onConfirm={this.confirmDelete}
                 onClose={this.closeDelete}
-                actions={(
-                    <>
-                        <button type="button" class="addresses__delete-confirm" disabled={deleting} onClick={this.confirmDelete}>
-                            Удалить
-                        </button>
-                        <button type="button" class="addresses__delete-cancel" disabled={deleting} onClick={this.closeDelete}>
-                            Отмена
-                        </button>
-                    </>
-                )}
-            >
-                {deleteError && <p class="addresses__error" role="alert">{deleteError}</p>}
-            </Modal>
+            />
         );
     }
 
@@ -393,9 +386,9 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
         if (status === 'loading') {
             return (
                 <div class="addresses__skeleton" aria-busy="true" aria-label="Загрузка">
-                    <span class="addresses__skeleton-card" />
-                    <span class="addresses__skeleton-card" />
-                    <span class="addresses__skeleton-card addresses__skeleton-card--short" />
+                    <Skeleton width={300} height={73} radius={12} />
+                    <Skeleton width={300} height={73} radius={12} />
+                    <Skeleton width={200} height={73} radius={12} />
                 </div>
             );
         }

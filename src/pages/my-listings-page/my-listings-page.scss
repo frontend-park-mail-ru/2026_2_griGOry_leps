@@ -68,20 +68,6 @@
         border-radius: $radius-xl;
     }
 
-    &__skeleton-photo,
-    &__skeleton-bar {
-        display: block;
-        background-color: $gray-200;
-        animation: my-listings-pulse 1.2s ease-in-out infinite;
-    }
-
-    &__skeleton-photo {
-        flex-shrink: 0;
-        width: 144px;
-        height: 108px;
-        border-radius: $radius-lg;
-    }
-
     &__skeleton-bars {
         display: flex;
         flex-direction: column;
@@ -90,57 +76,7 @@
         max-width: 600px;
     }
 
-    &__skeleton-bar {
-        height: 16px;
-        border-radius: $radius-sm;
-
-        &--title {
-            height: 28px;
-        }
-
-        &--short {
-            width: 200px;
-            max-width: 100%;
-        }
-    }
-
-    &__empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        padding: 64px 32px;
-        text-align: center;
-        background-color: $surface-0;
-        border: 1px solid $color-border;
-        border-radius: $radius-xl;
-    }
-
-    &__empty-icon {
-        font-size: 40px;
-        line-height: 44px;
-    }
-
-    &__empty-title {
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 26px;
-        color: $color-text-strong;
-    }
-
-    &__empty-text {
-        font-size: 16px;
-        line-height: 22px;
-        color: $color-text-secondary;
-    }
-
-    &__empty-action {
-        @include button-blue;
-    }
-}
-
-@keyframes my-listings-pulse {
-    50% {
-        opacity: 0.5;
+    &__sentinel {
+        height: 1px;
     }
 }

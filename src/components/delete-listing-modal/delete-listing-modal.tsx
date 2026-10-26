@@ -12,7 +12,7 @@ export interface DeleteListingModalProps {
 export const DeleteListingModal = ({ title, pending, error, onConfirm, onClose }: DeleteListingModalProps) => (
     <Modal
         title="Удалить объявление?"
-        description={`«${title}» будет удалено навсегда вместе с фотографиями. Восстановить его не получится.`}
+        description={`«${title || 'Без названия'}» будет удалено навсегда вместе с фотографиями. Восстановить его не получится.`}
         onClose={onClose}
         actions={(
             <>

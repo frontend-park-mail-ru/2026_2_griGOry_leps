@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@/vdom';
 import type { MyAdCard, MyListingPage, Profile } from '@/lib/api';
 import { MyListingsPage, type MyListingsTab } from './my-listings-page';
@@ -97,7 +97,10 @@ describe('MyListingsPage', () => {
         renderPage();
         await tick();
 
-        expect(root.querySelector('.my-listings__empty-title')?.textContent).toBe('У вас пока нет объявлений');
+        expect(root.querySelector('.empty-state__title')?.textContent).toBe('У вас пока нет объявлений');
+        expect(root.querySelector('.empty-state')?.classList.contains('empty-state--card')).toBe(true);
+        expect(root.querySelector('.empty-state__emoji')?.textContent).toBe('📦');
+        expect(root.querySelector<HTMLButtonElement>('.empty-state__action')?.textContent).toBe('Разместить объявление');
     });
 
     it('при ошибке загрузки показывает ошибку с повтором', async () => {
@@ -151,7 +154,7 @@ describe('MyListingsPage', () => {
 
         expect(api.closeListing).toHaveBeenCalledWith(1, 'sold_on_goget');
         expect(root.querySelectorAll('.my-ad-card')).toHaveLength(0);
-        expect(root.querySelector('.my-listings__empty-title')?.textContent).toBe('Нет активных объявлений');
+        expect(root.querySelector('.empty-state__title')?.textContent).toBe('Нет активных объявлений');
     });
 
     it('оставляет модалку открытой и показывает ошибку, если удалить не удалось', async () => {
@@ -183,7 +186,7 @@ describe('MyListingsPage', () => {
         const tabs = [...root.querySelectorAll('.my-listings__tab')].map((el) => el.textContent);
         expect(tabs).toEqual(['Активные · 0', 'Снятые · 0', 'Черновики · 0']);
         expect(root.querySelector('.profile-sidebar__menu-count')?.textContent).toBe('0');
-        expect(root.querySelector('.my-listings__empty-title')?.textContent).toBe('У вас пока нет объявлений');
+        expect(root.querySelector('.empty-state__title')?.textContent).toBe('У вас пока нет объявлений');
     });
 
     it('берёт counts бэка, если загружены не все объявления', async () => {
@@ -200,4 +203,111 @@ describe('MyListingsPage', () => {
         expect(root.querySelector('.my-listings__tab--active')?.textContent).toBe('Активные · 70');
         expect(root.querySelector('.profile-sidebar__menu-count')?.textContent).toBe('80');
     });
+
+    it('показывает фото по полной ссылке на бэк и «Даром» у бесплатного', async () => {
+        api.getMyListings.mockResolvedValue(listingsPage([
+            { ...ad(1, 'active'), image_url: '/uploads/listings/1.jpg' },
+            { ...ad(2, 'active'), is_free: true, price: '0.00' },
+        ]));
+        renderPage();
+        await tick();
+
+        expect(root.querySelector('[data-ad-id="1"] .my-ad-card__image')?.getAttribute('src'))
+            .toBe('http://localhost:8080/uploads/listings/1.jpg');
+        expect(root.querySelector('[data-ad-id="2"] .my-ad-card__price')?.textContent).toBe('Даром');
+    });
 });
+
+class FakeObserver {
+    static instances: FakeObserver[] = [];
+
+    callback: IntersectionObserverCallback;
+
+    targets: Element[] = [];
+
+    constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+        FakeObserver.instances.push(this);
+    }
+
+    observe(target: Element) {
+        this.targets.push(target);
+    }
+
+    unobserve(target: Element) {
+        this.targets = this.targets.filter((el) => el !== target);
+    }
+
+    disconnect() {
+        this.targets = [];
+    }
+
+    reveal() {
+        const entries = this.targets.map((target) => ({ isIntersecting: true, target }) as IntersectionObserverEntry);
+        this.callback(entries, this as unknown as IntersectionObserver);
+    }
+}
+
+function revealEnd() {
+    FakeObserver.instances.forEach((observer) => observer.reveal());
+}
+
+function pageOf(items: MyAdCard[], total: number, offset = 0): MyListingPage {
+    return { ...listingsPage(items), total, offset };
+}
+
+const many = (from: number, count: number) => Array.from({ length: count }, (_, i) => ad(from + i, 'active'));
+
+describe('MyListingsPage: бесконечная лента', () => {
+    beforeEach(() => {
+        FakeObserver.instances = [];
+        vi.stubGlobal('IntersectionObserver', FakeObserver);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('догружает следующую страницу, когда конец списка виден', async () => {
+        api.getMyListings
+            .mockResolvedValueOnce(pageOf(many(1, 60), 70))
+            .mockResolvedValueOnce(pageOf(many(61, 10), 70, 60));
+        renderPage();
+        await tick();
+
+        expect(root.querySelectorAll('.my-ad-card')).toHaveLength(60);
+
+        revealEnd();
+        await tick();
+
+        expect(api.getMyListings).toHaveBeenLastCalledWith({ limit: 60, offset: 60 });
+        expect(root.querySelectorAll('.my-ad-card')).toHaveLength(70);
+    });
+
+    it('показывает строку-скелетон, пока грузится следующая страница', async () => {
+        api.getMyListings
+            .mockResolvedValueOnce(pageOf(many(1, 60), 70))
+            .mockReturnValueOnce(new Promise(() => {}));
+        renderPage();
+        await tick();
+
+        revealEnd();
+        await tick();
+
+        expect(root.querySelectorAll('.my-ad-card')).toHaveLength(60);
+        expect(root.querySelectorAll('.my-listings__skeleton')).toHaveLength(1);
+    });
+
+    it('не грузит дальше, когда загружено всё', async () => {
+        api.getMyListings.mockResolvedValueOnce(pageOf(many(1, 5), 5));
+        renderPage();
+        await tick();
+
+        revealEnd();
+        await tick();
+
+        expect(api.getMyListings).toHaveBeenCalledTimes(1);
+        expect(root.querySelector('.my-listings__sentinel')).toBeNull();
+    });
+});
+
