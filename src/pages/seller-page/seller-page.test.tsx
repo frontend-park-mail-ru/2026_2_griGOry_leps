@@ -12,6 +12,10 @@ const api = vi.hoisted(() => ({
     reportSeller: vi.fn(),
 }));
 
+const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
+
+vi.mock('@/lib/toast', () => toast);
+
 vi.mock('@/lib/api', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api')>()),
     ...api,
@@ -133,7 +137,8 @@ describe('SellerPage', () => {
         expect(query('#seller-sort').textContent).toBe('Сначала новые');
         expect(root.querySelectorAll('.product-card')).toHaveLength(12);
         expect(query('.product-card__meta').textContent).toBe('Москва · размещено сегодня');
-        expect(query<HTMLAnchorElement>('.seller-page__card-link').getAttribute('href')).toBe(`/listing/${ad(1).id}`);
+        expect(query<HTMLAnchorElement>('.product-card__link').getAttribute('href')).toBe(`/listing/${ad(1).id}`);
+        expect(query('.product-card__rating').textContent).toBe('4,8');
         expect(api.getSellerListings).toHaveBeenCalledWith(5, { limit: 60, sort: 'newest', category_id: undefined });
     });
 
@@ -265,7 +270,7 @@ describe('SellerPage', () => {
 
         expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/seller/5`);
         expect(root.querySelector('.seller-header__menu')).toBeNull();
-        expect(query('.toast--success .toast__message').textContent).toBe('Ссылка скопирована');
+        expect(toast.showToast).toHaveBeenCalledWith('Ссылка скопирована');
     });
 
     it('гостю не предлагает пожаловаться на продавца', async () => {
@@ -292,7 +297,7 @@ describe('SellerPage', () => {
         await tick();
 
         expect(query('.seller-page__chip--active').textContent).toBe('Все · 12');
-        expect(query('.toast--error .toast__message').textContent).toBe('Не удалось загрузить объявления. Попробуйте ещё раз');
+        expect(toast.showToast).toHaveBeenCalledWith('Не удалось загрузить объявления. Попробуйте ещё раз', 'error');
 
         api.getSellerListings.mockRejectedValueOnce(new ApiError(500));
         query<HTMLButtonElement>('#seller-sort').click();
@@ -325,7 +330,7 @@ describe('SellerPage', () => {
         await tick();
 
         expect(query('#seller-review-sort').textContent).toContain('Сначала новые');
-        expect(query('.toast--error .toast__message').textContent).toBe('Не удалось загрузить отзывы. Попробуйте ещё раз');
+        expect(toast.showToast).toHaveBeenCalledWith('Не удалось загрузить отзывы. Попробуйте ещё раз', 'error');
     });
 
     it('отправляет жалобу на продавца', async () => {
@@ -355,7 +360,7 @@ describe('SellerPage', () => {
 
         expect(api.reportSeller).toHaveBeenCalledWith(5, { reason: 'rude', comment: 'Хамил в переписке' });
         expect(root.querySelector('.modal')).toBeNull();
-        expect(query('.toast--success .toast__message').textContent).toBe('Жалоба отправлена. Спасибо!');
+        expect(toast.showToast).toHaveBeenCalledWith('Жалоба отправлена. Спасибо!');
     });
 
     it('оставляет модалку жалобы открытой при ошибке', async () => {
@@ -447,7 +452,7 @@ describe('SellerPage: гонки запросов', () => {
         await tick();
 
         expect(root.querySelector('.page-error')).toBeNull();
-        expect(root.querySelector('.toast')).toBeNull();
+        expect(toast.showToast).not.toHaveBeenCalled();
         expect([...root.querySelectorAll<HTMLElement>('.product-card')].map((el) => el.dataset.adId)).toEqual(['61', '62']);
     });
 
