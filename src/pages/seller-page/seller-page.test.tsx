@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@/vdom';
 import { ApiError, type AdCard, type Review, type ReviewPage, type SellerAdPage, type SellerProfile } from '@/lib/api';
 import { formatPosted } from '@/lib/format';
-import { clearUser } from '@/store';
+import { clearUser, setUser } from '@/store';
 import { SellerPage, type SellerTab } from './seller-page';
 
 const api = vi.hoisted(() => ({
@@ -128,11 +128,12 @@ describe('SellerPage', () => {
         expect(query('.seller-header__details').textContent).toBe('На GoGET с 2022 года · Москва, м. Сокол');
         expect(texts('.seller-header__badge')).toEqual(['Телефон подтверждён', '140 завершённых продаж']);
         expect(texts('.seller-page__tab')).toEqual(['Объявления · 12', 'Отзывы · 56']);
-        expect(texts('.breadcrumbs > *')).toEqual(['Главная', '/', 'Все категории']);
+        expect(texts('.breadcrumbs > *')).toEqual(['Главная', '/', `Продавец ${seller.first_name}`]);
         expect(texts('.seller-page__chip')).toEqual(['Все · 12', 'Спорт и отдых · 10', 'Детские товары · 2']);
         expect(query('#seller-sort').textContent).toBe('Сначала новые');
         expect(root.querySelectorAll('.product-card')).toHaveLength(12);
         expect(query('.product-card__meta').textContent).toBe('Москва · размещено сегодня');
+        expect(query<HTMLAnchorElement>('.seller-page__card-link').getAttribute('href')).toBe(`/listing/${ad(1).id}`);
         expect(api.getSellerListings).toHaveBeenCalledWith(5, { limit: 60, sort: 'newest', category_id: undefined });
     });
 
@@ -374,6 +375,36 @@ describe('SellerPage', () => {
         await tick();
 
         expect(query('.report-seller-modal__error').textContent).toBe('Не удалось отправить жалобу. Попробуйте ещё раз');
+    });
+
+    it('показывает лимит запросов в ошибке жалобы', async () => {
+        api.reportSeller.mockRejectedValue(new ApiError(429, { reason: 'too many requests', retryAfter: 120 }));
+        renderPage();
+        await tick();
+
+        query<HTMLButtonElement>('.seller-header__more-button').click();
+        await tick();
+        clickText('.seller-header__menu-item', 'Пожаловаться на продавца');
+        await tick();
+        const radio = query<HTMLInputElement>('.report-seller-modal__radio[value="fraud"]');
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+        await tick();
+        query<HTMLButtonElement>('.report-seller-modal__confirm').click();
+        await tick();
+
+        expect(query('.report-seller-modal__error').textContent).toBe('Слишком много попыток. Попробуйте через 2 минуты');
+    });
+
+    it('не даёт пожаловаться на себя', async () => {
+        setUser({ id: 5, email: 'timur@mail.ru', first_name: 'Тимур', phone: '+79990000000' });
+        renderPage();
+        await tick();
+
+        query<HTMLButtonElement>('.seller-header__more-button').click();
+        await tick();
+
+        expect(texts('.seller-header__menu-item')).toEqual(['Поделиться профилем', 'Скопировать ссылку']);
     });
 
     it('перезагружает данные при переходе к другому продавцу', async () => {
