@@ -24,7 +24,7 @@ export interface Review {
     rating: number;
     text: string;
     listing_title: string | null;
-    photos: string[];
+    photos: string[] | null;
     created_at: string;
 }
 

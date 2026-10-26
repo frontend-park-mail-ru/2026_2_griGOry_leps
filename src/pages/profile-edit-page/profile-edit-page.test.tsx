@@ -57,7 +57,7 @@ async function submit() {
 }
 
 function chooseFile(file: File) {
-    const input = query<HTMLInputElement>('.profile-edit__file');
+    const input = query<HTMLInputElement>('.avatar-uploader__file');
     Object.defineProperty(input, 'files', { value: [file], configurable: true });
     input.dispatchEvent(new Event('change', { bubbles: true }));
 }
@@ -82,11 +82,11 @@ describe('ProfileEditPage', () => {
         expect(query<HTMLInputElement>('#profile-first-name').value).toBe('иван');
         expect(query<HTMLInputElement>('#profile-phone').value).toBe('+79990000000');
         expect(query('#profile-city').textContent).toBe('Москва');
-        expect(query('.profile-edit__counter').textContent).toBe('26 / 500');
+        expect(query('#profile-about ~ .textarea-field__counter').textContent).toBe('26 / 500');
         expect(query('.profile-sidebar__menu-item--active').textContent).toBe('Настройки');
         expect(query('.profile-sidebar__menu-count').textContent).toBe('4');
 
-        const avatar = query('.profile-edit__avatar');
+        const avatar = query('.avatar-uploader__avatar');
         expect(avatar.textContent).toBe('И');
         expect(avatar.style.backgroundColor).not.toBe('');
     });
@@ -232,7 +232,7 @@ describe('ProfileEditPage', () => {
         await tick();
 
         expect(api.uploadAvatar).toHaveBeenCalledTimes(1);
-        expect(query<HTMLImageElement>('img.profile-edit__avatar').getAttribute('src')).toBe('http://localhost:8080/uploads/avatar.png');
+        expect(query<HTMLImageElement>('img.avatar-uploader__avatar').getAttribute('src')).toBe('http://localhost:8080/uploads/avatar.png');
         expect(query<HTMLImageElement>('img.profile-sidebar__avatar').getAttribute('src')).toBe('http://localhost:8080/uploads/avatar.png');
     });
 
@@ -244,7 +244,7 @@ describe('ProfileEditPage', () => {
         await tick();
 
         expect(api.uploadAvatar).not.toHaveBeenCalled();
-        expect(query('.profile-edit__avatar-hint--error').textContent).toBe('Можно загрузить только JPG или PNG');
+        expect(query('.avatar-uploader__hint--error').textContent).toBe('Можно загрузить только JPG или PNG');
     });
 });
 
@@ -319,8 +319,8 @@ describe('ProfileEditPage: ошибки загрузки фото', () => {
         chooseFile(new File(['png'], 'avatar.png', { type: 'image/png' }));
         await tick();
 
-        expect(query('.profile-edit__avatar-hint--error').textContent).toBe('Файл больше 5 МБ. Выберите фото поменьше');
-        expect(query('.profile-edit__avatar').textContent).toBe('И');
+        expect(query('.avatar-uploader__hint--error').textContent).toBe('Файл больше 5 МБ. Выберите фото поменьше');
+        expect(query('.avatar-uploader__avatar').textContent).toBe('И');
     });
 
     it('не отправляет файл больше 5 МБ', async () => {
@@ -333,7 +333,7 @@ describe('ProfileEditPage: ошибки загрузки фото', () => {
         await tick();
 
         expect(api.uploadAvatar).not.toHaveBeenCalled();
-        expect(query('.profile-edit__avatar-hint--error').textContent).toBe('Файл больше 5 МБ. Выберите фото поменьше');
+        expect(query('.avatar-uploader__hint--error').textContent).toBe('Файл больше 5 МБ. Выберите фото поменьше');
     });
 });
 

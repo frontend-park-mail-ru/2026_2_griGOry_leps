@@ -62,6 +62,12 @@
     font-family: $font-body;
 }
 
+@mixin skeleton {
+    background-color: $gray-200;
+    border-radius: $radius-sm;
+    animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
 @mixin button-base {
     display: inline-flex;
     align-items: center;

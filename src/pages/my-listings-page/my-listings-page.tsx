@@ -13,6 +13,8 @@ import { logError } from '@/lib/logger';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { MyAdCard } from '@/components/my-ad-card/my-ad-card';
 import { PageError } from '@/components/page-error/page-error';
+import { EmptyState } from '@/components/empty-state/empty-state';
+import { Skeleton } from '@/components/skeleton/skeleton';
 import { CloseListingModal } from '@/components/close-listing-modal/close-listing-modal';
 import { DeleteListingModal } from '@/components/delete-listing-modal/delete-listing-modal';
 import './my-listings-page.scss';
@@ -32,6 +34,8 @@ export interface MyListingsPageState {
     items: MyAd[];
     counts: Counts | null;
     complete: boolean;
+    loadingMore: boolean;
+    moreError: boolean;
     modal: { type: 'close' | 'delete'; ad: MyAd } | null;
     pending: boolean;
     actionError: string;
@@ -77,17 +81,42 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         items: [],
         counts: null,
         complete: false,
+        loadingMore: false,
+        moreError: false,
         modal: null,
         pending: false,
         actionError: '',
     };
 
+    observer: IntersectionObserver | null = null;
+
+    sentinel: Element | null = null;
+
     componentDidMount() {
+        if (typeof IntersectionObserver !== 'undefined') {
+            this.observer = new IntersectionObserver(this.handleIntersect, { rootMargin: '400px 0px' });
+        }
         void this.load();
     }
 
+    componentWillUnmount() {
+        this.observer?.disconnect();
+        this.observer = null;
+    }
+
+    setSentinel = (el: Element | null) => {
+        if (el === this.sentinel) return;
+        if (this.sentinel) this.observer?.unobserve(this.sentinel);
+        this.sentinel = el;
+        if (el) this.observer?.observe(el);
+    };
+
+    handleIntersect = (entries: IntersectionObserverEntry[]) => {
+        if (entries.some(({ isIntersecting }) => isIntersecting)) void this.loadMore();
+    };
+
     load = async () => {
-        this.setState({ status: 'loading' });
+        this.setState({ status: 'loading', moreError: false });
         try {
             const page = await getMyListings({ limit: LISTINGS_LIMIT });
             const items = page.items ?? [];
@@ -102,6 +131,34 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
             this.setState({ status: 'error' });
         }
     };
+
+    loadMore = async () => {
+        const { status, complete, loadingMore, items } = this.state;
+        if (status !== 'ready' || complete || loadingMore) return;
+
+        this.setState({ loadingMore: true, moreError: false });
+        try {
+            const page = await getMyListings({ limit: LISTINGS_LIMIT, offset: items.length });
+            const next = [...this.state.items, ...(page.items ?? [])];
+            this.setState({
+                items: next,
+                counts: page.counts ?? this.state.counts,
+                complete: next.length >= (page.total ?? 0) || (page.items ?? []).length === 0,
+                loadingMore: false,
+            });
+            this.recheckSentinel();
+        } catch (err) {
+            logError('Не удалось догрузить мои объявления:', err);
+            this.setState({ loadingMore: false, moreError: true });
+        }
+    };
+
+    recheckSentinel() {
+        const el = this.sentinel;
+        if (!el || !this.observer) return;
+        this.observer.unobserve(el);
+        this.observer.observe(el);
+    }
 
     openModal = (type: 'close' | 'delete', ad: MyAd) => {
         this.setState({ modal: { type, ad }, pending: false, actionError: '' });
@@ -180,20 +237,24 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
         );
     }
 
+    renderSkeletonRow(key: number) {
+        return (
+            <div key={`skeleton-${key}`} class="my-listings__skeleton">
+                <Skeleton width={144} height={108} radius={12} />
+                <span class="my-listings__skeleton-bars">
+                    <Skeleton width="100%" height={28} />
+                    <Skeleton width="100%" height={16} />
+                    <Skeleton width="100%" height={16} />
+                    <Skeleton width={200} height={16} />
+                </span>
+            </div>
+        );
+    }
+
     renderSkeleton() {
         return (
             <div class="my-listings__list" aria-busy="true" aria-label="Загрузка">
-                {Array.from({ length: SKELETON_ROWS }, (_, i) => (
-                    <div key={i} class="my-listings__skeleton">
-                        <span class="my-listings__skeleton-photo" />
-                        <span class="my-listings__skeleton-bars">
-                            <span class="my-listings__skeleton-bar my-listings__skeleton-bar--title" />
-                            <span class="my-listings__skeleton-bar" />
-                            <span class="my-listings__skeleton-bar" />
-                            <span class="my-listings__skeleton-bar my-listings__skeleton-bar--short" />
-                        </span>
-                    </div>
-                ))}
+                {Array.from({ length: SKELETON_ROWS }, (_, i) => this.renderSkeletonRow(i))}
             </div>
         );
     }
@@ -201,33 +262,42 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
     renderEmpty() {
         if (!this.getCounts()?.all) {
             return (
-                <div class="my-listings__empty">
-                    <span class="my-listings__empty-icon" aria-hidden="true">📦</span>
-                    <h2 class="my-listings__empty-title">У вас пока нет объявлений</h2>
-                    <p class="my-listings__empty-text">Отпустите лишнее: создайте объявление в несколько кликов</p>
-                    <button type="button" class="my-listings__empty-action" disabled>Разместить объявление</button>
-                </div>
+                <EmptyState
+                    card
+                    emoji="📦"
+                    title="У вас пока нет объявлений"
+                    text="Отпустите лишнее: создайте объявление в несколько кликов"
+                    action={{ label: 'Разместить объявление', disabled: true }}
+                />
             );
         }
 
         const { title, text } = EMPTY_TAB_TEXT[this.props.tab];
+        return <EmptyState card title={title} text={text} />;
+    }
+
+    renderTail() {
+        const { complete, loadingMore, moreError } = this.state;
+        if (complete) return null;
+        if (moreError) return <PageError onRetry={this.loadMore} />;
+
         return (
-            <div class="my-listings__empty">
-                <h2 class="my-listings__empty-title">{title}</h2>
-                <p class="my-listings__empty-text">{text}</p>
-            </div>
+            <>
+                {loadingMore && this.renderSkeletonRow(0)}
+                <div class="my-listings__sentinel" ref={this.setSentinel} aria-hidden="true" />
+            </>
         );
     }
 
     renderList() {
-        const { status, items } = this.state;
+        const { status, items, complete } = this.state;
 
         if (status === 'loading') return this.renderSkeleton();
         if (status === 'error') return <PageError onRetry={this.load} />;
 
         const statuses = TABS.find(({ tab }) => tab === this.props.tab)?.statuses ?? [];
         const visible = items.filter((item) => statuses.includes(item.status));
-        if (visible.length === 0) return this.renderEmpty();
+        if (visible.length === 0 && complete) return this.renderEmpty();
 
         return (
             <div class="my-listings__list">
@@ -239,6 +309,7 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
                         onDelete={(item) => this.openModal('delete', item)}
                     />
                 ))}
+                {this.renderTail()}
             </div>
         );
     }

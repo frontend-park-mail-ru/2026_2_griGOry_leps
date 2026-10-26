@@ -1,6 +1,7 @@
 import { Component } from '@/vdom';
 import type { ReportReason } from '@/lib/api';
 import { Modal } from '@/components/modal/modal';
+import { TextareaField } from '@/components/textarea-field/textarea-field';
 import './report-seller-modal.scss';
 
 export const REPORT_COMMENT_MAX = 500;
@@ -78,18 +79,17 @@ export class ReportSellerModal extends Component<ReportSellerModalProps, ReportS
                         </label>
                     ))}
                 </div>
-                <div class="report-seller-modal__textarea-box">
-                    <textarea
-                        class="report-seller-modal__textarea"
-                        aria-label="Комментарий к жалобе"
-                        placeholder="Опишите, что произошло"
-                        maxlength={REPORT_COMMENT_MAX}
-                        value={comment}
-                        disabled={pending}
-                        onInput={this.handleComment}
-                    />
-                    <span class="report-seller-modal__counter">{comment.length} / {REPORT_COMMENT_MAX}</span>
-                </div>
+                <TextareaField
+                    id="report-comment"
+                    name="comment"
+                    ariaLabel="Комментарий к жалобе"
+                    placeholder="Опишите, что произошло"
+                    maxLength={REPORT_COMMENT_MAX}
+                    height={100}
+                    value={comment}
+                    disabled={pending}
+                    onInput={this.handleComment}
+                />
                 {error && <p class="report-seller-modal__error" role="alert">{error}</p>}
             </Modal>
         );

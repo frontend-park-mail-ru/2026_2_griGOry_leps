@@ -1,4 +1,4 @@
-import type { ListingStatus, MyAdCard as MyAd } from '@/lib/api';
+import { assetUrl, type ListingStatus, type MyAdCard as MyAd } from '@/lib/api';
 import { formatDay, formatPrice } from '@/lib/format';
 import './my-ad-card.scss';
 
@@ -32,18 +32,19 @@ function getMeta(ad: MyAd): string {
 }
 
 function getPrice(ad: MyAd): string {
-    return ad.is_free ? 'Бесплатно' : `${formatPrice(ad.price)} ₽`;
+    return ad.is_free ? 'Даром' : `${formatPrice(ad.price)} ₽`;
 }
 
 export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
     const { label, tone } = STATUS[ad.status];
     const dimmed = DIMMED.includes(ad.status);
     const canClose = ad.status === 'active' || ad.status === 'moderation';
+    const imageUrl = assetUrl(ad.image_url);
 
     return (
         <article class="my-ad-card" data-ad-id={ad.id}>
             <div class={dimmed ? 'my-ad-card__photo my-ad-card__photo--dimmed' : 'my-ad-card__photo'}>
-                {ad.image_url && <img class="my-ad-card__image" src={ad.image_url} alt={ad.title} loading="lazy" />}
+                {imageUrl && <img class="my-ad-card__image" src={imageUrl} alt={ad.title} loading="lazy" />}
             </div>
 
             <div class="my-ad-card__info">

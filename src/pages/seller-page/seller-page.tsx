@@ -22,6 +22,7 @@ import { ReviewCard } from '@/components/review-card/review-card';
 import { RatingSummary } from '@/components/rating-summary/rating-summary';
 import { ReportSellerModal } from '@/components/report-seller-modal/report-seller-modal';
 import { Select } from '@/components/select/select';
+import { Skeleton } from '@/components/skeleton/skeleton';
 import { PageError } from '@/components/page-error/page-error';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
@@ -34,6 +35,7 @@ type LoadStatus = 'idle' | 'loading' | 'error' | 'ready';
 export interface SellerPageProps {
     sellerId: number;
     tab: SellerTab;
+    authorized: boolean;
 }
 
 export interface SellerPageState {
@@ -45,6 +47,9 @@ export interface SellerPageState {
     categoryId: number | null;
     sort: Sort;
     refreshingListings: boolean;
+    listingsComplete: boolean;
+    loadingMoreListings: boolean;
+    moreListingsError: boolean;
     reviewsStatus: LoadStatus;
     reviews: Review[];
     reviewsPage: Omit<ReviewPage, 'items'> | null;
@@ -80,6 +85,14 @@ function sellerUrl(id: number, tab: SellerTab = 'listings'): string {
     return tab === 'listings' ? `/seller/${id}` : `/seller/${id}/${tab}`;
 }
 
+type ListingsFilter = Pick<SellerPageState, 'categoryId' | 'sort'>;
+
+type ReviewsFilter = Pick<SellerPageState, 'reviewSort' | 'withPhotos'>;
+
+const DEFAULT_LISTINGS_FILTER: ListingsFilter = { categoryId: null, sort: 'newest' };
+
+const DEFAULT_REVIEWS_FILTER: ReviewsFilter = { reviewSort: 'newest', withPhotos: false };
+
 function initialState(): SellerPageState {
     return {
         status: 'loading',
@@ -87,14 +100,15 @@ function initialState(): SellerPageState {
         listingsStatus: 'idle',
         listings: [],
         categories: [],
-        categoryId: null,
-        sort: 'newest',
+        ...DEFAULT_LISTINGS_FILTER,
         refreshingListings: false,
+        listingsComplete: false,
+        loadingMoreListings: false,
+        moreListingsError: false,
         reviewsStatus: 'idle',
         reviews: [],
         reviewsPage: null,
-        reviewSort: 'newest',
-        withPhotos: false,
+        ...DEFAULT_REVIEWS_FILTER,
         loadingMoreReviews: false,
         refreshingReviews: false,
         reportOpen: false,
@@ -115,9 +129,20 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
 
     reviewsRequest = 0;
 
+    appliedListings: ListingsFilter = DEFAULT_LISTINGS_FILTER;
+
+    appliedReviews: ReviewsFilter = DEFAULT_REVIEWS_FILTER;
+
+    observer: IntersectionObserver | null = null;
+
+    sentinel: Element | null = null;
+
     toasts = new ToastTimer((toast) => this.setState({ toast }));
 
     componentDidMount() {
+        if (typeof IntersectionObserver !== 'undefined') {
+            this.observer = new IntersectionObserver(this.handleIntersect, { rootMargin: '400px 0px' });
+        }
         void this.load();
     }
 
@@ -125,6 +150,8 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         if (this.props.sellerId !== this.loadedId) {
             this.listingsRequest += 1;
             this.reviewsRequest += 1;
+            this.appliedListings = DEFAULT_LISTINGS_FILTER;
+            this.appliedReviews = DEFAULT_REVIEWS_FILTER;
             this.setState(initialState());
             void this.load();
             return;
@@ -137,6 +164,26 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         this.listingsRequest += 1;
         this.reviewsRequest += 1;
         this.toasts.stop();
+        this.observer?.disconnect();
+        this.observer = null;
+    }
+
+    setSentinel = (el: Element | null) => {
+        if (el === this.sentinel) return;
+        if (this.sentinel) this.observer?.unobserve(this.sentinel);
+        this.sentinel = el;
+        if (el) this.observer?.observe(el);
+    };
+
+    handleIntersect = (entries: IntersectionObserverEntry[]) => {
+        if (entries.some(({ isIntersecting }) => isIntersecting)) void this.loadMoreListings();
+    };
+
+    recheckSentinel() {
+        const el = this.sentinel;
+        if (!el || !this.observer) return;
+        this.observer.unobserve(el);
+        this.observer.observe(el);
     }
 
     load = async () => {
@@ -177,8 +224,11 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         const { categoryId, sort } = this.state;
         const request = ++this.listingsRequest;
 
-        if (this.state.listingsStatus === 'ready') this.setState({ refreshingListings: true });
-        else this.setState({ listingsStatus: 'loading' });
+        if (this.state.listingsStatus === 'ready') {
+            this.setState({ refreshingListings: true, loadingMoreListings: false, moreListingsError: false });
+        } else {
+            this.setState({ listingsStatus: 'loading', moreListingsError: false });
+        }
         try {
             const page = await getSellerListings(sellerId, {
                 limit: LISTINGS_LIMIT,
@@ -186,21 +236,58 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                 category_id: categoryId ?? undefined,
             });
             if (request !== this.listingsRequest) return;
+            const listings = page.items ?? [];
+            this.appliedListings = { categoryId, sort };
             this.setState({
                 listingsStatus: 'ready',
                 refreshingListings: false,
-                listings: page.items ?? [],
+                listings,
+                listingsComplete: listings.length >= (page.total ?? 0),
                 categories: page.categories ?? [],
             });
+            this.recheckSentinel();
         } catch (err) {
             if (request !== this.listingsRequest) return;
             logError('Не удалось загрузить объявления продавца:', err);
             if (this.state.listingsStatus === 'ready') {
-                this.setState({ refreshingListings: false });
+                this.setState({ refreshingListings: false, ...this.appliedListings });
                 this.toasts.show('error', 'Не удалось загрузить объявления. Попробуйте ещё раз');
             } else {
                 this.setState({ listingsStatus: 'error' });
             }
+        }
+    };
+
+    loadMoreListings = async () => {
+        const { sellerId } = this.props;
+        const {
+            listingsStatus, listingsComplete, loadingMoreListings, refreshingListings, listings,
+        } = this.state;
+        if (listingsStatus !== 'ready' || listingsComplete || loadingMoreListings || refreshingListings) return;
+        const { categoryId, sort } = this.appliedListings;
+        const request = this.listingsRequest;
+
+        this.setState({ loadingMoreListings: true, moreListingsError: false });
+        try {
+            const page = await getSellerListings(sellerId, {
+                limit: LISTINGS_LIMIT,
+                offset: listings.length,
+                sort,
+                category_id: categoryId ?? undefined,
+            });
+            if (request !== this.listingsRequest) return;
+            const items = page.items ?? [];
+            const next = [...this.state.listings, ...items];
+            this.setState({
+                listings: next,
+                listingsComplete: next.length >= (page.total ?? 0) || items.length === 0,
+                loadingMoreListings: false,
+            });
+            this.recheckSentinel();
+        } catch (err) {
+            if (request !== this.listingsRequest) return;
+            logError('Не удалось догрузить объявления продавца:', err);
+            this.setState({ loadingMoreListings: false, moreListingsError: true });
         }
     };
 
@@ -221,6 +308,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                 with_photos: withPhotos || undefined,
             });
             if (request !== this.reviewsRequest) return;
+            this.appliedReviews = { reviewSort, withPhotos };
             this.setState(({ reviews: current }) => ({
                 reviewsStatus: 'ready',
                 loadingMoreReviews: false,
@@ -231,8 +319,11 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         } catch (err) {
             if (request !== this.reviewsRequest) return;
             logError('Не удалось загрузить отзывы:', err);
-            if (more || this.state.reviewsStatus === 'ready') {
-                this.setState({ loadingMoreReviews: false, refreshingReviews: false });
+            if (more) {
+                this.setState({ loadingMoreReviews: false });
+                this.toasts.show('error', 'Не удалось загрузить отзывы. Попробуйте ещё раз');
+            } else if (this.state.reviewsStatus === 'ready') {
+                this.setState({ loadingMoreReviews: false, refreshingReviews: false, ...this.appliedReviews });
                 this.toasts.show('error', 'Не удалось загрузить отзывы. Попробуйте ещё раз');
             } else {
                 this.setState({ reviewsStatus: 'error' });
@@ -335,17 +426,21 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         );
     }
 
+    renderCardSkeleton(key: number) {
+        return (
+            <div key={key} class="seller-page__card-skeleton">
+                <Skeleton height={200} radius={16} />
+                <Skeleton width={120} height={22} />
+                <Skeleton width={240} height={16} />
+                <Skeleton width={160} height={16} />
+            </div>
+        );
+    }
+
     renderGridSkeleton() {
         return (
             <div class="seller-page__grid" aria-busy="true" aria-label="Загрузка">
-                {Array.from({ length: SKELETON_CARDS }, (_, i) => (
-                    <div key={i} class="seller-page__card-skeleton">
-                        <span class="seller-page__bar seller-page__bar--image" />
-                        <span class="seller-page__bar seller-page__bar--price" />
-                        <span class="seller-page__bar seller-page__bar--wide" />
-                        <span class="seller-page__bar seller-page__bar--narrow" />
-                    </div>
-                ))}
+                {Array.from({ length: SKELETON_CARDS }, (_, i) => this.renderCardSkeleton(i))}
             </div>
         );
     }
@@ -353,12 +448,12 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     renderHeaderSkeleton() {
         return (
             <div class="seller-page__header-skeleton" aria-busy="true" aria-label="Загрузка">
-                <span class="seller-page__bar seller-page__bar--avatar" />
+                <Skeleton width={120} height={120} circle />
                 <span class="seller-page__header-bars">
-                    <span class="seller-page__bar seller-page__bar--title" />
-                    <span class="seller-page__bar" />
-                    <span class="seller-page__bar" />
-                    <span class="seller-page__bar seller-page__bar--short" />
+                    <Skeleton height={28} />
+                    <Skeleton height={16} />
+                    <Skeleton height={16} />
+                    <Skeleton width={200} height={16} />
                 </span>
             </div>
         );
@@ -397,6 +492,19 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         );
     }
 
+    renderListingsTail() {
+        const { listingsComplete, loadingMoreListings, moreListingsError } = this.state;
+        if (listingsComplete) return null;
+        if (moreListingsError) return <PageError onRetry={this.loadMoreListings} />;
+
+        return (
+            <>
+                {loadingMoreListings && this.renderGridSkeleton()}
+                <div class="seller-page__sentinel" ref={this.setSentinel} aria-hidden="true" />
+            </>
+        );
+    }
+
     renderListings() {
         const { listingsStatus, listings, categories, refreshingListings } = this.state;
 
@@ -423,6 +531,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                 >
                     {listings.map((ad) => <ProductCard key={ad.id} {...ad} />)}
                 </div>
+                {this.renderListingsTail()}
             </>
         );
     }
@@ -506,7 +615,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                     reviewsHref={sellerUrl(seller.id, 'reviews')}
                     onShare={this.share}
                     onCopyLink={this.copyLink}
-                    onReport={this.openReport}
+                    onReport={this.props.authorized ? this.openReport : undefined}
                 />
                 {this.renderTabs()}
                 {tab === 'listings' && this.renderListings()}
@@ -532,7 +641,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
             <div class="seller-page">
                 <Breadcrumbs flush strong items={[{ label: 'Главная', href: '/' }, { label: 'Все категории' }]} />
                 {this.renderContent()}
-                {reportOpen && (
+                {reportOpen && this.props.authorized && (
                     <ReportSellerModal
                         pending={reportPending}
                         error={reportError}

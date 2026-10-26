@@ -1,12 +1,7 @@
 import { assetUrl, type Review } from '@/lib/api';
-import { formatDay } from '@/lib/format';
+import { formatDay, formatStars } from '@/lib/format';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './review-card.scss';
-
-export function formatStars(rating: number): string {
-    const full = Math.max(0, Math.min(5, Math.round(rating)));
-    return '★'.repeat(full) + '☆'.repeat(5 - full);
-}
 
 export const ReviewCard = ({ review }: { review: Review }) => {
     const { author, rating, text, listing_title: listingTitle, photos, created_at: createdAt } = review;
@@ -23,13 +18,13 @@ export const ReviewCard = ({ review }: { review: Review }) => {
                 <span class="review-card__stars" aria-label={`Оценка ${rating} из 5`}>{formatStars(rating)}</span>
             </div>
             {text && <p class="review-card__text">{text}</p>}
-            {photos.length > 0 && (
+            {photos?.length ? (
                 <div class="review-card__photos">
                     {photos.map((photo) => (
                         <img key={photo} class="review-card__photo" src={assetUrl(photo) ?? ''} alt="Фото к отзыву" loading="lazy" />
                     ))}
                 </div>
-            )}
+            ) : null}
         </article>
     );
 };

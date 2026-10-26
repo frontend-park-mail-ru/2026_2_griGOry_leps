@@ -72,8 +72,8 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 let root: HTMLElement;
 
-function renderPage(tab: SellerTab = 'listings', sellerId = 5) {
-    render(root, <SellerPage sellerId={sellerId} tab={tab} />);
+function renderPage(tab: SellerTab = 'listings', sellerId = 5, authorized = true) {
+    render(root, <SellerPage sellerId={sellerId} tab={tab} authorized={authorized} />);
 }
 
 function query<T extends HTMLElement>(selector: string): T {
@@ -267,6 +267,66 @@ describe('SellerPage', () => {
         expect(query('.toast--success .toast__message').textContent).toBe('Ссылка скопирована');
     });
 
+    it('гостю не предлагает пожаловаться на продавца', async () => {
+        renderPage('listings', 5, false);
+        await tick();
+
+        query<HTMLButtonElement>('.seller-header__more-button').click();
+        await tick();
+
+        expect(texts('.seller-header__menu-item')).toEqual(['Поделиться профилем', 'Скопировать ссылку']);
+        expect(root.querySelector('.seller-header__menu-divider')).toBeNull();
+    });
+
+    it('при ошибке загрузки откатывает выбранную категорию и сортировку', async () => {
+        renderPage();
+        await tick();
+
+        const failed = deferred<SellerAdPage>();
+        api.getSellerListings.mockReturnValueOnce(failed.promise);
+        clickText('.seller-page__chip', 'Спорт и отдых · 10');
+        await tick();
+        expect(query('.seller-page__chip--active').textContent).toBe('Спорт и отдых · 10');
+        failed.reject(new ApiError(500));
+        await tick();
+
+        expect(query('.seller-page__chip--active').textContent).toBe('Все · 12');
+        expect(query('.toast--error .toast__message').textContent).toBe('Не удалось загрузить объявления. Попробуйте ещё раз');
+
+        api.getSellerListings.mockRejectedValueOnce(new ApiError(500));
+        query<HTMLButtonElement>('#seller-sort').click();
+        await tick();
+        clickText('.select__option', 'Сначала дешевле');
+        await tick();
+
+        expect(query('#seller-sort').textContent).toContain('Сначала новые');
+        expect(root.querySelectorAll('.product-card')).toHaveLength(12);
+    });
+
+    it('при ошибке загрузки отзывов откатывает фильтр и сортировку', async () => {
+        renderPage('reviews');
+        await tick();
+
+        const failed = deferred<ReviewPage>();
+        api.getSellerReviews.mockReturnValueOnce(failed.promise);
+        query<HTMLButtonElement>('.seller-page__photo-filter').click();
+        await tick();
+        expect(query('.seller-page__photo-filter').getAttribute('aria-pressed')).toBe('true');
+        failed.reject(new ApiError(500));
+        await tick();
+
+        expect(query('.seller-page__photo-filter').getAttribute('aria-pressed')).toBe('false');
+
+        api.getSellerReviews.mockRejectedValueOnce(new ApiError(500));
+        query<HTMLButtonElement>('#seller-review-sort').click();
+        await tick();
+        clickText('.select__option', 'Сначала отрицательные');
+        await tick();
+
+        expect(query('#seller-review-sort').textContent).toContain('Сначала новые');
+        expect(query('.toast--error .toast__message').textContent).toBe('Не удалось загрузить отзывы. Попробуйте ещё раз');
+    });
+
     it('отправляет жалобу на продавца', async () => {
         api.reportSeller.mockResolvedValue(undefined);
         renderPage();
@@ -283,11 +343,11 @@ describe('SellerPage', () => {
         const radio = query<HTMLInputElement>('.report-seller-modal__radio[value="rude"]');
         radio.checked = true;
         radio.dispatchEvent(new Event('change', { bubbles: true }));
-        const textarea = query<HTMLTextAreaElement>('.report-seller-modal__textarea');
+        const textarea = query<HTMLTextAreaElement>('#report-comment');
         textarea.value = '  Хамил в переписке ';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         await tick();
-        expect(query('.report-seller-modal__counter').textContent).toBe('20 / 500');
+        expect(query('#report-comment ~ .textarea-field__counter').textContent).toBe('20 / 500');
 
         query<HTMLButtonElement>('.report-seller-modal__confirm').click();
         await tick();
@@ -395,6 +455,103 @@ describe('SellerPage: гонки запросов', () => {
         await tick();
 
         expect(query<HTMLButtonElement>('.seller-page__more').disabled).toBe(true);
+    });
+});
+
+class FakeObserver {
+    static instances: FakeObserver[] = [];
+
+    callback: IntersectionObserverCallback;
+
+    targets: Element[] = [];
+
+    constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+        FakeObserver.instances.push(this);
+    }
+
+    observe(target: Element) {
+        this.targets.push(target);
+    }
+
+    unobserve(target: Element) {
+        this.targets = this.targets.filter((el) => el !== target);
+    }
+
+    disconnect() {
+        this.targets = [];
+    }
+
+    reveal() {
+        const entries = this.targets.map((target) => ({ isIntersecting: true, target }) as IntersectionObserverEntry);
+        this.callback(entries, this as unknown as IntersectionObserver);
+    }
+}
+
+function revealEnd() {
+    FakeObserver.instances.forEach((observer) => observer.reveal());
+}
+
+const many = (from: number, count: number) => Array.from({ length: count }, (_, i) => ad(from + i));
+
+describe('SellerPage: бесконечная лента объявлений', () => {
+    beforeEach(() => {
+        FakeObserver.instances = [];
+        vi.stubGlobal('IntersectionObserver', FakeObserver);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it('догружает следующую страницу, когда конец списка виден', async () => {
+        api.getSellerListings
+            .mockResolvedValueOnce(listingsPage(many(1, 60), 70))
+            .mockResolvedValueOnce(listingsPage(many(61, 10), 70));
+        renderPage();
+        await tick();
+
+        expect(root.querySelectorAll('.product-card')).toHaveLength(60);
+        revealEnd();
+        await tick();
+
+        expect(api.getSellerListings).toHaveBeenLastCalledWith(5, expect.objectContaining({ limit: 60, offset: 60 }));
+        expect(root.querySelectorAll('.product-card')).toHaveLength(70);
+        expect(root.querySelector('.seller-page__sentinel')).toBeNull();
+    });
+
+    it('догружает с текущими категорией и сортировкой', async () => {
+        api.getSellerListings
+            .mockResolvedValueOnce(listingsPage(many(1, 60), 70))
+            .mockResolvedValueOnce(listingsPage(many(1, 60), 65))
+            .mockResolvedValueOnce(listingsPage(many(61, 5), 65));
+        renderPage();
+        await tick();
+
+        clickText('.seller-page__chip', 'Спорт и отдых · 10');
+        await tick();
+        revealEnd();
+        await tick();
+
+        expect(api.getSellerListings).toHaveBeenLastCalledWith(5, expect.objectContaining({ offset: 60, category_id: 1 }));
+        expect(root.querySelectorAll('.product-card')).toHaveLength(65);
+    });
+
+    it('при ошибке догрузки показывает повтор', async () => {
+        api.getSellerListings
+            .mockResolvedValueOnce(listingsPage(many(1, 60), 70))
+            .mockRejectedValueOnce(new ApiError(500))
+            .mockResolvedValueOnce(listingsPage(many(61, 10), 70));
+        renderPage();
+        await tick();
+
+        revealEnd();
+        await tick();
+        expect(root.querySelectorAll('.product-card')).toHaveLength(60);
+        query<HTMLButtonElement>('.page-error button').click();
+        await tick();
+
+        expect(root.querySelectorAll('.product-card')).toHaveLength(70);
     });
 });
 

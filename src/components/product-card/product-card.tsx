@@ -25,7 +25,7 @@ export const ProductCard = ({
             </div>
             <div class="product-card__body">
                 <div class="product-card__price-row">
-                    <span class="product-card__price">{isFree ? 'Бесплатно' : `${formatPrice(price)} ₽`}</span>
+                    <span class="product-card__price">{isFree ? 'Даром' : `${formatPrice(price)} ₽`}</span>
                     {hasDelivery && (
                         <span class="product-card__delivery">
                             <img src="/img/truck.svg" alt="" aria-hidden="true" />

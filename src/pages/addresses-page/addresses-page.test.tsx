@@ -77,7 +77,7 @@ describe('AddressesPage', () => {
         expect(query('[data-address-id="1"] .addresses__option-description').textContent).toBe('д. 12, кв. 34 · основной');
         expect(query('.addresses__form-title').textContent).toBe('Изменить адрес');
         expect(query<HTMLInputElement>('#address-street').value).toBe('Москва, ул. Тверская');
-        expect(query('.addresses__counter').textContent).toBe('10 / 200');
+        expect(query('#address-comment ~ .textarea-field__counter').textContent).toBe('10 / 200');
         expect(query('.profile-sidebar__menu-item--active').textContent).toBe('Адреса доставки');
         expect(query('.profile-sidebar__menu-count').textContent).toBe('0');
     });
@@ -176,12 +176,13 @@ describe('AddressesPage', () => {
 
     it('удаляет адрес после подтверждения', async () => {
         api.deleteAddress.mockResolvedValue(undefined);
+        api.getAddresses.mockResolvedValueOnce([home, work]).mockResolvedValueOnce([{ ...work, is_default: true }]);
         renderPage();
         await tick();
 
         query<HTMLButtonElement>('.addresses__delete').click();
         await tick();
-        query<HTMLButtonElement>('.addresses__delete-confirm').click();
+        query<HTMLButtonElement>('.confirm-modal__confirm').click();
         await tick();
 
         expect(api.deleteAddress).toHaveBeenCalledWith(1);
@@ -189,6 +190,25 @@ describe('AddressesPage', () => {
         expect(root.querySelectorAll('.addresses__option')).toHaveLength(1);
         expect(query('.addresses__option--selected').dataset.addressId).toBe('2');
         expect(query('.toast--success .toast__message').textContent).toBe('Адрес удалён');
+    });
+
+    it('после удаления основного адреса перезапрашивает список у бэка', async () => {
+        api.deleteAddress.mockResolvedValue(undefined);
+        api.getAddresses
+            .mockResolvedValueOnce([home, work])
+            .mockResolvedValueOnce([{ ...work, is_default: true }]);
+        renderPage();
+        await tick();
+
+        query<HTMLButtonElement>('.addresses__delete').click();
+        await tick();
+        query<HTMLButtonElement>('.confirm-modal__confirm').click();
+        await tick();
+        await tick();
+
+        expect(api.getAddresses).toHaveBeenCalledTimes(2);
+        expect(query('.addresses__option--selected').dataset.addressId).toBe('2');
+        expect(query('[data-address-id="2"] .addresses__option-description').textContent).toBe('д. 1 · основной');
     });
 
     it('при ошибке загрузки показывает ошибку с повтором', async () => {

@@ -9,7 +9,7 @@ export interface SellerHeaderProps {
     reviewsHref: string;
     onShare: () => void;
     onCopyLink: () => void;
-    onReport: () => void;
+    onReport?: () => void;
 }
 
 export interface SellerHeaderState {
@@ -103,17 +103,19 @@ export class SellerHeader extends Component<SellerHeaderProps, SellerHeaderState
                         Скопировать ссылку
                     </button>
                 </li>
-                <li class="seller-header__menu-divider" role="separator" />
-                <li role="none">
-                    <button
-                        type="button"
-                        class="seller-header__menu-item seller-header__menu-item--danger"
-                        role="menuitem"
-                        onClick={() => this.pick(onReport)}
-                    >
-                        Пожаловаться на продавца
-                    </button>
-                </li>
+                {onReport && <li class="seller-header__menu-divider" role="separator" />}
+                {onReport && (
+                    <li role="none">
+                        <button
+                            type="button"
+                            class="seller-header__menu-item seller-header__menu-item--danger"
+                            role="menuitem"
+                            onClick={() => this.pick(onReport)}
+                        >
+                            Пожаловаться на продавца
+                        </button>
+                    </li>
+                )}
             </ul>
         );
     }

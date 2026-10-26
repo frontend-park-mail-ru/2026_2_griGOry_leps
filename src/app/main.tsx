@@ -139,7 +139,7 @@ async function loadProfile(): Promise<Profile> {
 function sellerRoute(path: string, tab: SellerTab) {
     route(path, {
         name: 'seller',
-        view: (_, { id }) => <SellerPage sellerId={Number(id)} tab={tab} />,
+        view: (_, { id }) => <SellerPage sellerId={Number(id)} tab={tab} authorized={getUser() !== null} />,
     });
 }
 

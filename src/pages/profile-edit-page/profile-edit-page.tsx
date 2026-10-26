@@ -3,7 +3,6 @@ import {
     getAddresses,
     getCities,
     updateProfile,
-    uploadAvatar,
     type Address,
     type City,
     type Profile,
@@ -22,7 +21,8 @@ import { logError, logWarn } from '@/lib/logger';
 import { setUser } from '@/store';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
-import { UserAvatar } from '@/components/user-avatar/user-avatar';
+import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
+import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { Select } from '@/components/select/select';
 import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
 import './profile-edit-page.scss';
@@ -35,23 +35,6 @@ const RULES: Record<string, FieldRule> = {
 };
 
 const API_FIELDS = [...Object.keys(RULES), 'city_id'];
-
-const AVATAR_TYPES = ['image/jpeg', 'image/png'];
-
-const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
-
-const AVATAR_TYPE_ERROR = 'Можно загрузить только JPG или PNG';
-
-const AVATAR_SIZE_ERROR = 'Файл больше 5 МБ. Выберите фото поменьше';
-
-const CameraIcon = () => (
-    <svg viewBox="0 0 20 20" width="20" height="20" fill="none"
-        stroke="currentColor" stroke-width="1.5"
-        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M3.33 6.67c0-.92.75-1.67 1.67-1.67h1.67l1.25-1.67h4.16l1.25 1.67H15c.92 0 1.67.75 1.67 1.67v8.33c0 .92-.75 1.67-1.67 1.67H5c-.92 0-1.67-.75-1.67-1.67V6.67Z" />
-        <circle cx="10" cy="10.83" r="2.75" />
-    </svg>
-);
 
 function profileValues(profile: Profile): FormValues {
     return {
@@ -85,15 +68,11 @@ export interface ProfileEditPageState {
     addresses: Address[] | null;
     addressesError: boolean;
     saving: boolean;
-    avatarUploading: boolean;
-    avatarError: string;
     toast: ToastState | null;
 }
 
 export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEditPageState> {
     validation: FormValidation;
-
-    fileInput: HTMLInputElement | null = null;
 
     toasts = new ToastTimer((toast) => this.setState({ toast }));
 
@@ -111,8 +90,6 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             addresses: null,
             addressesError: false,
             saving: false,
-            avatarUploading: false,
-            avatarError: '',
             toast: null,
         };
     }
@@ -227,45 +204,9 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         this.fillForm(this.state.profile);
     };
 
-    openFilePicker = () => {
-        this.fileInput?.click();
-    };
-
-    handleAvatarChange = async (e: Event) => {
-        const input = e.target as HTMLInputElement;
-        const file = input.files?.[0];
-        input.value = '';
-        if (!file) return;
-
-        if (!AVATAR_TYPES.includes(file.type)) {
-            this.setState({ avatarError: AVATAR_TYPE_ERROR });
-            return;
-        }
-        if (file.size > AVATAR_MAX_BYTES) {
-            this.setState({ avatarError: AVATAR_SIZE_ERROR });
-            return;
-        }
-
-        this.setState({ avatarUploading: true, avatarError: '' });
-        try {
-            const { avatar_url } = await uploadAvatar(file);
-            this.applyProfile({ ...this.state.profile, avatar_url });
-            this.toasts.show('success', 'Фото обновлено');
-        } catch (err) {
-            logError('Не удалось загрузить аватарку:', err);
-            const { message } = describeApiError(err, {
-                fields: [],
-                fallback: 'Не удалось загрузить фото. Попробуйте ещё раз',
-                byStatus: {
-                    400: 'Не удалось прочитать файл. Выберите другое фото',
-                    413: AVATAR_SIZE_ERROR,
-                    415: AVATAR_TYPE_ERROR,
-                },
-            });
-            this.setState({ avatarError: message });
-        } finally {
-            this.setState({ avatarUploading: false });
-        }
+    handleAvatarUploaded = (avatarUrl: string | null) => {
+        this.applyProfile({ ...this.state.profile, avatar_url: avatarUrl });
+        this.toasts.show('success', 'Фото обновлено');
     };
 
     fieldProps(name: string) {
@@ -277,39 +218,6 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             onInput: this.handleInput,
             onChange: this.handleChange,
         };
-    }
-
-    renderAvatar() {
-        const { profile, avatarUploading, avatarError } = this.state;
-
-        return (
-            <div class="profile-edit__avatar-row">
-                <UserAvatar user={profile} class="profile-edit__avatar" />
-                <div class="profile-edit__avatar-actions">
-                    <button
-                        type="button"
-                        class="profile-edit__avatar-button"
-                        disabled={avatarUploading}
-                        onClick={this.openFilePicker}
-                    >
-                        <CameraIcon />
-                        {avatarUploading ? 'Загружаем фото…' : 'Изменить фото'}
-                    </button>
-                    <input
-                        ref={(el) => { this.fileInput = el as HTMLInputElement | null; }}
-                        class="profile-edit__file"
-                        type="file"
-                        accept={AVATAR_TYPES.join(',')}
-                        tabindex="-1"
-                        aria-hidden="true"
-                        onChange={this.handleAvatarChange}
-                    />
-                    {avatarError
-                        ? <span class="profile-edit__avatar-hint profile-edit__avatar-hint--error" role="alert">{avatarError}</span>
-                        : <span class="profile-edit__avatar-hint">JPG или PNG, до 5 МБ</span>}
-                </div>
-            </div>
-        );
     }
 
     renderCity() {
@@ -334,28 +242,20 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
 
     renderAbout() {
         const { values, errors } = this.state;
-        const error = errors.about ?? '';
-        const about = values.about ?? '';
 
         return (
-            <div class={error ? 'profile-edit__field profile-edit__field--error' : 'profile-edit__field'}>
-                <label class="profile-edit__label" for="profile-about">О себе</label>
-                <div class="profile-edit__textarea-box">
-                    <textarea
-                        id="profile-about"
-                        class="profile-edit__textarea"
-                        name="about"
-                        maxlength={LIMITS.aboutMax}
-                        placeholder="Расскажите покупателям о себе"
-                        value={about}
-                        aria-invalid={String(Boolean(error))}
-                        onInput={this.handleInput}
-                        onChange={this.handleChange}
-                    />
-                    <span class="profile-edit__counter">{about.length} / {LIMITS.aboutMax}</span>
-                </div>
-                {error && <p class="profile-edit__error">{error}</p>}
-            </div>
+            <TextareaField
+                id="profile-about"
+                name="about"
+                label="О себе"
+                placeholder="Расскажите покупателям о себе"
+                value={values.about ?? ''}
+                maxLength={LIMITS.aboutMax}
+                height={140}
+                error={errors.about}
+                onInput={this.handleInput}
+                onChange={this.handleChange}
+            />
         );
     }
 
@@ -410,7 +310,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
 
                     <section class="profile-edit__card">
                         <h2 class="profile-edit__card-title">Личные данные</h2>
-                        {this.renderAvatar()}
+                        <AvatarUploader user={profile} onUploaded={this.handleAvatarUploaded} />
                         <div class="profile-edit__fields">
                             <FormField
                                 {...this.fieldProps('first_name')}

@@ -58,48 +58,6 @@
         color: $color-text-strong;
     }
 
-    &__textarea-box {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        height: 100px;
-        padding: 12px 16px;
-        background-color: $surface-0;
-        border: 1px solid $color-border;
-        border-radius: $radius-lg;
-        transition: border-color $timing-animation-short, box-shadow $timing-animation-short;
-
-        &:focus-within {
-            border-color: $goget-blue;
-            box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.16);
-        }
-    }
-
-    &__textarea {
-        flex: 1;
-        min-height: 0;
-        padding: 0;
-        font-family: $font-body;
-        font-size: 16px;
-        line-height: 22px;
-        color: $color-text-strong;
-        background: transparent;
-        border: 0;
-        outline: 0;
-        resize: none;
-
-        &::placeholder {
-            color: $color-text-placeholder;
-        }
-    }
-
-    &__counter {
-        font-size: 13px;
-        line-height: 17px;
-        color: $color-text-placeholder;
-        text-align: right;
-    }
-
     &__error {
         font-size: 13px;
         line-height: 18px;
