@@ -22,6 +22,21 @@ export interface UpdateProfileData {
     about?: string;
 }
 
+export interface Address {
+    id: number;
+    street: string;
+    house: string;
+    comment: string;
+    is_default: boolean;
+}
+
+export interface AddressData {
+    street: string;
+    house: string;
+    comment: string;
+    is_default: boolean;
+}
+
 export interface MyAdCard extends AdCard {
     status: ListingStatus;
     close_reason: CloseReason | null;
@@ -46,4 +61,25 @@ export async function changePassword(data: { current_password: string; new_passw
 
 export async function getMyListings(params: PageQuery & { status?: ListingStatus } = {}): Promise<MyListingPage> {
     return json(await request(`/me/listings${query(params)}`));
+}
+
+export async function getMyListingsCount(): Promise<number> {
+    const page = await getMyListings({ limit: 1 });
+    return page.total;
+}
+
+export async function getAddresses(): Promise<Address[]> {
+    return json(await request('/me/addresses'));
+}
+
+export async function createAddress(data: AddressData): Promise<Address> {
+    return json(await request('/me/addresses', { method: 'POST', ...jsonBody(data) }));
+}
+
+export async function updateAddress(id: number, data: AddressData): Promise<Address> {
+    return json(await request(`/me/addresses/${id}`, { method: 'PATCH', ...jsonBody(data) }));
+}
+
+export async function deleteAddress(id: number): Promise<void> {
+    await ensureOk(await request(`/me/addresses/${id}`, { method: 'DELETE' }));
 }

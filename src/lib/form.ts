@@ -1,5 +1,6 @@
 import { debounce, type Debounced } from '@/lib/debounce';
 import { ApiError } from '@/lib/api';
+import { plural } from '@/lib/format';
 
 const VALIDATION_DELAY_MS = 300;
 
@@ -119,6 +120,13 @@ export interface ApiErrorMessages {
     conflictMessages?: Record<string, string>;
 }
 
+export function tooManyRequestsText(seconds: number): string {
+    if (seconds <= 0) return 'Слишком много попыток. Попробуйте позже';
+    if (seconds < 60) return `Слишком много попыток. Попробуйте через ${seconds} ${plural(seconds, ['секунду', 'секунды', 'секунд'])}`;
+    const minutes = Math.ceil(seconds / 60);
+    return `Слишком много попыток. Попробуйте через ${minutes} ${plural(minutes, ['минуту', 'минуты', 'минут'])}`;
+}
+
 /** field есть, если ошибку надо показать под полем, иначе это общая ошибка формы */
 export function describeApiError(
     err: unknown,
@@ -135,6 +143,7 @@ export function describeApiError(
         };
     }
 
+    if (err.status === 429) return { message: tooManyRequestsText(err.retryAfter) };
     if (err.timeout) return { message: 'Сервер не отвечает. Попробуйте ещё раз' };
     if (err.network) return { message: 'Нет соединения с сервером. Проверьте интернет' };
 

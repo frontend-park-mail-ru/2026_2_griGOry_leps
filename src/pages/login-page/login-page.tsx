@@ -163,6 +163,7 @@ export class LoginPage extends Component<object, LoginState> {
                                 onInput={this.handleInput}
                                 onChange={this.handleChange}
                             />
+                            <a href="/forgot-password" data-link class="login-page__forgot">Забыли пароль?</a>
                         </AuthForm>
                     </AuthCard>
                 </div>

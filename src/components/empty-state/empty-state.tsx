@@ -11,13 +11,19 @@ export interface EmptyStateProps {
         onClick?: () => void;
         disabled?: boolean;
     };
+    emoji?: string;
+    card?: boolean;
 }
 
-export const EmptyState = ({ title, text, action, iconSrc = '/img/sparkles.svg' }: EmptyStateProps) => (
-    <div class="empty-state">
-        <div class="empty-state__icon" aria-hidden="true">
-            <img src={iconSrc} alt="" />
-        </div>
+export const EmptyState = ({ title, text, action, emoji, card = false }: EmptyStateProps) => (
+    <div class={card ? 'empty-state empty-state--card' : 'empty-state'}>
+        {emoji
+            ? <span class="empty-state__emoji" aria-hidden="true">{emoji}</span>
+            : (
+                <div class="empty-state__icon" aria-hidden="true">
+                    <img class="empty-state__icon-image" src="/img/sparkles.svg" alt="" />
+                </div>
+            )}
         <h2 class="empty-state__title">{title}</h2>
         <p class="empty-state__text">{text}</p>
         {action && (action.href && !action.disabled
