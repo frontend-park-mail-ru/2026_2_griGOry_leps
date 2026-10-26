@@ -1,0 +1,217 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.checkout-page {
+    width: 100%;
+    max-width: $container-max-width;
+    margin: 0 auto;
+    padding: 0 32px 64px;
+
+    @media (max-width: 640px) {
+        padding: 0 16px 48px;
+    }
+
+    &__title {
+        @include typo-h1;
+        margin: 32px 0 20px;
+        font-size: 2rem;
+
+        @media (max-width: 640px) {
+            font-size: 1.5rem;
+        }
+    }
+
+    &__summary,
+    &__form-error {
+        margin: 0 0 16px;
+        padding: 12px 16px;
+        font-size: 0.875rem;
+        color: $color-status-error;
+        background: #fdeeee;
+        border: 1px solid rgba(219, 38, 38, 0.3);
+        border-radius: $radius-lg;
+    }
+
+    &__form-error {
+        margin: 0;
+    }
+
+    &__layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 20px;
+        align-items: start;
+
+        @media (max-width: 960px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    &__main {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    &__aside {
+        position: sticky;
+        top: 104px;
+
+        @media (max-width: 960px) {
+            position: static;
+        }
+    }
+
+    &__section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px 24px;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+
+        @media (max-width: 640px) {
+            padding: 16px;
+        }
+    }
+
+    &__section-title {
+        @include typo-h4;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    &__step {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        font-size: 0.75rem;
+        color: $white;
+        background: $goget-blue;
+        border-radius: 50%;
+    }
+
+    &__seller {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__seller-name {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    &__seller-hint {
+        @include typo-small;
+        margin: 0;
+    }
+
+    &__choices {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+    }
+
+    &__addresses {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    &__address-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__link {
+        padding: 0;
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: $goget-blue;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__muted {
+        font-size: 0.75rem;
+        color: $color-text-placeholder;
+    }
+
+    &__label {
+        margin: 4px 0 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    &__error {
+        margin: 0;
+        font-size: 0.75rem;
+        color: $color-status-error;
+    }
+
+    &__comment {
+        position: relative;
+        height: auto;
+        padding: 10px 16px 26px;
+    }
+
+    &__comment-input {
+        min-height: 48px;
+        resize: vertical;
+    }
+
+    &__counter {
+        position: absolute;
+        right: 16px;
+        bottom: 8px;
+        font-size: 0.75rem;
+        color: $color-text-placeholder;
+    }
+
+    &__recipient {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        background: $surface-1;
+        border-radius: $radius-md;
+    }
+
+    &__recipient-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__recipient-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    &__recipient-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+
+        @media (max-width: 640px) {
+            grid-template-columns: 1fr;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.order-page {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 56px 16px 64px;
+
+    &__primary {
+        @include button-blue;
+    }
+
+    &__secondary {
+        @include button-gray;
+    }
+
+    &__methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        width: 100%;
+        text-align: left;
+    }
+
+    &__error {
+        width: 100%;
+        margin: 0;
+        font-size: 0.8125rem;
+        color: $color-status-error;
+    }
+}

@@ -1,0 +1,68 @@
+@use '@/shared/styles/variables' as *;
+
+.choice-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px 14px;
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: border-color $timing-animation-short;
+
+    &:hover {
+        border-color: $color-text-placeholder;
+    }
+
+    &--checked,
+    &--checked:hover {
+        border-color: $goget-blue;
+        box-shadow: 0 0 0 1px $goget-blue;
+    }
+
+    &--disabled,
+    &--disabled:hover {
+        background: $surface-1;
+        border-color: $color-border;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    &__radio {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: $goget-blue;
+        cursor: inherit;
+    }
+
+    &__text {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: $color-text-strong;
+    }
+
+    &__hint {
+        font-size: 0.75rem;
+        color: $color-text-placeholder;
+    }
+
+    &__aside {
+        flex: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: $color-text-strong;
+        white-space: nowrap;
+    }
+}

@@ -18,6 +18,7 @@ import { formatDay } from '@/lib/format';
 import { CONDITION_LABELS, statusNotice } from '@/lib/listing';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
+import { setCartCount } from '@/lib/cart';
 import { navigate } from '@/router/router';
 
 export interface ListingPageProps {
@@ -53,6 +54,12 @@ function listingSpecs(listing: Listing) {
         ...listing.attributes,
         ...(listing.address ? [{ key: 'address', name: 'Где забрать', value: location }] : []),
     ];
+}
+
+function cartErrorText(err: unknown): string {
+    if (err instanceof ApiError && (err.network || err.timeout)) return 'Нет интернета, попробуйте позже';
+    if (err instanceof ApiError && err.status === 409) return 'Товар уже недоступен';
+    return 'Не удалось добавить в корзину. Попробуйте ещё раз';
 }
 
 export class ListingPage extends Component<ListingPageProps, ListingPageState> {
@@ -113,17 +120,32 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
 
         this.setState({ busy: true, cartError: '' });
         try {
-            await addToCart(this.state.listing.id);
+            const { items_count: count } = await addToCart(this.state.listing.id);
+            setCartCount(count);
             this.setState({ listing: { ...this.state.listing, in_cart: true } });
-            showToast('Товар добавлен в корзину');
+            showToast('Товар добавлен в корзину', 'success', { label: 'Перейти', onClick: () => navigate('/cart') });
         } catch (err) {
             logWarn('Не удалось добавить в корзину:', err);
-            const message = err instanceof ApiError && err.status === 409
-                ? 'Товар уже недоступен'
-                : 'Не удалось добавить в корзину. Попробуйте ещё раз';
-            this.setState({ cartError: message });
+            this.setState({ cartError: cartErrorText(err) });
         } finally {
             this.setState({ busy: false });
+        }
+    };
+
+    handleBuyNow = async () => {
+        if (!this.props.user) {
+            navigate('/login');
+            return;
+        }
+
+        const { listing } = this.state;
+        this.setState({ busy: true, cartError: '' });
+        try {
+            if (!listing.in_cart) setCartCount((await addToCart(listing.id)).items_count);
+            navigate(`/checkout?ids=${listing.id}`);
+        } catch (err) {
+            logWarn('Не удалось перейти к оформлению:', err);
+            this.setState({ busy: false, cartError: cartErrorText(err) });
         }
     };
 
@@ -201,6 +223,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                             busy={busy}
                             cartError={cartError}
                             onAddToCart={this.handleAddToCart}
+                            onBuyNow={this.handleBuyNow}
                             onClose={() => this.openDialog('close')}
                             onDelete={() => this.openDialog('delete')}
                         />

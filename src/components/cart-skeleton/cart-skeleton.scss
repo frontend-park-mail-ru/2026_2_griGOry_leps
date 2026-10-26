@@ -1,0 +1,75 @@
+@use '@/shared/styles/variables' as *;
+
+.cart-skeleton {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 960px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    &__row,
+    &__aside {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+    }
+
+    &__aside {
+        flex-direction: column;
+        gap: 12px;
+
+        @media (max-width: 960px) {
+            display: none;
+        }
+    }
+
+    &__photo {
+        flex: none;
+        width: 88px;
+        height: 66px;
+        background: $gray-150;
+        border-radius: $radius-md;
+    }
+
+    &__lines {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__line {
+        display: block;
+        width: 100%;
+        height: 12px;
+        background: $gray-150;
+        border-radius: $radius-sm;
+        animation: cart-skeleton-pulse 1.2s ease-in-out infinite;
+
+        &--mid {
+            width: 70%;
+        }
+
+        &--short {
+            width: 30%;
+        }
+    }
+}
+
+@keyframes cart-skeleton-pulse {
+    50% {
+        opacity: 0.5;
+    }
+}

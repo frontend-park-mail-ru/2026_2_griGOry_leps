@@ -1,0 +1,118 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.cart-item {
+    display: grid;
+    grid-template-columns: auto 88px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    padding: 16px 0;
+
+    & + & {
+        border-top: 1px solid $color-border;
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: auto 64px minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    &__check {
+        width: 18px;
+        height: 18px;
+        margin: 4px 0 0;
+        accent-color: $goget-blue;
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    &__photo {
+        display: block;
+        width: 88px;
+        height: 66px;
+        overflow: hidden;
+        background: $surface-1;
+        border-radius: $radius-md;
+
+        @media (max-width: 640px) {
+            width: 64px;
+            height: 48px;
+        }
+    }
+
+    &__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    &__title {
+        @include typo-h5;
+        font-size: 0.9375rem;
+        overflow-wrap: anywhere;
+
+        &:hover {
+            color: $goget-blue;
+        }
+    }
+
+    &__seller,
+    &__meta {
+        font-size: 0.75rem;
+        color: $color-text-placeholder;
+    }
+
+    &__rating {
+        color: $goget-accent;
+    }
+
+    &__warning {
+        font-size: 0.75rem;
+        color: $color-status-error;
+    }
+
+    &__remove {
+        margin-top: 4px;
+        padding: 0;
+        font: inherit;
+        font-size: 0.75rem;
+        color: $color-status-error;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    }
+
+    &__price {
+        @include typo-h5;
+        white-space: nowrap;
+
+        @media (max-width: 640px) {
+            grid-column: 3;
+        }
+    }
+
+    &--unavailable &__photo,
+    &--unavailable &__title {
+        opacity: 0.5;
+    }
+}

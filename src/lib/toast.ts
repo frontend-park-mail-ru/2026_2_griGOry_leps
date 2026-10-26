@@ -1,4 +1,4 @@
-import { ToastTimer, type ToastState, type ToastType } from '@/components/toast/toast';
+import { ToastTimer, type ToastAction, type ToastState, type ToastType } from '@/components/toast/toast';
 
 let current: ToastState | null = null;
 const listeners = new Set<() => void>();
@@ -8,8 +8,14 @@ const timer = new ToastTimer((toast) => {
     listeners.forEach((fn) => fn());
 });
 
-export function showToast(message: string, type: ToastType = 'success'): void {
-    timer.show(type, message);
+export function showToast(message: string, type: ToastType = 'success', action?: ToastAction): void {
+    timer.show(type, message, action);
+}
+
+export function hideToast(): void {
+    timer.stop();
+    current = null;
+    listeners.forEach((fn) => fn());
 }
 
 export function getToast(): ToastState | null {

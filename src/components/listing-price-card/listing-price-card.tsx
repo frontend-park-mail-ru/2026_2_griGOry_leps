@@ -9,11 +9,12 @@ export interface ListingPriceCardProps {
     busy: boolean;
     cartError: string;
     onAddToCart: () => void;
+    onBuyNow: () => void;
     onClose: () => void;
     onDelete: () => void;
 }
 
-export const ListingPriceCard = ({ listing, busy, cartError, onAddToCart, onClose, onDelete }: ListingPriceCardProps) => {
+export const ListingPriceCard = ({ listing, busy, cartError, onAddToCart, onBuyNow, onClose, onDelete }: ListingPriceCardProps) => {
     const negotiable = listing.is_negotiable && !listing.is_free;
 
     return (
@@ -45,9 +46,14 @@ export const ListingPriceCard = ({ listing, busy, cartError, onAddToCart, onClos
                 </div>
             ) : listing.status === 'active' && (
                 <div class="listing-price-card__actions">
+                    <Button text="Купить сейчас" block disabled={busy} onClick={onBuyNow} />
                     {listing.in_cart
-                        ? <Button text="В корзине" variant="secondary" block disabled />
-                        : <Button text="Добавить в корзину" block disabled={busy} onClick={onAddToCart} />}
+                        ? <a href="/cart" data-link class="listing-price-card__in-cart">Перейти в корзину</a>
+                        : (
+                            <button type="button" class="listing-price-card__to-cart" disabled={busy} onClick={onAddToCart}>
+                                Добавить в корзину
+                            </button>
+                        )}
                     {cartError && <p class="listing-price-card__error" role="alert">{cartError}</p>}
                 </div>
             )}

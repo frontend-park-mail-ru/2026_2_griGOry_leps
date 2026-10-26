@@ -16,11 +16,12 @@ import {
 } from '@/router/router';
 import {
     ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts, logout,
-    type AdCard, type Listing, type User,
+    getCheckoutQuote, getOrder, type AdCard, type CheckoutQuote, type Listing, type Order, type User,
 } from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
+import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 
 import { HomePage, type HomeData } from '@/pages/home-page/home-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
@@ -33,6 +34,10 @@ import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
 import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
+import { CartPage } from '@/pages/cart-page/cart-page';
+import { CheckoutPage } from '@/pages/checkout-page/checkout-page';
+import { OrderPage } from '@/pages/order-page/order-page';
+import { OrderStatus } from '@/components/order-status/order-status';
 
 export type Layout = 'main' | 'auth';
 
@@ -60,7 +65,7 @@ let navigationId = 0;
 
 function toastView() {
     const toast = getToast();
-    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} /> : null;
+    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} action={toast.action} /> : null;
 }
 
 function renderApp() {
@@ -71,7 +76,7 @@ function renderApp() {
     if (currentPage && page && typeof page === 'object' && !Array.isArray(page)) page.key = currentPage.name;
 
     render(app, [
-        <Header user={getUser()} onLogout={handleLogout} />,
+        <Header user={getUser()} cartCount={getCartCount()} onLogout={handleLogout} />,
         <main id="page">{page}</main>,
         <Footer />,
         toastView(),
@@ -85,7 +90,7 @@ function route<T = undefined>(
 ) {
     const handler = async (params: RouteParams = {}) => {
         const id = ++navigationId;
-        const key = [name, ...Object.values(params)].join(':');
+        const key = [name, ...Object.values(params), location.search].join(':');
 
         let data = undefined as T;
         try {
@@ -160,13 +165,61 @@ async function loadSimilar(listing: Listing): Promise<AdCard[]> {
     }
 }
 
+type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' };
+
+/** Из ?ids=1,2,3; 409 — часть товаров успели купить или снять */
+async function loadCheckout(): Promise<CheckoutData> {
+    const ids = (new URLSearchParams(location.search).get('ids') ?? '')
+        .split(',')
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0);
+    if (!ids.length) return { problem: 'empty' };
+
+    try {
+        return { quote: await getCheckoutQuote(ids) };
+    } catch (err) {
+        if (err instanceof ApiError && (err.status === 409 || err.status === 400)) return { problem: 'unavailable' };
+        throw err;
+    }
+}
+
+function checkoutView(data: CheckoutData) {
+    if ('quote' in data) return <CheckoutPage quote={data.quote} />;
+    return (
+        <div class="order-page">
+            <OrderStatus
+                kind="error"
+                title={data.problem === 'empty' ? 'Нечего оформлять' : 'Часть товаров уже недоступна'}
+                text={data.problem === 'empty'
+                    ? 'Выберите товары в корзине и нажмите «Перейти к оформлению».'
+                    : 'Пока вы выбирали, часть товаров купили или сняли с продажи. Проверьте корзину и оформите заказ заново.'}
+            >
+                <a class="order-page__primary" href="/cart" data-link>Вернуться в корзину</a>
+            </OrderStatus>
+        </div>
+    );
+}
+
+async function loadOrder(id: string): Promise<Order | null> {
+    if (!/^\d+$/.test(id)) return null;
+    try {
+        return await getOrder(Number(id));
+    } catch (err) {
+        if (err instanceof ApiError && err.status === 404) return null;
+        throw err;
+    }
+}
+
 async function start() {
     render(app, <div class="app-loader" aria-label="Загрузка" />);
 
     setAuthCheck(() => getUser() !== null);
     await loadCurrentUser();
     subscribe(renderApp);
+    subscribe((user) => void refreshCartCount(Boolean(user)));
     subscribeToast(renderApp);
+    subscribeCartCount(renderApp);
+    void refreshCartCount(Boolean(getUser()));
 
     route('/', {
         name: 'home',
@@ -210,6 +263,14 @@ async function start() {
             ? <ListingPage listing={listing} similar={similar} user={getUser()} />
             : <NotFoundPage />),
     });
+    route('/cart', { name: 'cart', tone: 'gray', view: () => <CartPage /> }, { requireAuth: true });
+    route('/checkout', { name: 'checkout', tone: 'gray', load: loadCheckout, view: checkoutView }, { requireAuth: true });
+    route('/orders/:id', {
+        name: 'order',
+        tone: 'gray',
+        load: ({ id }) => loadOrder(id),
+        view: (order) => (order ? <OrderPage order={order} /> : <NotFoundPage />),
+    }, { requireAuth: true });
     route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
     route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
     route('/forgot-password', {

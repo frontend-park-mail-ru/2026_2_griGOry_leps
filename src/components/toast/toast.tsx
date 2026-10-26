@@ -1,11 +1,17 @@
 import './toast.scss';
 
-export type ToastType = 'success' | 'error';
+export type ToastType = 'success' | 'error' | 'info';
+
+export interface ToastAction {
+    label: string;
+    onClick: () => void;
+}
 
 export interface ToastState {
     id: number;
     type: ToastType;
     message: string;
+    action?: ToastAction;
 }
 
 export const TOAST_DURATION_MS = 4000;
@@ -21,10 +27,10 @@ export class ToastTimer {
         this.onChange = onChange;
     }
 
-    show(type: ToastType, message: string): void {
+    show(type: ToastType, message: string, action?: ToastAction): void {
         this.stop();
         this.lastId += 1;
-        this.onChange({ id: this.lastId, type, message });
+        this.onChange({ id: this.lastId, type, message, action });
         this.timer = setTimeout(() => {
             this.timer = null;
             this.onChange(null);
@@ -40,11 +46,15 @@ export class ToastTimer {
 export interface ToastProps {
     type: ToastType;
     message: string;
+    action?: ToastAction;
 }
 
-export const Toast = ({ type, message }: ToastProps) => (
+const ICONS: Record<ToastType, string> = { success: '✓', error: '!', info: 'i' };
+
+export const Toast = ({ type, message, action }: ToastProps) => (
     <div class={`toast toast--${type}`} role={type === 'error' ? 'alert' : 'status'}>
-        <span class="toast__icon" aria-hidden="true">{type === 'success' ? '✓' : '!'}</span>
+        <span class="toast__icon" aria-hidden="true">{ICONS[type]}</span>
         <span class="toast__message">{message}</span>
+        {action && <button type="button" class="toast__action" onClick={action.onClick}>{action.label}</button>}
     </div>
 );
