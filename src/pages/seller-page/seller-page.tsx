@@ -16,6 +16,7 @@ import {
 } from '@/lib/api';
 import { describeApiError } from '@/lib/form';
 import { logError, logWarn } from '@/lib/logger';
+import { showToast } from '@/lib/toast';
 import { getUser } from '@/store';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { SellerHeader } from '@/components/seller-header/seller-header';
@@ -27,7 +28,6 @@ import { Select } from '@/components/select/select';
 import { Skeleton } from '@/components/skeleton/skeleton';
 import { PageError } from '@/components/page-error/page-error';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
-import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
 import './seller-page.scss';
 
 export type SellerTab = 'listings' | 'reviews';
@@ -62,7 +62,6 @@ export interface SellerPageState {
     reportOpen: boolean;
     reportPending: boolean;
     reportError: string;
-    toast: ToastState | null;
 }
 
 const LISTINGS_LIMIT = 60;
@@ -116,7 +115,6 @@ function initialState(): SellerPageState {
         reportOpen: false,
         reportPending: false,
         reportError: '',
-        toast: null,
     };
 }
 
@@ -138,8 +136,6 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     observer: IntersectionObserver | null = null;
 
     sentinel: Element | null = null;
-
-    toasts = new ToastTimer((toast) => this.setState({ toast }));
 
     componentDidMount() {
         if (typeof IntersectionObserver !== 'undefined') {
@@ -165,7 +161,6 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         this.requestId += 1;
         this.listingsRequest += 1;
         this.reviewsRequest += 1;
-        this.toasts.stop();
         this.observer?.disconnect();
         this.observer = null;
     }
@@ -253,7 +248,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
             logError('Не удалось загрузить объявления продавца:', err);
             if (this.state.listingsStatus === 'ready') {
                 this.setState({ refreshingListings: false, ...this.appliedListings });
-                this.toasts.show('error', 'Не удалось загрузить объявления. Попробуйте ещё раз');
+                showToast('Не удалось загрузить объявления. Попробуйте ещё раз', 'error');
             } else {
                 this.setState({ listingsStatus: 'error' });
             }
@@ -323,10 +318,10 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
             logError('Не удалось загрузить отзывы:', err);
             if (more) {
                 this.setState({ loadingMoreReviews: false });
-                this.toasts.show('error', 'Не удалось загрузить отзывы. Попробуйте ещё раз');
+                showToast('Не удалось загрузить отзывы. Попробуйте ещё раз', 'error');
             } else if (this.state.reviewsStatus === 'ready') {
                 this.setState({ loadingMoreReviews: false, refreshingReviews: false, ...this.appliedReviews });
-                this.toasts.show('error', 'Не удалось загрузить отзывы. Попробуйте ещё раз');
+                showToast('Не удалось загрузить отзывы. Попробуйте ещё раз', 'error');
             } else {
                 this.setState({ reviewsStatus: 'error' });
             }
@@ -361,10 +356,10 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     copyLink = async () => {
         try {
             await navigator.clipboard.writeText(this.pageUrl());
-            this.toasts.show('success', 'Ссылка скопирована');
+            showToast('Ссылка скопирована');
         } catch (err) {
             logWarn('Не удалось скопировать ссылку:', err);
-            this.toasts.show('error', 'Не удалось скопировать ссылку');
+            showToast('Не удалось скопировать ссылку', 'error');
         }
     };
 
@@ -393,7 +388,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
         try {
             await reportSeller(this.props.sellerId, { reason, comment });
             this.setState({ reportOpen: false, reportPending: false });
-            this.toasts.show('success', 'Жалоба отправлена. Спасибо!');
+            showToast('Жалоба отправлена. Спасибо!');
         } catch (err) {
             logError('Не удалось отправить жалобу:', err);
             const { message } = describeApiError(err, { fields: [], fallback: 'Не удалось отправить жалобу. Попробуйте ещё раз' });
@@ -509,7 +504,8 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     }
 
     renderListings() {
-        const { listingsStatus, listings, categories, refreshingListings } = this.state;
+        const { seller, listingsStatus, listings, categories, refreshingListings } = this.state;
+        const sellerRating = seller && seller.reviews_count > 0 ? seller.rating : undefined;
 
         if (listingsStatus === 'error') return <PageError onRetry={() => this.loadListings()} />;
         if (listingsStatus !== 'ready') return this.renderGridSkeleton();
@@ -533,9 +529,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                     aria-busy={refreshingListings ? 'true' : undefined}
                 >
                     {listings.map((ad) => (
-                        <a key={ad.id} href={`/listing/${ad.id}`} data-link class="seller-page__card-link">
-                            <ProductCard {...ad} />
-                        </a>
+                        <ProductCard key={ad.id} {...ad} href={`/listing/${ad.id}`} rating={sellerRating} />
                     ))}
                 </div>
                 {this.renderListingsTail()}
@@ -632,7 +626,7 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
     }
 
     render() {
-        const { status, seller, reportOpen, reportPending, reportError, toast } = this.state;
+        const { status, seller, reportOpen, reportPending, reportError } = this.state;
 
         if (status === 'error') {
             return (
@@ -660,7 +654,6 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
                         onClose={this.closeReport}
                     />
                 )}
-                {toast && <Toast key={toast.id} type={toast.type} message={toast.message} />}
             </div>
         );
     }

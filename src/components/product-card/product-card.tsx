@@ -1,5 +1,5 @@
 import { assetUrl, type AdCard } from '@/lib/api';
-import { formatPosted, formatPrice } from '@/lib/format';
+import { formatPosted, formatPrice, formatRating } from '@/lib/format';
 import './product-card.scss';
 
 const HeartIcon = () => (
@@ -9,9 +9,21 @@ const HeartIcon = () => (
     </svg>
 );
 
+const StarIcon = () => (
+    <svg class="product-card__star" viewBox="0 0 14 14" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <path d="M7 1.46 8.69 5.02l3.85.46-2.86 2.63.76 3.85L7 10.03l-3.44 1.93.76-3.85L1.46 5.48l3.85-.46L7 1.46Z" />
+    </svg>
+);
+
+export interface ProductCardProps extends AdCard {
+    href?: string;
+    rating?: number;
+}
+
 export const ProductCard = ({
     id, title, price, is_free: isFree, image_url: imageUrl, has_delivery: hasDelivery, city, created_at: createdAt,
-}: AdCard) => {
+    href, rating,
+}: ProductCardProps) => {
     const src = assetUrl(imageUrl);
     const meta = [city, createdAt ? formatPosted(createdAt) : ''].filter(Boolean).join(' · ');
 
@@ -33,8 +45,16 @@ export const ProductCard = ({
                         </span>
                     )}
                 </div>
-                <h3 class="product-card__title">{title}</h3>
+                <h3 class="product-card__title">
+                    {href ? <a href={href} data-link class="product-card__link">{title}</a> : title}
+                </h3>
                 {meta && <p class="product-card__meta">{meta}</p>}
+                {rating !== undefined && (
+                    <span class="product-card__rating" aria-label={`Рейтинг продавца ${formatRating(rating)}`}>
+                        <StarIcon />
+                        {formatRating(rating)}
+                    </span>
+                )}
             </div>
         </article>
     );
