@@ -11,13 +11,13 @@ interface Call {
     body: unknown;
 }
 
-type Reply = { status?: number; body?: unknown };
+type Reply = { status?: number; body?: unknown; headers?: Record<string, string> };
 
 let calls: Call[];
 let replies: Array<(call: Call) => Reply | Promise<Reply>>;
 
-function jsonResponse({ status = 200, body }: Reply): Response {
-    return new Response(body === undefined ? null : JSON.stringify(body), { status });
+function jsonResponse({ status = 200, body, headers }: Reply): Response {
+    return new Response(body === undefined ? null : JSON.stringify(body), { status, headers });
 }
 
 beforeEach(() => {
@@ -195,6 +195,26 @@ describe('запросы', () => {
 
         expect(calls[1].headers.get('Idempotency-Key')).toBe('key-1');
         expect(calls[1].headers.get('X-CSRF-Token')).toBe('t1');
+    });
+});
+
+describe('лимит запросов', () => {
+    it('429 — ApiError со временем из Retry-After', async () => {
+        replies.push(csrf('t1'), () => ({ status: 429, body: { error: 'too many requests' }, headers: { 'Retry-After': '42' } }));
+
+        const err = await login({ login: 'a@b.ru', password: 'Secret123' }).catch((e: unknown) => e);
+
+        expect(err).toBeInstanceOf(ApiError);
+        expect((err as ApiError).status).toBe(429);
+        expect((err as ApiError).retryAfter).toBe(42);
+    });
+
+    it('без Retry-After время неизвестно', async () => {
+        replies.push(csrf('t1'), () => ({ status: 429, body: { error: 'too many requests' } }));
+
+        const err = await login({ login: 'a@b.ru', password: 'Secret123' }).catch((e: unknown) => e);
+
+        expect((err as ApiError).retryAfter).toBe(0);
     });
 });
 
