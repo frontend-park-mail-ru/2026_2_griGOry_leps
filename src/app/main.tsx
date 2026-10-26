@@ -27,6 +27,8 @@ import { CategoriesPage } from '@/pages/categories-page/categories-page';
 import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
+import { ForgotPasswordPage } from '@/pages/forgot-password-page/forgot-password-page';
+import { ResetPasswordPage, loadResetPassword } from '@/pages/reset-password-page/reset-password-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
@@ -210,6 +212,17 @@ async function start() {
     });
     route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
     route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
+    route('/forgot-password', {
+        name: 'forgot-password',
+        layout: 'auth',
+        view: () => <ForgotPasswordPage />,
+    }, { guestOnly: true });
+    route('/reset-password', {
+        name: 'reset-password',
+        layout: 'auth',
+        load: loadResetPassword,
+        view: (data) => <ResetPasswordPage {...data} />,
+    });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
