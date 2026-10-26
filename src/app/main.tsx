@@ -93,7 +93,9 @@ function route<T = undefined>(
             logError(`Не удалось загрузить страницу ${path ?? '404'}:`, err);
             if (id !== navigationId) return;
 
-            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError onRetry={() => handler(params)} /> };
+            const network = err instanceof ApiError && err.network
+
+            currentPage = { name: `${key}-error`, layout, tone, view: () => <PageError network={network} onRetry={() => handler(params)} /> };
             renderApp();
             return;
         }
