@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-    ApiError, addToCart, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
+    ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
     requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
@@ -233,5 +233,17 @@ describe('восстановление пароля', () => {
 
         expect(JSON.parse(calls[1].body as string)).toEqual({ token: 'abc', password: 'NewPass123' });
         expect(calls[3].headers.get('X-CSRF-Token')).toBe('t2');
+    });
+});
+
+describe('assetUrl', () => {
+    it('достраивает относительную ссылку до адреса бэка', () => {
+        expect(assetUrl('/uploads/avatars/a.png')).toBe('http://localhost:8080/uploads/avatars/a.png');
+    });
+
+    it('не трогает полную ссылку и пустое значение', () => {
+        expect(assetUrl('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
+        expect(assetUrl(null)).toBeNull();
+        expect(assetUrl('')).toBeNull();
     });
 });

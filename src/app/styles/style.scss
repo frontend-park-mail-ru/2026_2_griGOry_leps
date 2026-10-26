@@ -1,5 +1,7 @@
 @use './reset';
 @use './base';
+@use './utils';
+@use '@/shared/styles/variables' as *;
 
 main {
     flex: 1;
@@ -9,4 +11,8 @@ main {
 #app[data-layout='auth'] > .header,
 #app[data-layout='auth'] > .footer {
     display: none;
+}
+
+#app[data-tone='gray'] > main {
+    background-color: $surface-1;
 }
