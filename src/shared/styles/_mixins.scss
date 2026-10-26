@@ -119,6 +119,7 @@
 
 @mixin button-blue {
     @include button-base;
+    border: none;
     color: $white;
     background-color: $goget-blue;
 
@@ -129,6 +130,7 @@
 
 @mixin button-danger {
     @include button-base;
+    border: none;
     color: $white;
     background-color: $color-status-error;
 

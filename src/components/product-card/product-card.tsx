@@ -1,14 +1,39 @@
 import { assetUrl, type AdCard } from '@/lib/api';
-import { formatPrice } from '@/lib/format';
+import { formatPosted, formatPrice, formatRating } from '@/lib/format';
 import './product-card.scss';
 
-export const ProductCard = ({ id, title, price, is_free: isFree, image_url, has_delivery: hasDelivery }: AdCard) => {
-    const imageUrl = assetUrl(image_url);
+const HeartIcon = () => (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 16.7 3.9 10.6a3.75 3.75 0 0 1 5.3-5.3l.8.8.8-.8a3.75 3.75 0 0 1 5.3 5.3L10 16.7Z" />
+    </svg>
+);
+
+const StarIcon = () => (
+    <svg class="product-card__star" viewBox="0 0 14 14" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <path d="M7 1.46 8.69 5.02l3.85.46-2.86 2.63.76 3.85L7 10.03l-3.44 1.93.76-3.85L1.46 5.48l3.85-.46L7 1.46Z" />
+    </svg>
+);
+
+export interface ProductCardProps extends AdCard {
+    href?: string;
+    rating?: number;
+}
+
+export const ProductCard = ({
+    id, title, price, is_free: isFree, image_url: imageUrl, has_delivery: hasDelivery, city, created_at: createdAt,
+    href, rating,
+}: ProductCardProps) => {
+    const src = assetUrl(imageUrl);
+    const meta = [city, createdAt ? formatPosted(createdAt) : ''].filter(Boolean).join(' · ');
 
     return (
         <article class="product-card" data-ad-id={id}>
             <div class="product-card__img">
-                {imageUrl && <img class="product-card__photo" src={imageUrl} alt={title} loading="lazy" />}
+                {src && <img class="product-card__photo" src={src} alt={title} loading="lazy" />}
+                <button type="button" class="product-card__favorite" aria-label="В избранное" disabled>
+                    <HeartIcon />
+                </button>
             </div>
             <div class="product-card__body">
                 <div class="product-card__price-row">
@@ -20,7 +45,16 @@ export const ProductCard = ({ id, title, price, is_free: isFree, image_url, has_
                         </span>
                     )}
                 </div>
-                <h3 class="product-card__title">{title}</h3>
+                <h3 class="product-card__title">
+                    {href ? <a href={href} data-link class="product-card__link">{title}</a> : title}
+                </h3>
+                {meta && <p class="product-card__meta">{meta}</p>}
+                {rating !== undefined && (
+                    <span class="product-card__rating" aria-label={`Рейтинг продавца ${formatRating(rating)}`}>
+                        <StarIcon />
+                        {formatRating(rating)}
+                    </span>
+                )}
             </div>
         </article>
     );

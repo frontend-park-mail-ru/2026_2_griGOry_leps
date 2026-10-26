@@ -20,6 +20,11 @@
 
     &__name {
         @include typo-h5;
+        color: inherit;
+
+        &:hover {
+            color: $goget-blue;
+        }
     }
 
     &__rating {

@@ -26,4 +26,10 @@ describe('Breadcrumbs', () => {
 
         expect(root.firstElementChild).toMatchSnapshot();
     });
+
+    it('с strong добавляет модификатор', () => {
+        render(root, <Breadcrumbs strong flush items={[{ label: 'Главная', href: '/' }, { label: 'Все категории' }]} />);
+
+        expect(root.firstElementChild?.className).toBe('breadcrumbs breadcrumbs--flush breadcrumbs--strong');
+    });
 });

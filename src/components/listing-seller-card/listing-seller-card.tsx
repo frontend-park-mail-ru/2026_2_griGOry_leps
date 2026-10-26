@@ -12,7 +12,7 @@ export const ListingSellerCard = ({ seller }: { seller: SellerShort }) => {
         <ListingCard class="listing-seller-card" label="Продавец">
             <UserAvatar user={{ ...seller, email: '' }} class="listing-seller-card__avatar" />
             <div class="listing-seller-card__info">
-                <span class="listing-seller-card__name">{seller.first_name}</span>
+                <a href={`/seller/${seller.id}`} data-link class="listing-seller-card__name">{seller.first_name}</a>
                 <span class="listing-seller-card__rating">
                     {reviews > 0
                         ? `★ ${formatRating(seller.rating)} · ${reviews} ${plural(reviews, ['отзыв', 'отзыва', 'отзывов'])}`

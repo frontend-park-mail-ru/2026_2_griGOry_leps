@@ -41,4 +41,13 @@ describe('TextareaField', () => {
 
         expect(onInput).toHaveBeenCalledTimes(1);
     });
+
+    it('без подписи берёт aria-label и умеет блокироваться', () => {
+        render(root, <TextareaField id="r" name="comment" ariaLabel="Комментарий к жалобе" value="" maxLength={500} height={100} disabled />);
+
+        const textarea = root.querySelector<HTMLTextAreaElement>('textarea')!;
+        expect(root.querySelector('.textarea-field__label')).toBeNull();
+        expect(textarea.getAttribute('aria-label')).toBe('Комментарий к жалобе');
+        expect(textarea.disabled).toBe(true);
+    });
 });

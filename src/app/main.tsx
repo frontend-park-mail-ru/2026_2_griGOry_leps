@@ -36,6 +36,7 @@ import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
+import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
 
 export type Layout = 'main' | 'auth';
 
@@ -173,6 +174,13 @@ async function loadProfile(): Promise<Profile> {
     return profile;
 }
 
+function sellerRoute(path: string, tab: SellerTab) {
+    route(path, {
+        name: 'seller',
+        view: (_, { id }) => <SellerPage sellerId={Number(id)} tab={tab} authorized={getUser() !== null} />,
+    });
+}
+
 function myListingsRoute(path: string, tab: MyListingsTab) {
     route(path, {
         name: 'my-listings',
@@ -258,6 +266,8 @@ async function start() {
         load: loadProfile,
         view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
     }, { requireAuth: true });
+    sellerRoute('/seller/:id', 'listings');
+    sellerRoute('/seller/:id/reviews', 'reviews');
     route(null, { name: 'not-found', view: () => <NotFoundPage /> });
 
     initRouter();
