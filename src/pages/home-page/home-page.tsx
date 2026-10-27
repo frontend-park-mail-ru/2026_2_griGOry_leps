@@ -131,9 +131,7 @@ export const HomePage = ({ categories, promos, products, user }: HomeData & { us
             >
                 {products.length
                     ? products.map((product) => (
-                        <a key={product.id} href={`/listing/${product.id}`} data-link class="home-products__link">
-                            <ProductCard {...product} />
-                        </a>
+                        <ProductCard key={product.id} {...product} href={`/listing/${product.id}`} />
                     ))
                     : <EmptyState title="Товаров пока нет" text="Загляните позже — мы уже готовим новую подборку" />}
             </ScrollSection>

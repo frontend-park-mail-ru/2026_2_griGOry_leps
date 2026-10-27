@@ -243,9 +243,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                         <h2 class="listing-page__similar-title">Похожие объявления</h2>
                         <div class="listing-page__similar-grid">
                             {similar.map((item) => (
-                                <a key={item.id} href={`/listing/${item.id}`} data-link class="listing-page__similar-link">
-                                    <ProductCard {...item} />
-                                </a>
+                                <ProductCard key={item.id} {...item} href={`/listing/${item.id}`} />
                             ))}
                         </div>
                     </section>

@@ -47,3 +47,28 @@ export function plural(count: number, [one, few, many]: [string, string, string]
 export function formatAddress({ street, house }: { street: string; house: string }): string {
     return [street.trim(), house.trim()].filter(Boolean).join(', ');
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function formatPosted(value: string, now: Date = new Date()): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const days = Math.round((startOfDay(now) - startOfDay(date)) / DAY_MS);
+
+    if (days <= 0) return 'размещено сегодня';
+    if (days === 1) return 'размещено вчера';
+    if (days < 7) return `размещено ${days} ${plural(days, ['день', 'дня', 'дней'])} назад`;
+    return `размещено ${formatDay(value)}`;
+}
+
+export function formatSinceYear(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()} года`;
+}
+
+export function formatStars(rating: number): string {
+    const full = Math.max(0, Math.min(5, Math.round(rating)));
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+}

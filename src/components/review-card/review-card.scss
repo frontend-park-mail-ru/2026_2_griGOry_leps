@@ -1,0 +1,82 @@
+@use '@/shared/styles/variables' as *;
+
+.review-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px;
+    background-color: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    @media (max-width: 640px) {
+        padding: 16px;
+    }
+
+    &__author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    &__info {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__name {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+    }
+
+    &__meta {
+        overflow: hidden;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-placeholder;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__stars {
+        flex-shrink: 0;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $goget-accent;
+        white-space: nowrap;
+    }
+
+    &__text {
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-secondary;
+        overflow-wrap: anywhere;
+        white-space: pre-line;
+    }
+
+    &__photos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__photo {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: $radius-md;
+    }
+}

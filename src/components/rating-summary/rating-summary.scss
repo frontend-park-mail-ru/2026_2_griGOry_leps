@@ -1,0 +1,76 @@
+@use '@/shared/styles/variables' as *;
+
+.rating-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 360px;
+    flex-shrink: 0;
+    padding: 28px;
+    background-color: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    @media (max-width: 960px) {
+        width: 100%;
+    }
+
+    &__value {
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 44px;
+        color: $color-text-strong;
+    }
+
+    &__caption {
+        font-size: 16px;
+        line-height: 22px;
+        color: $goget-accent;
+    }
+
+    &__bars {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &__label {
+        width: 24px;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-secondary;
+        white-space: nowrap;
+    }
+
+    &__track {
+        flex: 1;
+        height: 8px;
+        overflow: hidden;
+        background-color: $gray-200;
+        border-radius: 4px;
+    }
+
+    &__fill {
+        display: block;
+        height: 100%;
+        background-color: $goget-accent;
+        border-radius: 4px;
+    }
+
+    &__count {
+        min-width: 16px;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-placeholder;
+        text-align: right;
+    }
+}

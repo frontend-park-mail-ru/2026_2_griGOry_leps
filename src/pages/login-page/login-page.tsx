@@ -21,6 +21,7 @@ export interface LoginState {
     /** При 401 текст под паролем, а красная рамка у обоих полей */
     loginHighlighted: boolean;
     formError: string;
+    networkError: string;
     submitting: boolean;
 }
 
@@ -48,6 +49,7 @@ export class LoginPage extends Component<object, LoginState> {
             errors: {},
             loginHighlighted: false,
             formError: '',
+            networkError: '',
             submitting: false,
         };
     }
@@ -83,7 +85,7 @@ export class LoginPage extends Component<object, LoginState> {
 
     handleSubmit = async (e: SubmitEvent) => {
         e.preventDefault();
-        this.setState({ formError: '', loginHighlighted: false });
+        this.setState({ formError: '', networkError: '', loginHighlighted: false });
 
         const values = this.validation.validateAll();
         if (!values) return;
@@ -108,6 +110,7 @@ export class LoginPage extends Component<object, LoginState> {
                 fallback: 'Не удалось войти. Попробуйте ещё раз',
             });
             if (field) this.validation.setError(field, message);
+            else if (err instanceof ApiError && err.network) this.setState({ networkError: message });
             else this.setState({ formError: message });
         } finally {
             this.setState({ submitting: false });
@@ -115,7 +118,7 @@ export class LoginPage extends Component<object, LoginState> {
     };
 
     render() {
-        const { values, errors, loginHighlighted, formError, submitting } = this.state;
+        const { values, errors, loginHighlighted, formError, networkError, submitting } = this.state;
 
         return (
             <div class="login-page">
@@ -132,6 +135,7 @@ export class LoginPage extends Component<object, LoginState> {
                             onSubmit={this.handleSubmit}
                             footer={[
                                 <Button type="submit" text="Войти" block disabled={submitting} />,
+                                <p class="auth-form__error" role="alert">{networkError || null}</p>,
                                 <FormNote text="Нет аккаунта?" linkHref="/register" linkText="Зарегистрироваться" />,
                             ]}
                         >

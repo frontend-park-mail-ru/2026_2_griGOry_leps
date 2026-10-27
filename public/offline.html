@@ -1,0 +1,119 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GoGet — нет соединения</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #f5f5f6; color: #141417; font-family: 'Fira Sans', Arial, sans-serif; }
+        a { color: inherit; text-decoration: none; }
+        button, input { font: inherit; }
+        button, .button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 24px; border: 1px solid transparent; border-radius: 12px; background: #0866ff; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button:hover, .button:hover { background: #0052cc; }
+        :focus-visible { outline: 2px solid #0866ff; outline-offset: 4px; }
+        .header { background: #fff; border-bottom: 1px solid #e6e6e9; }
+        .header__inner { display: flex; align-items: center; gap: 24px; min-height: 80px; padding: 16px 64px; }
+        .header__logo img { display: block; width: 100px; height: 44px; }
+        .header__category { background: #f5f5f6; border-color: #e6e6e9; color: #141417; white-space: nowrap; }
+        .header__category:hover { background: #e6e6e9; }
+        .search { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; height: 48px; padding: 0 16px; background: #f5f5f6; border: 1px solid #e6e6e9; border-radius: 12px; }
+        .search input { width: 100%; min-width: 0; background: none; border: 0; font-size: 16px; }
+        .search input::placeholder { color: #9999a1; }
+        .search img { width: 22px; height: 22px; }
+        .header__auth { display: flex; gap: 24px; }
+        .page { flex: 1; width: 100%; padding: 76px 64px 96px; }
+        .offline { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; padding: 80px 32px; background: #fff; border: 1px solid #e6e6e9; border-radius: 16px; text-align: center; }
+        .offline__icon { width: 40px; height: 40px; object-fit: contain; }
+        .offline h1 { margin: 0; font-size: 28px; line-height: 36px; }
+        .offline p { margin: 0; color: #525259; font-size: 16px; line-height: 24px; }
+        .footer { display: flex; flex-direction: column; gap: 20px; padding: 32px 64px 24px; }
+        .footer__top { display: flex; justify-content: space-between; gap: 48px; }
+        .footer__brand img { display: block; }
+        .footer__tagline { max-width: 320px; margin: 10px 0 0; color: #525259; line-height: 24px; }
+        .footer__cols { display: flex; gap: 72px; }
+        .footer__col { display: flex; flex-direction: column; gap: 8px; line-height: 24px; }
+        .footer__col h2 { margin: 0; font-size: 16px; font-weight: 600; }
+        .footer__col span { color: #525259; cursor: not-allowed; }
+        .footer__bottom { display: flex; justify-content: space-between; gap: 24px; padding-top: 20px; border-top: 1px solid #e6e6e9; color: #9999a1; font-size: 13px; line-height: 18px; }
+        .footer__legal { display: flex; flex-wrap: wrap; gap: 24px; }
+        @media (max-width: 1000px) {
+            .header__inner { flex-wrap: wrap; gap: 16px; padding: 16px 24px; }
+            .search { order: 1; flex-basis: 100%; }
+            .header__auth { margin-left: auto; gap: 12px; }
+            .page { padding: 48px 24px; }
+            .footer { padding: 32px 24px 24px; }
+            .footer__top { flex-wrap: wrap; }
+            .footer__cols { flex-wrap: wrap; gap: 32px; }
+        }
+        @media (max-width: 560px) {
+            .header__inner, .page, .footer { padding-left: 16px; padding-right: 16px; }
+            .header__auth { width: 100%; margin: 0; }
+            .header__auth .button { flex: 1; padding: 12px; font-size: 13px; }
+            .offline { padding: 48px 20px; }
+            .offline h1 { font-size: 24px; }
+            .footer__bottom { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header__inner">
+            <a class="header__logo" href="/" aria-label="GoGet — на главную"><img src="/img/goget.svg" alt="GoGet" width="100" height="44"></a>
+            <a class="button header__category" href="/categories">Все категории</a>
+            <div class="search" role="search" aria-label="Поиск недоступен без соединения" aria-disabled="true">
+                <input type="search" placeholder="Поиск по объявлениям" aria-label="Поиск по объявлениям" disabled>
+                <img src="/img/search_icon.svg" alt="">
+            </div>
+            <nav class="header__auth" aria-label="Аккаунт">
+                <a class="button" href="/register">Зарегистрироваться</a>
+                <a class="button" href="/login">Войти</a>
+            </nav>
+        </div>
+    </header>
+    <main class="page">
+        <section class="offline" aria-labelledby="offline-title">
+            <img class="offline__icon" src="/img/antenna.png" alt="" width="40" height="40">
+            <h1 id="offline-title">Нет соединения</h1>
+            <p>Эта страница не сохранена для просмотра без интернета. Проверьте подключение и попробуйте снова.</p>
+            <button type="button" onclick="location.reload()">Обновить</button>
+        </section>
+    </main>
+    <footer class="footer">
+        <div class="footer__top">
+            <div class="footer__brand">
+                <a href="/" aria-label="GoGet — на главную"><img src="/img/goget-mono.svg" alt="GoGET" width="89" height="40"></a>
+                <p class="footer__tagline">Покупайте и продавайте рядом с домом — быстро и без посредников</p>
+            </div>
+            <nav class="footer__cols" aria-label="Меню в подвале">
+                <div class="footer__col">
+                    <h2>Покупателям</h2>
+                    <span aria-disabled="true">Как купить</span>
+                    <span aria-disabled="true">Безопасная сделка</span>
+                    <span aria-disabled="true">Доставка</span>
+                    <span aria-disabled="true">Избранное</span>
+                </div>
+                <div class="footer__col">
+                    <h2>Продавцам</h2>
+                    <span aria-disabled="true">Разместить объявление</span>
+                    <span aria-disabled="true">Правила размещения</span>
+                    <span aria-disabled="true">Продвижение</span>
+                </div>
+                <div class="footer__col">
+                    <h2>GoGET</h2>
+                    <span aria-disabled="true">О проекте</span>
+                    <span aria-disabled="true">Помощь</span>
+                    <span aria-disabled="true">Контакты</span>
+                </div>
+            </nav>
+        </div>
+        <div class="footer__bottom">
+            <span>© 2026 GoGET</span>
+            <div class="footer__legal">
+                <span aria-disabled="true">Политика конфиденциальности</span>
+                <a href="/terms">Условия использования</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

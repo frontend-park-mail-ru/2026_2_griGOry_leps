@@ -8,6 +8,12 @@ export default tseslint.config(
     },
     js.configs.recommended,
     {
+        files: ['public/serv_work.js'],
+        languageOptions: {
+            globals: globals.serviceworker,
+        },
+    },
+    {
         files: ['src/**/*.{ts,tsx}'],
         extends: [tseslint.configs.recommended],
         languageOptions: {
