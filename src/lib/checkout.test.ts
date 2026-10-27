@@ -104,6 +104,16 @@ describe('оформление', () => {
 describe('подписи', () => {
     const today = new Date(2026, 9, 26);
 
+    it('сегодня и завтра считаются по локальной дате около полуночи', () => {
+        const lateEvening = new Date(2026, 9, 26, 23, 59, 59);
+        const afterMidnight = new Date(2026, 9, 27, 0, 0, 1);
+        expect(dateChipLabel('2026-10-26', lateEvening)).toBe('Сегодня, 26 окт');
+        expect(dateChipLabel('2026-10-27', lateEvening)).toBe('Завтра, 27 окт');
+        expect(dateChipLabel('2026-10-27', afterMidnight)).toBe('Сегодня, 27 окт');
+        expect(dateChipLabel('2026-10-28', afterMidnight)).toBe('Завтра, 28 окт');
+        expect(dateChipLabel('2026-11-01', new Date(2026, 9, 31, 23, 30))).toBe('Завтра, 1 нояб');
+    });
+
     it('даты доставки', () => {
         expect(dateChipLabel('2026-10-27', today)).toBe('Завтра, 27 окт');
         expect(dateChipLabel('2026-10-28', today)).toBe('Ср, 28 окт');

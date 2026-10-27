@@ -16,11 +16,12 @@ import {
 } from '@/router/router';
 import {
     ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts, logout,
-    getCheckoutQuote, getOrder, type AdCard, type CheckoutQuote, type Listing, type Order, type Profile, type User,
+    type AdCard, type Listing, type Profile, type User,
 } from '@/lib/api';
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
+import { loadCheckout, loadOrder } from '@/app/loaders';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 
 import { HomePage, type HomeData } from '@/pages/home-page/home-page';
@@ -35,9 +36,8 @@ import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
 import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
 import { CartPage } from '@/pages/cart-page/cart-page';
-import { CheckoutPage } from '@/pages/checkout-page/checkout-page';
+import { checkoutView } from '@/pages/checkout-page/checkout-page';
 import { OrderPage } from '@/pages/order-page/order-page';
-import { OrderStatus } from '@/components/order-status/order-status';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
@@ -169,51 +169,6 @@ async function loadSimilar(listing: Listing): Promise<AdCard[]> {
     } catch (err) {
         logWarn('Не удалось загрузить похожие объявления:', err);
         return [];
-    }
-}
-
-type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' };
-
-/** Из ?ids=1,2,3; 409 — часть товаров успели купить или снять */
-async function loadCheckout(): Promise<CheckoutData> {
-    const ids = (new URLSearchParams(location.search).get('ids') ?? '')
-        .split(',')
-        .map(Number)
-        .filter((id) => Number.isInteger(id) && id > 0);
-    if (!ids.length) return { problem: 'empty' };
-
-    try {
-        return { quote: await getCheckoutQuote(ids) };
-    } catch (err) {
-        if (err instanceof ApiError && (err.status === 409 || err.status === 400)) return { problem: 'unavailable' };
-        throw err;
-    }
-}
-
-function checkoutView(data: CheckoutData) {
-    if ('quote' in data) return <CheckoutPage quote={data.quote} />;
-    return (
-        <div class="order-page">
-            <OrderStatus
-                kind="error"
-                title={data.problem === 'empty' ? 'Нечего оформлять' : 'Часть товаров уже недоступна'}
-                text={data.problem === 'empty'
-                    ? 'Выберите товары в корзине и нажмите «Перейти к оформлению».'
-                    : 'Пока вы выбирали, часть товаров купили или сняли с продажи. Проверьте корзину и оформите заказ заново.'}
-            >
-                <a class="order-page__primary" href="/cart" data-link>Вернуться в корзину</a>
-            </OrderStatus>
-        </div>
-    );
-}
-
-async function loadOrder(id: string): Promise<Order | null> {
-    if (!/^\d+$/.test(id)) return null;
-    try {
-        return await getOrder(Number(id));
-    } catch (err) {
-        if (err instanceof ApiError && err.status === 404) return null;
-        throw err;
     }
 }
 

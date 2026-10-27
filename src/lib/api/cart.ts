@@ -26,6 +26,10 @@ export interface CartCount {
     items_count: number;
 }
 
+export interface CartBulkAddResult extends CartCount {
+    skipped_ids: number[];
+}
+
 export async function getCart(): Promise<Cart> {
     return json(await request('/cart'));
 }
@@ -36,6 +40,10 @@ export async function addToCart(listingId: number): Promise<CartCount> {
 
 export async function removeFromCart(listingId: number): Promise<CartCount> {
     return json(await request(`/cart/items/${listingId}`, { method: 'DELETE' }));
+}
+
+export async function addToCartBulk(listingIds: number[]): Promise<CartBulkAddResult> {
+    return json(await request('/cart/items/bulk-add', { method: 'POST', ...jsonBody({ listing_ids: listingIds }) }));
 }
 
 export async function removeFromCartBulk(listingIds: number[]): Promise<CartCount> {

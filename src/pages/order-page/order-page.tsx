@@ -30,6 +30,8 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     pollTimer: ReturnType<typeof setTimeout> | null = null;
     clockTimer: ReturnType<typeof setInterval> | null = null;
     tries = 0;
+    pollId = 0;
+    mounted = false;
 
     constructor(props: { order: Order }) {
         super(props);
@@ -45,28 +47,52 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     }
 
     componentDidMount() {
+        this.mounted = true;
         if (isPending(this.state.order)) this.schedulePoll();
         this.clockTimer = setInterval(() => this.setState({ now: Date.now() }), 1000);
+        window.addEventListener('pageshow', this.handlePageShow);
     }
 
     componentWillUnmount() {
-        if (this.pollTimer) clearTimeout(this.pollTimer);
+        this.mounted = false;
+        this.stopPoll();
         if (this.clockTimer) clearInterval(this.clockTimer);
+        window.removeEventListener('pageshow', this.handlePageShow);
+    }
+
+    handlePageShow = (e: PageTransitionEvent) => {
+        if (e.persisted) this.setState({ busy: false });
+    };
+
+    stopPoll() {
+        if (this.pollTimer) clearTimeout(this.pollTimer);
+        this.pollTimer = null;
+        this.pollId += 1;
     }
 
     schedulePoll() {
-        this.pollTimer = setTimeout(() => void this.poll(), POLL_MS);
+        this.stopPoll();
+        const id = this.pollId;
+        this.pollTimer = setTimeout(() => {
+            if (id === this.pollId) void this.poll();
+        }, POLL_MS);
     }
 
     poll = async () => {
+        this.stopPoll();
+        const id = this.pollId;
         this.tries += 1;
+        let pending = true;
         try {
             const order = await getOrder(this.state.order.id);
+            if (id !== this.pollId || !this.mounted) return;
             this.setState({ order });
-            if (!isPending(order)) return;
+            pending = isPending(order);
         } catch (err) {
+            if (id !== this.pollId || !this.mounted) return;
             logWarn('Не удалось получить статус заказа:', err);
         }
+        if (!pending) return;
         if (this.tries < POLL_TRIES) this.schedulePoll();
         else this.setState({ stalled: true });
     };
@@ -78,6 +104,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     };
 
     pay = async (method: PaymentMethod) => {
+        this.stopPoll();
         this.setState({ busy: true, error: '' });
         try {
             const order = await payOrder(this.state.order.id, method);

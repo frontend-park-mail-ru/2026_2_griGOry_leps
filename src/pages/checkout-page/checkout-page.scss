@@ -165,25 +165,6 @@
         color: $color-status-error;
     }
 
-    &__comment {
-        position: relative;
-        height: auto;
-        padding: 10px 16px 26px;
-    }
-
-    &__comment-input {
-        min-height: 48px;
-        resize: vertical;
-    }
-
-    &__counter {
-        position: absolute;
-        right: 16px;
-        bottom: 8px;
-        font-size: 0.75rem;
-        color: $color-text-placeholder;
-    }
-
     &__recipient {
         display: flex;
         align-items: center;

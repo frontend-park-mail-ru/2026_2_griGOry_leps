@@ -6,6 +6,8 @@ import { CheckoutSummary } from '@/components/checkout-summary/checkout-summary'
 import { ChipGroup } from '@/components/chip-group/chip-group';
 import { ChoiceCard } from '@/components/choice-card/choice-card';
 import { FormField } from '@/components/form-field/form-field';
+import { OrderStatus } from '@/components/order-status/order-status';
+import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
     ApiError, createOrder, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
@@ -13,7 +15,7 @@ import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
     COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
     initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
-    type CheckoutErrors, type CheckoutValues,
+    type CheckoutData, type CheckoutErrors, type CheckoutValues,
 } from '@/lib/checkout';
 import { formatPrice } from '@/lib/format';
 import { logWarn } from '@/lib/logger';
@@ -71,6 +73,18 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             redirecting: false,
         };
     }
+
+    componentDidMount() {
+        window.addEventListener('pageshow', this.handlePageShow);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('pageshow', this.handlePageShow);
+    }
+
+    handlePageShow = (e: PageTransitionEvent) => {
+        if (e.persisted) this.setState({ redirecting: false, submitting: false });
+    };
 
     update(patch: Partial<CheckoutValues>) {
         const values = { ...this.state.values, ...patch };
@@ -272,23 +286,17 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                 onChange={(timeSlot) => this.update({ timeSlot })}
             />,
             errors.timeSlot ? <p class="checkout-page__error">{errors.timeSlot}</p> : null,
-            <div class={errors.comment ? 'form-field form-field--error' : 'form-field'}>
-                <label class="form-field__label" for="checkout-comment">Комментарий курьеру</label>
-                <div class="form-field__control checkout-page__comment">
-                    <textarea
-                        id="checkout-comment"
-                        name="comment"
-                        class="form-field__input checkout-page__comment-input"
-                        rows="2"
-                        placeholder="Например, позвоните за 30 минут"
-                        value={values.comment}
-                        aria-invalid={String(Boolean(errors.comment))}
-                        onInput={this.handleInput}
-                    />
-                    <span class="checkout-page__counter">{values.comment.length} / {COMMENT_MAX}</span>
-                </div>
-                <p class="form-field__error">{errors.comment || null}</p>
-            </div>,
+            <TextareaField
+                id="checkout-comment"
+                name="comment"
+                label="Комментарий курьеру"
+                placeholder="Например, позвоните за 30 минут"
+                value={values.comment}
+                maxLength={COMMENT_MAX}
+                height={96}
+                error={errors.comment}
+                onInput={this.handleInput}
+            />,
         ];
     }
 
@@ -395,4 +403,21 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             </div>
         );
     }
+}
+
+export function checkoutView(data: CheckoutData) {
+    if ('quote' in data) return <CheckoutPage quote={data.quote} />;
+    return (
+        <div class="order-page">
+            <OrderStatus
+                kind="error"
+                title={data.problem === 'empty' ? 'Нечего оформлять' : 'Часть товаров уже недоступна'}
+                text={data.problem === 'empty'
+                    ? 'Выберите товары в корзине и нажмите «Перейти к оформлению».'
+                    : 'Пока вы выбирали, часть товаров купили или сняли с продажи. Проверьте корзину и оформите заказ заново.'}
+            >
+                <a class="order-page__primary" href="/cart" data-link>Вернуться в корзину</a>
+            </OrderStatus>
+        </div>
+    );
 }

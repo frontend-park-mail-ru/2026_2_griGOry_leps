@@ -6,13 +6,13 @@ import { CartSellerGroup } from '@/components/cart-seller-group/cart-seller-grou
 import { CartSkeleton } from '@/components/cart-skeleton/cart-skeleton';
 import { CartSummary } from '@/components/cart-summary/cart-summary';
 import { EmptyState } from '@/components/empty-state/empty-state';
-import { ApiError, addToCart, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
+import { ApiError, addToCartBulk, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
 import {
     cartItems, getCachedCart, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems, setCartCount, setSelected,
 } from '@/lib/cart';
 import { itemsCountText } from '@/lib/checkout';
 import { logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
+import { showToast, type ToastType } from '@/lib/toast';
 import { navigate } from '@/router/router';
 
 type Status = 'loading' | 'ready' | 'cached' | 'offline' | 'error';
@@ -23,6 +23,12 @@ export interface CartPageState {
     savedAt: string | null;
     busy: boolean;
     selection: number;
+}
+
+function restoreToast(total: number, skipped: number): [string, ToastType] {
+    if (skipped === 0) return [total === 1 ? 'Товар вернулся в корзину' : 'Товары вернулись в корзину', 'success'];
+    if (skipped === total) return [total === 1 ? 'Товар уже недоступен' : 'Товары уже недоступны', 'error'];
+    return [`Вернули не всё, уже недоступно: ${itemsCountText(skipped)}`, 'info'];
 }
 
 function withoutItems(cart: Cart, ids: number[]): Cart {
@@ -99,12 +105,12 @@ export class CartPage extends Component<object, CartPageState> {
     async restore(ids: number[]) {
         this.setState({ busy: true });
         try {
-            for (const id of ids) await addToCart(id);
+            const { skipped_ids: skipped } = await addToCartBulk(ids);
             const cart = await getCart();
             setCartCount(cart.items_count);
             saveCart(cart);
             this.setState({ cart, status: 'ready', savedAt: null });
-            showToast(ids.length === 1 ? 'Товар вернулся в корзину' : 'Товары вернулись в корзину');
+            showToast(...restoreToast(ids.length, skipped.length));
         } catch (err) {
             logWarn('Не удалось вернуть в корзину:', err);
             showToast(this.errorText(err, 'Не удалось вернуть товар'), 'error');

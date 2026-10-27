@@ -3,6 +3,8 @@ import { fromKopecks, toKopecks } from '@/lib/cart';
 import { plural } from '@/lib/format';
 import { validateName, validatePhone } from '@/lib/validators';
 
+export type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' };
+
 export const COMMENT_MAX = 200;
 
 const METHOD_ORDER: DeliveryMethod[] = ['courier', 'pickup_point', 'self_pickup'];
@@ -130,25 +132,24 @@ const dayMonth = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'shor
 const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'UTC' });
 const dayMonthLong = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function utcDate(date: string): Date {
     return new Date(`${date}T00:00:00Z`);
 }
 
-function localIso(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+export function daysFromToday(date: string, today = new Date()): number {
+    const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    return Math.round((utcDate(date).getTime() - todayUtc) / DAY_MS);
 }
 
 /** «2026-10-12» → «Завтра, 12 окт» или «Пн, 13 окт» */
 export function dateChipLabel(date: string, today = new Date()): string {
     const day = dayMonth.format(utcDate(date)).replace('.', '');
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
+    const diff = daysFromToday(date, today);
 
-    if (date === localIso(today)) return `Сегодня, ${day}`;
-    if (date === localIso(tomorrow)) return `Завтра, ${day}`;
+    if (diff === 0) return `Сегодня, ${day}`;
+    if (diff === 1) return `Завтра, ${day}`;
     const wd = weekday.format(utcDate(date));
     return `${wd[0].toUpperCase()}${wd.slice(1)}, ${day}`;
 }
@@ -165,10 +166,11 @@ export function orderPlacedText(order: Order, today = new Date()): string {
 
     if (methods.has('courier') && order.delivery.date && order.delivery.time_slot) {
         const [from, to] = order.delivery.time_slot.split('-');
-        const label = dateChipLabel(order.delivery.date, today).split(',')[0].toLowerCase();
-        const when = ['завтра', 'сегодня'].includes(label)
-            ? `${label}, ${dayMonthLong.format(utcDate(order.delivery.date))}`
-            : dayMonthLong.format(utcDate(order.delivery.date));
+        const diff = daysFromToday(order.delivery.date, today);
+        const date = dayMonthLong.format(utcDate(order.delivery.date));
+        let when = date;
+        if (diff === 0) when = `сегодня, ${date}`;
+        if (diff === 1) when = `завтра, ${date}`;
         parts.push(`Курьер привезёт заказ ${when}, с ${from} до ${to}.`);
     }
     if (methods.has('pickup_point')) parts.push('Когда заказ приедет в пункт выдачи, пришлём уведомление.');
