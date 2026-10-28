@@ -1,0 +1,84 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.cart-skeleton {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 32px;
+    align-items: start;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 24px;
+    }
+
+    @media (max-width: 960px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__row,
+    &__aside {
+        display: flex;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+    }
+
+    &__row {
+        gap: 20px;
+        padding: 20px;
+    }
+
+    &__aside {
+        flex-direction: column;
+        gap: 12px;
+        padding: 24px;
+
+        @media (max-width: 960px) {
+            display: none;
+        }
+    }
+
+    &__photo {
+        @include skeleton;
+        flex: none;
+        width: 120px;
+        height: 96px;
+        border-radius: $radius-lg;
+
+        @media (max-width: 640px) {
+            width: 72px;
+            height: 58px;
+        }
+    }
+
+    &__lines {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 600px;
+    }
+
+    &__line {
+        @include skeleton;
+        display: block;
+        width: 100%;
+        height: 16px;
+
+        &--title {
+            height: 28px;
+        }
+
+        &--short {
+            width: 200px;
+            max-width: 40%;
+        }
+    }
+}

@@ -1,0 +1,51 @@
+@use '@/shared/styles/variables' as *;
+
+.cart-seller-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    @media (max-width: 640px) {
+        padding: 16px;
+    }
+
+    &__head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &__avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    &__name {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+
+        &:hover {
+            color: $goget-blue;
+        }
+    }
+
+    &__rating {
+        color: $goget-accent;
+    }
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+}

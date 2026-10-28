@@ -21,6 +21,8 @@ import {
 import { getUser, setUser, clearUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
+import { loadCheckout, loadOrder } from '@/app/loaders';
+import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 
 import { HomePage, type HomeData } from '@/pages/home-page/home-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
@@ -33,6 +35,9 @@ import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
 import { ListingFormPage } from '@/pages/listing-form-page/listing-form-page';
+import { CartPage } from '@/pages/cart-page/cart-page';
+import { checkoutView } from '@/pages/checkout-page/checkout-page';
+import { OrderPage } from '@/pages/order-page/order-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
@@ -64,7 +69,7 @@ let navigationId = 0;
 
 function toastView() {
     const toast = getToast();
-    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} /> : null;
+    return toast ? <Toast key={toast.id} type={toast.type} message={toast.message} action={toast.action} /> : null;
 }
 
 function renderApp() {
@@ -76,7 +81,7 @@ function renderApp() {
         page.key = currentPage.name;
 
     render(app, [
-        <Header user={getUser()} onLogout={handleLogout} />,
+        <Header user={getUser()} cartCount={getCartCount()} onLogout={handleLogout} />,
         <main id="page">{page}</main>,
         <Footer />,
         toastView(),
@@ -90,7 +95,7 @@ function route<T = undefined>(
 ) {
     const handler = async (params: RouteParams = {}) => {
         const id = ++navigationId;
-        const key = [name, ...Object.values(params)].join(':');
+        const key = [name, ...Object.values(params), location.search].join(':');
 
         let data = undefined as T;
         try {
@@ -195,7 +200,10 @@ async function start() {
     setAuthCheck(() => getUser() !== null);
     await loadCurrentUser();
     subscribe(renderApp);
+    subscribe((user) => void refreshCartCount(Boolean(user)));
     subscribeToast(renderApp);
+    subscribeCartCount(renderApp);
+    void refreshCartCount(Boolean(getUser()));
 
     route('/', {
         name: 'home',
@@ -239,6 +247,14 @@ async function start() {
             ? <ListingPage listing={listing} similar={similar} user={getUser()} />
             : <NotFoundPage />),
     });
+    route('/cart', { name: 'cart', tone: 'gray', view: () => <CartPage /> }, { requireAuth: true });
+    route('/checkout', { name: 'checkout', tone: 'gray', load: loadCheckout, view: checkoutView }, { requireAuth: true });
+    route('/orders/:id', {
+        name: 'order',
+        tone: 'gray',
+        load: ({ id }) => loadOrder(id),
+        view: (order) => (order ? <OrderPage order={order} /> : <NotFoundPage />),
+    }, { requireAuth: true });
     route('/login', { name: 'login', layout: 'auth', view: () => <LoginPage /> }, { guestOnly: true });
     route('/register', { name: 'register', layout: 'auth', view: () => <RegisterPage /> }, { guestOnly: true });
     route('/forgot-password', {

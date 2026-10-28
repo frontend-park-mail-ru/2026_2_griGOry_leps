@@ -1,0 +1,138 @@
+@use '@/shared/styles/variables' as *;
+
+.cart-item {
+    display: grid;
+    grid-template-columns: auto 120px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    padding: 20px 0;
+
+    @media (max-width: 640px) {
+        grid-template-columns: auto 72px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 0;
+    }
+
+    &__check {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        accent-color: $goget-blue;
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    &__photo {
+        display: block;
+        width: 120px;
+        height: 96px;
+        overflow: hidden;
+        background: $surface-1;
+        border-radius: $radius-lg;
+
+        @media (max-width: 640px) {
+            width: 72px;
+            height: 58px;
+        }
+    }
+
+    &__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+        overflow-wrap: anywhere;
+
+        &:hover {
+            color: $goget-blue;
+        }
+    }
+
+    &__seller,
+    &__meta,
+    &__warning {
+        font-size: 13px;
+        line-height: 17px;
+    }
+
+    &__seller {
+        color: $color-text-secondary;
+    }
+
+    &__meta {
+        color: $color-text-placeholder;
+    }
+
+    &__rating {
+        color: $goget-accent;
+    }
+
+    &__warning {
+        color: $color-status-error;
+    }
+
+    &__remove {
+        margin-top: 6px;
+        padding: 0;
+        font: inherit;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-status-error;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    }
+
+    &__price {
+        font-weight: 700;
+        font-size: 20px;
+        line-height: 26px;
+        color: $color-text-strong;
+        white-space: nowrap;
+
+        @media (max-width: 640px) {
+            grid-column: 3;
+            font-size: 16px;
+            line-height: 22px;
+        }
+    }
+
+    &--unavailable &__check {
+        opacity: 0.4;
+    }
+
+    &--unavailable &__photo {
+        opacity: 0.45;
+    }
+
+    &--unavailable &__title,
+    &--unavailable &__price {
+        color: $color-text-placeholder;
+    }
+}

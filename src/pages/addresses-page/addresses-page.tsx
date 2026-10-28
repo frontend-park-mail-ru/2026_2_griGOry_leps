@@ -17,7 +17,8 @@ import { PageError } from '@/components/page-error/page-error';
 import { Skeleton } from '@/components/skeleton/skeleton';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { DeleteAddressModal } from '@/components/delete-address-modal/delete-address-modal';
-import { Toast, ToastTimer, type ToastState } from '@/components/toast/toast';
+import { Toast } from '@/components/toast/toast';
+import { ToastTimer, type ToastState } from '@/lib/toast';
 import './addresses-page.scss';
 
 const trim = (value: string) => value.trim();

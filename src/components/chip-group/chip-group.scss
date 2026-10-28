@@ -1,0 +1,36 @@
+@use '@/shared/styles/variables' as *;
+
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    &__chip {
+        padding: 8px 16px;
+        font: inherit;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-pill;
+        cursor: pointer;
+        transition: border-color $timing-animation-short, background-color $timing-animation-short;
+
+        &:hover {
+            border-color: $color-text-placeholder;
+        }
+
+        &--active,
+        &--active:hover {
+            color: $white;
+            background: $color-text-strong;
+            border-color: $color-text-strong;
+        }
+    }
+
+    &--invalid &__chip {
+        border-color: $color-status-error;
+    }
+}

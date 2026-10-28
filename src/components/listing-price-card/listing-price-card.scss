@@ -1,4 +1,5 @@
 @use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
 
 .listing-price-card {
     &__status {
@@ -90,6 +91,18 @@
 
         &:hover {
             background: $goget-blue-hover;
+        }
+    }
+
+    &__to-cart {
+        @include button-base;
+        width: 100%;
+        color: $color-text-strong;
+        background-color: $goget-accent;
+        border-color: $color-border;
+
+        &:hover:not(:disabled) {
+            opacity: 0.85;
         }
     }
 

@@ -1,3 +1,4 @@
+import { CartLink } from '@/components/cart-link/cart-link';
 import { Component } from '@/vdom';
 import type { User } from '@/lib/api';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
@@ -5,6 +6,7 @@ import './header.scss';
 
 export interface HeaderProps {
     user: User | null;
+    cartCount: number;
     onLogout: () => Promise<void>;
 }
 
@@ -54,6 +56,7 @@ export class Header extends Component<HeaderProps, HeaderState> {
 
         return (
             <>
+                <CartLink count={this.props.cartCount} />
                 <a href="/listing/new" data-link class="header__post">Разместить объявление</a>
                 <div
                     class={menuOpen ? 'header__user header__user--open' : 'header__user'}

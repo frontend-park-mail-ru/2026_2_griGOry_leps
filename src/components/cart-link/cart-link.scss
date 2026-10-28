@@ -1,0 +1,47 @@
+@use '@/shared/styles/variables' as *;
+
+.cart-link {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    color: $color-text-strong;
+    background: $surface-1;
+    border-radius: 50%;
+    transition: background-color $timing-animation-short;
+
+    &:hover {
+        background: $gray-150;
+    }
+
+    &__icon {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    &__badge {
+        position: absolute;
+        top: 2px;
+        right: 0;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 18px;
+        color: $white;
+        text-align: center;
+        background: $color-status-error;
+        border: 2px solid $surface-0;
+        border-radius: $radius-pill;
+        box-sizing: content-box;
+    }
+}
