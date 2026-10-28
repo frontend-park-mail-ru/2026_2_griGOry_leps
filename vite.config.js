@@ -50,6 +50,7 @@ export default defineConfig({
                 ],
             }),
             enforce: 'pre',
+            apply: (_, { command, mode }) => command === 'build' || mode === 'test',
         },
     ],
 });
