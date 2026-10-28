@@ -49,7 +49,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     componentDidMount() {
         this.mounted = true;
         if (isPending(this.state.order)) this.schedulePoll();
-        this.clockTimer = setInterval(() => this.setState({ now: Date.now() }), 1000);
+        this.clockTimer = setInterval(this.tick, 1000);
         window.addEventListener('pageshow', this.handlePageShow);
     }
 
@@ -59,6 +59,11 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
         if (this.clockTimer) clearInterval(this.clockTimer);
         window.removeEventListener('pageshow', this.handlePageShow);
     }
+
+    tick = () => {
+        const { order } = this.state;
+        if (order.payment.status === 'failed' && order.pay_until) this.setState({ now: Date.now() });
+    };
 
     handlePageShow = (e: PageTransitionEvent) => {
         if (e.persisted) this.setState({ busy: false });

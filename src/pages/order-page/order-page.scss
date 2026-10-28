@@ -5,7 +5,11 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: 56px 16px 64px;
+    padding: 80px 64px 120px;
+
+    @media (max-width: 960px) {
+        padding: 40px 16px 64px;
+    }
 
     &__primary {
         @include button-blue;
@@ -17,8 +21,8 @@
 
     &__methods {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
         width: 100%;
         text-align: left;
     }
@@ -26,7 +30,8 @@
     &__error {
         width: 100%;
         margin: 0;
-        font-size: 0.8125rem;
+        font-size: 13px;
+        line-height: 17px;
         color: $color-status-error;
     }
 }

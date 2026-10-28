@@ -30,6 +30,7 @@ export const CheckoutSummary = ({ items, itemsTotal, deliveryLabel, delivery, to
                 );
             })}
         </ul>
+        <hr class="checkout-summary__divider" />
         <div class="checkout-summary__row">
             <span>Товары · {items.length}</span>
             <span>{formatPrice(itemsTotal)} ₽</span>

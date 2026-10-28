@@ -4,9 +4,9 @@ const Row = () => (
     <div class="cart-skeleton__row">
         <span class="cart-skeleton__photo" />
         <span class="cart-skeleton__lines">
+            <span class="cart-skeleton__line cart-skeleton__line--title" />
             <span class="cart-skeleton__line" />
-            <span class="cart-skeleton__line cart-skeleton__line--mid" />
-            <span class="cart-skeleton__line cart-skeleton__line--mid" />
+            <span class="cart-skeleton__line" />
             <span class="cart-skeleton__line cart-skeleton__line--short" />
         </span>
     </div>
@@ -20,10 +20,10 @@ export const CartSkeleton = () => (
             <Row />
         </div>
         <div class="cart-skeleton__aside">
+            <span class="cart-skeleton__line cart-skeleton__line--title" />
             <span class="cart-skeleton__line" />
-            <span class="cart-skeleton__line cart-skeleton__line--mid" />
             <span class="cart-skeleton__line" />
-            <span class="cart-skeleton__line cart-skeleton__line--mid" />
+            <span class="cart-skeleton__line" />
         </div>
     </div>
 );

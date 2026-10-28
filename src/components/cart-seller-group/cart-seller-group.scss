@@ -1,40 +1,49 @@
 @use '@/shared/styles/variables' as *;
-@use '@/shared/styles/mixins' as *;
 
 .cart-seller-group {
-    padding: 16px 24px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
     background: $surface-0;
     border: 1px solid $color-border;
     border-radius: $radius-xl;
 
     @media (max-width: 640px) {
-        padding: 12px 16px 0;
+        padding: 16px;
     }
 
     &__head {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding-bottom: 4px;
+        gap: 10px;
     }
 
     &__avatar {
-        width: 28px;
-        height: 28px;
-        font-size: 0.8125rem;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
     }
 
     &__name {
-        @include typo-h5;
-        font-size: 0.875rem;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
+
+        &:hover {
+            color: $goget-blue;
+        }
     }
 
     &__rating {
-        font-size: 0.8125rem;
         color: $goget-accent;
     }
 
     &__items {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
         margin: 0;
         padding: 0;
         list-style: none;

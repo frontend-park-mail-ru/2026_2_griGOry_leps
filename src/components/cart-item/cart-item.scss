@@ -1,26 +1,22 @@
 @use '@/shared/styles/variables' as *;
-@use '@/shared/styles/mixins' as *;
 
 .cart-item {
     display: grid;
-    grid-template-columns: auto 88px minmax(0, 1fr) auto;
+    grid-template-columns: auto 120px minmax(0, 1fr) auto;
     gap: 16px;
     align-items: start;
-    padding: 16px 0;
-
-    & + & {
-        border-top: 1px solid $color-border;
-    }
+    padding: 20px 0;
 
     @media (max-width: 640px) {
-        grid-template-columns: auto 64px minmax(0, 1fr);
+        grid-template-columns: auto 72px minmax(0, 1fr);
         gap: 12px;
+        padding: 12px 0;
     }
 
     &__check {
-        width: 18px;
-        height: 18px;
-        margin: 4px 0 0;
+        width: 20px;
+        height: 20px;
+        margin: 0;
         accent-color: $goget-blue;
         cursor: pointer;
 
@@ -31,15 +27,15 @@
 
     &__photo {
         display: block;
-        width: 88px;
-        height: 66px;
+        width: 120px;
+        height: 96px;
         overflow: hidden;
         background: $surface-1;
-        border-radius: $radius-md;
+        border-radius: $radius-lg;
 
         @media (max-width: 640px) {
-            width: 64px;
-            height: 48px;
+            width: 72px;
+            height: 58px;
         }
     }
 
@@ -53,13 +49,15 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 3px;
+        gap: 6px;
         min-width: 0;
     }
 
     &__title {
-        @include typo-h5;
-        font-size: 0.9375rem;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-strong;
         overflow-wrap: anywhere;
 
         &:hover {
@@ -68,8 +66,17 @@
     }
 
     &__seller,
+    &__meta,
+    &__warning {
+        font-size: 13px;
+        line-height: 17px;
+    }
+
+    &__seller {
+        color: $color-text-secondary;
+    }
+
     &__meta {
-        font-size: 0.75rem;
         color: $color-text-placeholder;
     }
 
@@ -78,15 +85,15 @@
     }
 
     &__warning {
-        font-size: 0.75rem;
         color: $color-status-error;
     }
 
     &__remove {
-        margin-top: 4px;
+        margin-top: 6px;
         padding: 0;
         font: inherit;
-        font-size: 0.75rem;
+        font-size: 13px;
+        line-height: 17px;
         color: $color-status-error;
         background: none;
         border: none;
@@ -103,16 +110,29 @@
     }
 
     &__price {
-        @include typo-h5;
+        font-weight: 700;
+        font-size: 20px;
+        line-height: 26px;
+        color: $color-text-strong;
         white-space: nowrap;
 
         @media (max-width: 640px) {
             grid-column: 3;
+            font-size: 16px;
+            line-height: 22px;
         }
     }
 
-    &--unavailable &__photo,
-    &--unavailable &__title {
-        opacity: 0.5;
+    &--unavailable &__check {
+        opacity: 0.4;
+    }
+
+    &--unavailable &__photo {
+        opacity: 0.45;
+    }
+
+    &--unavailable &__title,
+    &--unavailable &__price {
+        color: $color-text-placeholder;
     }
 }

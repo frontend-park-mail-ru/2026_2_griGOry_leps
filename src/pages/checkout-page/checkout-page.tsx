@@ -181,9 +181,9 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
         this.setState({ formError: message });
     }
 
-    section(step: number, title: string, children: Child) {
+    section(step: number, title: string, children: Child, wide = false) {
         return (
-            <section class="checkout-page__section">
+            <section class={wide ? 'checkout-page__section checkout-page__section--wide' : 'checkout-page__section'}>
                 <h2 class="checkout-page__section-title">
                     <span class="checkout-page__step" aria-hidden="true">{step}</span>
                     {title}
@@ -257,35 +257,39 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                         onInput={this.handleInput}
                     />
                 )}
+                <div class="checkout-page__address-row">
+                    {values.address !== 'new' && (
+                        <button type="button" class="checkout-page__link" onClick={() => this.update({ address: 'new' })}>
+                            + Новый адрес
+                        </button>
+                    )}
+                    <span class="checkout-page__muted">
+                        {values.address === 'new'
+                            ? 'Сохранится только в этом заказе'
+                            : 'Адреса из профиля, изменить их можно в настройках'}
+                    </span>
+                    {errors.address && values.address !== 'new' && <span class="checkout-page__error">{errors.address}</span>}
+                </div>
             </div>,
-            <div class="checkout-page__address-row">
-                {values.address !== 'new' && (
-                    <button type="button" class="checkout-page__link" onClick={() => this.update({ address: 'new' })}>+ Новый адрес</button>
-                )}
-                <span class="checkout-page__muted">
-                    {values.address === 'new'
-                        ? 'Сохранится только в этом заказе'
-                        : 'Адреса из профиля, изменить их можно в настройках'}
-                </span>
-                {errors.address && values.address !== 'new' && <span class="checkout-page__error">{errors.address}</span>}
+            <div class="checkout-page__when">
+                <p class="checkout-page__label">Когда привезти</p>
+                <ChipGroup
+                    name="date"
+                    label="Дата доставки"
+                    options={quote.delivery_slots.dates.map((date) => ({ value: date, label: dateChipLabel(date) }))}
+                    value={values.date}
+                    onChange={(date) => this.update({ date })}
+                />
+                <ChipGroup
+                    name="time"
+                    label="Время доставки"
+                    options={quote.delivery_slots.times.map((time) => ({ value: time, label: slotLabel(time) }))}
+                    value={values.timeSlot}
+                    invalid={Boolean(errors.timeSlot)}
+                    onChange={(timeSlot) => this.update({ timeSlot })}
+                />
+                {errors.timeSlot && <p class="checkout-page__error">{errors.timeSlot}</p>}
             </div>,
-            <p class="checkout-page__label">Когда привезти</p>,
-            <ChipGroup
-                name="date"
-                label="Дата доставки"
-                options={quote.delivery_slots.dates.map((date) => ({ value: date, label: dateChipLabel(date) }))}
-                value={values.date}
-                onChange={(date) => this.update({ date })}
-            />,
-            <ChipGroup
-                name="time"
-                label="Время доставки"
-                options={quote.delivery_slots.times.map((time) => ({ value: time, label: slotLabel(time) }))}
-                value={values.timeSlot}
-                invalid={Boolean(errors.timeSlot)}
-                onChange={(timeSlot) => this.update({ timeSlot })}
-            />,
-            errors.timeSlot ? <p class="checkout-page__error">{errors.timeSlot}</p> : null,
             <TextareaField
                 id="checkout-comment"
                 name="comment"
@@ -375,17 +379,31 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
         let step = 0;
         return (
             <div class="checkout-page">
-                <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Корзина', href: '/cart' }, { label: 'Оформление заказа' }]} />
+                <Breadcrumbs
+                    flush
+                    strong
+                    items={[{ label: 'Главная', href: '/' }, { label: 'Корзина', href: '/cart' }, { label: 'Оформление заказа' }]}
+                />
                 <h1 class="checkout-page__title">Оформление заказа</h1>
-                {summary && <p class="checkout-page__summary" role="alert">{summary}</p>}
+                {summary && (
+                    <p class="checkout-page__alert" role="alert">
+                        <span class="checkout-page__alert-icon" aria-hidden="true">!</span>
+                        {summary}
+                    </p>
+                )}
 
                 <form class="checkout-page__layout" novalidate onSubmit={this.handleSubmit}>
                     <div class="checkout-page__main">
-                        {this.section(++step, 'Способ получения', this.renderDelivery())}
+                        {this.section(++step, 'Способ получения', this.renderDelivery(), quote.sellers.length > 1)}
                         {courier && this.section(++step, 'Адрес доставки', this.renderAddress())}
                         {this.section(++step, 'Получатель', this.renderRecipient())}
                         {this.section(++step, 'Оплата', this.renderPayment())}
-                        {formError && <p class="checkout-page__form-error" role="alert">{formError}</p>}
+                        {formError && (
+                            <p class="checkout-page__alert" role="alert">
+                                <span class="checkout-page__alert-icon" aria-hidden="true">!</span>
+                                {formError}
+                            </p>
+                        )}
                     </div>
                     <aside class="checkout-page__aside">
                         <CheckoutSummary

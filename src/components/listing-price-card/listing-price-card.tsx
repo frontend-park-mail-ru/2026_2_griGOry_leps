@@ -48,7 +48,7 @@ export const ListingPriceCard = ({ listing, busy, cartError, onAddToCart, onBuyN
                 <div class="listing-price-card__actions">
                     <Button text="Купить сейчас" block disabled={busy} onClick={onBuyNow} />
                     {listing.in_cart
-                        ? <a href="/cart" data-link class="listing-price-card__in-cart">Перейти в корзину</a>
+                        ? <a href="/cart" data-link class="listing-price-card__to-cart">✓ Перейти в корзину</a>
                         : (
                             <button type="button" class="listing-price-card__to-cart" disabled={busy} onClick={onAddToCart}>
                                 Добавить в корзину

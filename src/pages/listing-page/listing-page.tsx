@@ -123,7 +123,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
             const { items_count: count } = await addToCart(this.state.listing.id);
             setCartCount(count);
             this.setState({ listing: { ...this.state.listing, in_cart: true } });
-            showToast('Товар добавлен в корзину', 'success', { label: 'Перейти', onClick: () => navigate('/cart') });
+            showToast('Товар добавлен в корзину');
         } catch (err) {
             logWarn('Не удалось добавить в корзину:', err);
             this.setState({ cartError: cartErrorText(err) });

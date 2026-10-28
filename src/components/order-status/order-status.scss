@@ -1,41 +1,42 @@
 @use '@/shared/styles/variables' as *;
-@use '@/shared/styles/mixins' as *;
 
 .order-status {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     width: 100%;
-    max-width: 520px;
-    padding: 32px;
+    max-width: 640px;
+    padding: 48px;
     text-align: center;
     background: $surface-0;
     border: 1px solid $color-border;
-    border-radius: $radius-2xl;
+    border-radius: $radius-xl;
 
     @media (max-width: 640px) {
-        padding: 24px 16px;
+        padding: 32px 16px;
     }
 
     &__icon {
         display: flex;
+        flex: none;
         align-items: center;
         justify-content: center;
-        width: 56px;
-        height: 56px;
-        font-size: 26px;
+        width: 72px;
+        height: 72px;
         font-weight: 700;
+        font-size: 28px;
+        line-height: 32px;
         border-radius: 50%;
 
         &--success {
             color: $color-status-success;
-            background: rgba(33, 161, 82, 0.12);
+            background: #e5f7eb;
         }
 
         &--error {
             color: $color-status-error;
-            background: rgba(219, 38, 38, 0.1);
+            background: #ffebeb;
         }
 
         &--pending {
@@ -46,27 +47,32 @@
     }
 
     &__title {
-        @include typo-h3;
-        margin: 4px 0 0;
-        font-size: 1.5rem;
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 32px;
+        color: $color-text-strong;
     }
 
     &__text {
-        @include typo-p;
+        max-width: 542px;
         margin: 0;
+        font-size: 16px;
+        line-height: 22px;
         color: $color-text-secondary;
     }
 
     &__note {
-        @include typo-small;
         margin: 0;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-text-placeholder;
     }
 
     &__actions {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 8px;
-        margin-top: 8px;
+        gap: 12px;
+        width: 100%;
     }
 }

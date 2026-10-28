@@ -19,8 +19,9 @@ export const CartSellerGroup = ({ group, unselected, disabled, onToggle, onRemov
         <section class="cart-seller-group" aria-label={`Продавец ${seller.first_name}`}>
             <div class="cart-seller-group__head">
                 <UserAvatar user={{ ...seller, email: '' }} class="cart-seller-group__avatar" />
-                <span class="cart-seller-group__name">{seller.first_name}</span>
-                <span class="cart-seller-group__rating">· ★ {formatRating(seller.rating)}</span>
+                <a href={`/seller/${seller.id}`} data-link class="cart-seller-group__name">
+                    {seller.first_name} · <span class="cart-seller-group__rating">★ {formatRating(seller.rating)}</span>
+                </a>
             </div>
             <ul class="cart-seller-group__items">
                 {group.items.map((item) => (

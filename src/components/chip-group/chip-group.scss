@@ -6,10 +6,11 @@
     gap: 8px;
 
     &__chip {
-        padding: 8px 14px;
+        padding: 8px 16px;
         font: inherit;
-        font-size: 0.8125rem;
-        font-weight: 600;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
         color: $color-text-strong;
         background: $surface-0;
         border: 1px solid $color-border;

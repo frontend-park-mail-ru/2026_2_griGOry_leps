@@ -6,9 +6,10 @@ import { CartSellerGroup } from '@/components/cart-seller-group/cart-seller-grou
 import { CartSkeleton } from '@/components/cart-skeleton/cart-skeleton';
 import { CartSummary } from '@/components/cart-summary/cart-summary';
 import { EmptyState } from '@/components/empty-state/empty-state';
-import { ApiError, addToCartBulk, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
+import { ApiError, addToCart, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
 import {
-    cartItems, getCachedCart, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems, setCartCount, setSelected,
+    cartItems, getCachedCart, getCartCount, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems, setCartCount,
+    setSelected,
 } from '@/lib/cart';
 import { itemsCountText } from '@/lib/checkout';
 import { logWarn } from '@/lib/logger';
@@ -31,6 +32,10 @@ function restoreToast(total: number, skipped: number): [string, ToastType] {
     return [`Вернули не всё, уже недоступно: ${itemsCountText(skipped)}`, 'info'];
 }
 
+function isGone(err: unknown): boolean {
+    return err instanceof ApiError && [403, 404, 409].includes(err.status);
+}
+
 function withoutItems(cart: Cart, ids: number[]): Cart {
     const groups = cart.groups
         .map((group) => ({ ...group, items: group.items.filter((item) => !ids.includes(item.listing_id)) }))
@@ -41,8 +46,15 @@ function withoutItems(cart: Cart, ids: number[]): Cart {
 export class CartPage extends Component<object, CartPageState> {
     state: CartPageState = { status: 'loading', cart: null, savedAt: null, busy: false, selection: 0 };
 
+    mounted = false;
+
     componentDidMount() {
+        this.mounted = true;
         void this.load();
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
     }
 
     load = async () => {
@@ -103,19 +115,23 @@ export class CartPage extends Component<object, CartPageState> {
     }
 
     async restore(ids: number[]) {
-        this.setState({ busy: true });
+        if (this.mounted) this.setState({ busy: true });
         try {
-            const { skipped_ids: skipped } = await addToCartBulk(ids);
+            const results = await Promise.allSettled(ids.map((id) => addToCart(id)));
+            const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected' && !isGone(r.reason));
+            if (failed) throw failed.reason;
+
+            const skipped = results.filter((r) => r.status === 'rejected').length;
             const cart = await getCart();
             setCartCount(cart.items_count);
             saveCart(cart);
-            this.setState({ cart, status: 'ready', savedAt: null });
-            showToast(...restoreToast(ids.length, skipped.length));
+            if (this.mounted) this.setState({ cart, status: 'ready', savedAt: null });
+            showToast(...restoreToast(ids.length, skipped));
         } catch (err) {
             logWarn('Не удалось вернуть в корзину:', err);
             showToast(this.errorText(err, 'Не удалось вернуть товар'), 'error');
         } finally {
-            this.setState({ busy: false });
+            if (this.mounted) this.setState({ busy: false });
         }
     }
 
@@ -172,12 +188,13 @@ export class CartPage extends Component<object, CartPageState> {
         }
         if (!cart || cart.items_count === 0) {
             return (
-                <div class="cart-page__state">
-                    <EmptyState
-                        title="В корзине пока пусто"
-                        text="Добавляйте товары кнопкой «В корзину» на странице объявления, оформим всё одним заказом"
-                        action={{ label: 'Перейти к покупкам', href: '/' }}
-                    />
+                <div class="cart-page__empty">
+                    <span class="cart-page__empty-icon" aria-hidden="true">🛒</span>
+                    <h2 class="cart-page__empty-title">В корзине пока пусто</h2>
+                    <p class="cart-page__empty-text">
+                        Добавляйте товары кнопкой «В корзину» на странице объявления, оформим всё одним заказом
+                    </p>
+                    <a href="/" data-link class="cart-page__empty-action">Перейти к покупкам</a>
                 </div>
             );
         }
@@ -236,12 +253,13 @@ export class CartPage extends Component<object, CartPageState> {
 
     render() {
         const { cart, status } = this.state;
-        const count = (status === 'ready' || status === 'cached') && cart ? cart.items_count : 0;
+        const count = status === 'loading' ? getCartCount() : cart?.items_count ?? 0;
+        const empty = (status === 'ready' || status === 'cached') && count === 0;
 
         return (
             <div class="cart-page">
-                <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'Корзина' }]} />
-                <h1 class="cart-page__title">{count ? `Корзина · ${itemsCountText(count)}` : 'Корзина'}</h1>
+                <Breadcrumbs flush strong items={[{ label: 'Главная', href: '/' }, { label: 'Корзина' }]} />
+                {!empty && <h1 class="cart-page__title">{count ? `Корзина · ${itemsCountText(count)}` : 'Корзина'}</h1>}
                 {this.renderContent()}
             </div>
         );

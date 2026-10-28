@@ -26,8 +26,9 @@ export const CartSummary = ({ selectedCount, availableCount, total, unavailableC
                     <span>{goods}</span>
                     <span>{formatPrice(total)} ₽</span>
                 </div>
+                <hr class="cart-summary__divider" />
                 <div class="cart-summary__row cart-summary__row--total">
-                    <span>Итог</span>
+                    <span>Итого</span>
                     <span>{formatPrice(total)} ₽</span>
                 </div>
                 <button
@@ -41,7 +42,12 @@ export const CartSummary = ({ selectedCount, availableCount, total, unavailableC
                     Оплата через Безопасную сделку: продавец получит деньги только после того, как вы получите товар.
                 </p>
             </section>
-            {unavailableCount > 0 && <p class="cart-summary__warning" role="status">{unavailableText(unavailableCount)}</p>}
+            {unavailableCount > 0 && (
+                <p class="cart-summary__warning" role="status">
+                    <span class="cart-summary__warning-icon" aria-hidden="true">!</span>
+                    {unavailableText(unavailableCount)}
+                </p>
+            )}
         </div>
     );
 };

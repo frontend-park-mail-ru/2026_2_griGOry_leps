@@ -95,13 +95,15 @@
     }
 
     &__to-cart {
-        @include button-orange;
+        @include button-base;
         width: 100%;
-    }
+        color: $color-text-strong;
+        background-color: $goget-accent;
+        border-color: $color-border;
 
-    &__in-cart {
-        @include button-gray;
-        width: 100%;
+        &:hover:not(:disabled) {
+            opacity: 0.85;
+        }
     }
 
     &__error {
