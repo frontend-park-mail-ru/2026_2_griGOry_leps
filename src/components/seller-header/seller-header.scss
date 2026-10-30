@@ -104,6 +104,12 @@
         }
     }
 
+    &__no-reviews {
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-placeholder;
+    }
+
     &__actions {
         display: flex;
         flex-direction: column;

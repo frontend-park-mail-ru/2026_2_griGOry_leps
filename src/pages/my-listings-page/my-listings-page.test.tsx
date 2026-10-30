@@ -140,7 +140,8 @@ describe('MyListingsPage', () => {
         renderPage();
         await tick();
 
-        click('[data-ad-id="1"] .my-ad-card__action:not(:disabled)');
+        expect(root.querySelector('[data-ad-id="1"] a.my-ad-card__action')?.getAttribute('href')).toBe('/listing/1/edit');
+        click('[data-ad-id="1"] button.my-ad-card__action');
         await tick();
 
         expect(root.querySelector<HTMLButtonElement>('.close-listing-modal__confirm')?.disabled).toBe(true);

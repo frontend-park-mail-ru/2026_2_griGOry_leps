@@ -153,6 +153,15 @@ describe('SellerPage', () => {
         expect(texts('.seller-page__chip')).toEqual(['Все · 3', 'Спорт и отдых · 3']);
     });
 
+    it('без отзывов пишет, что их пока нет', async () => {
+        api.getSeller.mockResolvedValue({ ...seller, rating: 0, reviews_count: 0 });
+        renderPage();
+        await tick();
+
+        expect(root.querySelector('.seller-header__stars')).toBeNull();
+        expect(query('.seller-header__no-reviews').textContent).toBe('Пока нет отзывов');
+    });
+
     it('показывает длинное имя продавца целиком', async () => {
         const longName = 'Александр-Константин Величайший Продавец Велосипедов';
         api.getSeller.mockResolvedValue({ ...seller, first_name: longName });
@@ -405,6 +414,9 @@ describe('SellerPage', () => {
         setUser({ id: 5, email: 'timur@mail.ru', first_name: 'Тимур', phone: '+79990000000' });
         renderPage();
         await tick();
+
+        expect(root.querySelector('.seller-header__message')).toBeNull();
+        expect(query<HTMLAnchorElement>('.seller-header__follow').getAttribute('href')).toBe('/profile/edit');
 
         query<HTMLButtonElement>('.seller-header__more-button').click();
         await tick();
