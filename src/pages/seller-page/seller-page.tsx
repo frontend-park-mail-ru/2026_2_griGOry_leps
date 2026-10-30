@@ -609,14 +609,17 @@ export class SellerPage extends Component<SellerPageProps, SellerPageState> {
             );
         }
 
+        const own = getUser()?.id === seller.id;
+
         return (
             <>
                 <SellerHeader
                     seller={seller}
                     reviewsHref={sellerUrl(seller.id, 'reviews')}
+                    own={own}
                     onShare={this.share}
                     onCopyLink={this.copyLink}
-                    onReport={this.props.authorized && getUser()?.id !== seller.id ? this.openReport : undefined}
+                    onReport={this.props.authorized && !own ? this.openReport : undefined}
                 />
                 {this.renderTabs()}
                 {tab === 'listings' && this.renderListings()}
