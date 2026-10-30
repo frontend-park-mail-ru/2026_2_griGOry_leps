@@ -6,8 +6,10 @@ export const UPLOAD_TIMEOUT_MS = 60000;
 
 const API_ORIGIN = new URL(BASE_URL, window.location.origin).origin;
 
+/** Файлы из /uploads/ лежат на бэке, остальные относительные пути — статика фронта */
 export function assetUrl(url: string | null | undefined): string | null {
     if (!url) return null;
+    if (!url.startsWith('/uploads/')) return url;
     try {
         return new URL(url, API_ORIGIN).href;
     } catch {
