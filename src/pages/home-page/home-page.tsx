@@ -126,7 +126,7 @@ export const HomePage = ({ categories, promos, products, user }: HomeData & { us
             )}
 
             <ScrollSection
-                title={isGuest ? 'Популярное сейчас' : 'Рекомендуем для вас'}
+                title="Рекомендуем для вас"
                 scrollerClass={products.length ? 'home-products' : 'home-products home-products--empty'}
             >
                 {products.length

@@ -12,7 +12,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        gap: 48px;
+        gap: 64px;
     }
 
     &__brand {
@@ -28,7 +28,7 @@
     &__tagline {
         width: 320px;
         font-size: 16px;
-        line-height: 24px;
+        line-height: 22px;
         color: $color-text-secondary;
     }
 
@@ -47,13 +47,13 @@
     &__heading {
         font-weight: 500;
         font-size: 16px;
-        line-height: 24px;
+        line-height: 22px;
         color: $color-text-main;
     }
 
     &__link {
         font-size: 16px;
-        line-height: 24px;
+        line-height: 22px;
         color: $color-text-secondary;
         transition: color $timing-animation-short;
 
@@ -67,7 +67,7 @@
 
         &--small {
             font-size: 13px;
-            line-height: 18px;
+            line-height: 17px;
             color: $color-text-muted;
         }
     }
@@ -79,7 +79,7 @@
         padding-top: 20px;
         border-top: 1px solid $gray-200;
         font-size: 13px;
-        line-height: 18px;
+        line-height: 17px;
         color: $color-text-muted;
     }
 

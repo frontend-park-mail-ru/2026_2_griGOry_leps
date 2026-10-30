@@ -148,6 +148,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                                 {...this.fieldProps('first_name')}
                                 id="first-name-input"
                                 label="Имя или никнейм"
+                                large
                                 placeholder="Например, Иван"
                                 autocomplete="given-name"
                                 hint="Его увидят покупатели и продавцы"
@@ -156,6 +157,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                                 {...this.fieldProps('phone')}
                                 id="phone-input"
                                 label="Телефон"
+                                large
                                 type="tel"
                                 placeholder="+7 900 000-00-00"
                                 autocomplete="tel"
@@ -166,6 +168,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                                 {...this.fieldProps('email')}
                                 id="email-input"
                                 label="Email"
+                                large
                                 type="email"
                                 placeholder="name@mail.ru"
                                 autocomplete="email"
@@ -175,6 +178,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                                 {...this.fieldProps('password')}
                                 id="password-input"
                                 label="Пароль"
+                                large
                                 placeholder="Придумайте пароль"
                                 autocomplete="new-password"
                                 password
@@ -186,6 +190,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                                 {...this.fieldProps('passwordRepeat')}
                                 id="password-repeat-input"
                                 label="Повторите пароль"
+                                large
                                 placeholder="Ещё раз пароль"
                                 autocomplete="new-password"
                                 password
