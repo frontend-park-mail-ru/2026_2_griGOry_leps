@@ -155,6 +155,7 @@ export function saveErrorText(err: unknown): string {
     if (!(err instanceof ApiError)) return 'Не удалось сохранить объявление. Попробуйте ещё раз';
     if (err.network) return 'Нет соединения с сервером. Проверьте интернет';
     if (err.timeout) return 'Сервер не отвечает. Попробуйте ещё раз';
+    if (err.status === 403 && err.reason === 'email not verified') return 'Сначала подтвердите почту — ссылка в письме, которое мы отправили';
     if (err.status === 409 && err.reason === 'listing is not a draft') return 'Объявление уже опубликовано. Обновите страницу';
     if (err.status === 409) return 'Проданное объявление нельзя изменить';
     if (err.status === 403) return 'Это объявление нельзя редактировать';

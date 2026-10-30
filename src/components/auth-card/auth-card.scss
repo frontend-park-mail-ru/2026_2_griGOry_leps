@@ -34,18 +34,19 @@
     }
 
     &--status {
+        gap: 24px;
         text-align: center;
     }
 
     &--status &__heading {
         align-items: center;
-        gap: 1rem;
+        gap: 24px;
     }
 
     &--status &__subtitle {
         min-height: 0;
-        font-size: 0.9375rem;
-        line-height: 1.6;
+        font-size: 1rem;
+        line-height: 24px;
     }
 
     &__icon {
@@ -56,17 +57,17 @@
         height: 64px;
         border-radius: 50%;
         color: $goget-blue;
-        background: rgba(8, 102, 255, 0.1);
+        background: #e5f0ff;
     }
 
     &--expired &__icon {
-        color: $color-status-error;
-        background: rgba(219, 38, 38, 0.1);
+        color: #dc2626;
+        background: #fff2f2;
     }
 
     &--success &__icon {
         color: $color-status-success;
-        background: rgba(33, 161, 82, 0.1);
+        background: #e8f7ee;
     }
 
     @media (max-width: 480px) {
