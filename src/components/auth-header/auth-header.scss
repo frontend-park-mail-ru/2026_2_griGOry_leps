@@ -5,6 +5,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 1.5rem;
+    height: 80px;
     padding: 1rem 4rem;
     background: $surface-0;
     border-bottom: 1px solid $color-border;
@@ -16,6 +17,8 @@
 
     &__back {
         font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
         color: $color-text-secondary;
         transition: color $timing-animation-short;
 

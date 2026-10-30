@@ -143,6 +143,7 @@ export class LoginPage extends Component<object, LoginState> {
                                 id="login-input"
                                 name="login"
                                 label="Телефон или email"
+                                large
                                 placeholder="+7 900 000-00-00 или name@mail.ru"
                                 autocomplete="username"
                                 value={values.login}
@@ -155,6 +156,7 @@ export class LoginPage extends Component<object, LoginState> {
                                 id="login-password-input"
                                 name="password"
                                 label="Пароль"
+                                large
                                 placeholder="Введите пароль"
                                 autocomplete="current-password"
                                 password

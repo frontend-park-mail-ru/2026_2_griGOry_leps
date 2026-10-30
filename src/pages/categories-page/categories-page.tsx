@@ -7,7 +7,7 @@ import { plural } from '@/lib/format';
 
 export const CategoriesPage = ({ categories }: { categories: Category[] }) => (
     <div class="categories-page">
-        <Breadcrumbs flush items={[{ label: 'Главная', href: '/' }, { label: 'Все категории' }]} />
+        <Breadcrumbs flush strong items={[{ label: 'Главная', href: '/' }, { label: 'Все категории' }]} />
 
         <div class="categories-page__head">
             <h1 class="categories-page__title">Все категории</h1>

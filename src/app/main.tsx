@@ -204,6 +204,7 @@ async function start() {
     });
     route('/categories', {
         name: 'categories',
+        tone: 'gray',
         load: async () => ({ categories: await getCategories() }),
         view: ({ categories }) => <CategoriesPage categories={categories} />,
     });

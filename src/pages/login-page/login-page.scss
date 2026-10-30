@@ -6,8 +6,10 @@
 
     &__forgot {
         align-self: flex-start;
-        font-size: 0.875rem;
+        margin-top: 8px;
+        font-size: 16px;
         font-weight: 500;
+        line-height: 22px;
         color: $goget-blue;
 
         &:hover {
