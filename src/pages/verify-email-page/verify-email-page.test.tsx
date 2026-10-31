@@ -92,6 +92,16 @@ describe('loadVerifyEmail', () => {
 describe('VerifyEmailPage', () => {
     const pending: VerifyEmailProps = { token: '', status: 'pending', email: 'timur@mail.ru', emailChange: false, justSent: true };
 
+    it('после смены почты пишет про новую почту, а не про регистрацию', async () => {
+        renderPage({ token: 'abc', status: 'verified', email: 'new@mail.ru', emailChange: true, justSent: false });
+        await tick();
+
+        expect(root.querySelector('h1')?.textContent).toBe('Новая почта подтверждена');
+        expect(root.textContent).toContain('new@mail.ru');
+        expect(root.textContent).not.toContain('Регистрация завершена');
+        expect(root.querySelector('.button')?.textContent).toBe('Войти');
+    });
+
     it('после регистрации кнопка ждёт минуту, потом отправляет письмо ещё раз', async () => {
         vi.useFakeTimers();
         setUser(profile);

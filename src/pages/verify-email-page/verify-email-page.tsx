@@ -149,6 +149,13 @@ export class VerifyEmailPage extends Component<VerifyEmailProps, VerifyEmailStat
                     text: `Проверьте ${email}. Работает только ссылка из последнего письма, она действует 30 минут.`,
                 };
             case 'verified':
+                if (this.props.emailChange) {
+                    return {
+                        icon: 'success',
+                        title: 'Новая почта подтверждена',
+                        text: `Теперь входите и получайте письма на ${email}. Старая почта к аккаунту больше не привязана.`,
+                    };
+                }
                 return {
                     icon: 'success',
                     title: 'Почта подтверждена',
@@ -206,6 +213,9 @@ export class VerifyEmailPage extends Component<VerifyEmailProps, VerifyEmailStat
             case 'resent':
                 return [this.renderResendButton('Отправить письмо ещё раз'), changeLink];
             case 'verified':
+                if (this.props.emailChange && !loggedIn) {
+                    return <Button text="Войти" block onClick={() => navigate('/login')} />;
+                }
                 return <Button text="Перейти к объявлениям" block onClick={() => navigate('/')} />;
             case 'already':
                 return loggedIn
