@@ -237,7 +237,8 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
             this.toasts.show('success', 'Адрес удалён');
         } catch (err) {
             logError('Не удалось удалить адрес:', err);
-            this.setState({ deleting: false, deleteError: 'Не удалось удалить адрес. Попробуйте ещё раз' });
+            const { message } = describeApiError(err, { fields: [], fallback: 'Не удалось удалить адрес. Попробуйте ещё раз' });
+            this.setState({ deleting: false, deleteError: message });
         }
     };
 

@@ -1,6 +1,7 @@
 import { Component } from '@/vdom';
 import './listing-form-page.scss';
 
+import { AlertBanner } from '@/components/alert-banner/alert-banner';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { Button } from '@/components/button/button';
 import { CategorySelect } from '@/components/category-select/category-select';
@@ -13,8 +14,9 @@ import { ListingPublished } from '@/components/listing-published/listing-publish
 import { PhotoUploader, type PhotoItem } from '@/components/photo-uploader/photo-uploader';
 import { SellingTips } from '@/components/selling-tips/selling-tips';
 import {
-    ApiError, assetUrl, createListing, updateListing, uploadListingPhoto, type CategoryNode, type Listing,
+    ApiError, assetUrl, createListing, resendVerification, updateListing, uploadListingPhoto, type CategoryNode, type Listing,
 } from '@/lib/api';
+import { describeApiError } from '@/lib/form';
 import {
     PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
     buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
@@ -23,6 +25,7 @@ import {
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { navigate } from '@/router/router';
+import { getUser } from '@/store';
 
 export interface ListingFormPageProps {
     categories: CategoryNode[];
@@ -296,10 +299,36 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         window.scrollTo(0, 0);
     };
 
+    handleResendVerification = async () => {
+        try {
+            const email = await resendVerification();
+            showToast(`Отправили письмо на ${email}`);
+        } catch (err) {
+            logWarn('Не удалось отправить письмо для подтверждения:', err);
+            const { message } = describeApiError(err, { fields: [], fallback: 'Не удалось отправить письмо. Попробуйте ещё раз' });
+            showToast(message, 'error');
+        }
+    };
+
+    renderVerifyNotice() {
+        const user = getUser();
+        if (!user || user.email_verified || (this.props.listing && !this.isDraft)) return null;
+
+        return (
+            <AlertBanner>
+                {`Подтвердите почту ${user.email}, чтобы публиковать объявления. Черновик можно сохранить уже сейчас. `}
+                <button type="button" class="listing-form__verify-link" onClick={this.handleResendVerification}>
+                    Отправить письмо ещё раз
+                </button>
+            </AlertBanner>
+        );
+    }
+
     renderActions() {
         const { photos, submitting } = this.state;
         const { listing } = this.props;
         const disabled = submitting || photos.some((p) => p.uploading);
+        const canPublish = getUser()?.email_verified ?? false;
 
         if (listing && !this.isDraft) {
             return [
@@ -309,7 +338,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         }
 
         return [
-            <Button type="submit" text={submitting ? 'Публикуем…' : 'Опубликовать'} disabled={disabled} />,
+            <Button type="submit" text={submitting ? 'Публикуем…' : 'Опубликовать'} disabled={disabled || !canPublish} />,
             <Button text="Сохранить черновик" variant="outline" disabled={disabled} onClick={() => this.submit(true)} />,
             <p class="listing-form__terms">
                 Нажимая «Опубликовать», вы соглашаетесь с{' '}
@@ -349,6 +378,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                     <form class="listing-form" novalidate onSubmit={this.handleSubmit}>
                         <h1 class="listing-form-page__title">{title}</h1>
 
+                        {this.renderVerifyNotice()}
                         {summary && <p class="listing-form__summary" role="alert">{summary}</p>}
 
                         <section class="listing-form__section">

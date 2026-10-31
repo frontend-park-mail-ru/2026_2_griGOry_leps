@@ -110,6 +110,52 @@
         flex-shrink: 0;
     }
 
+    &__email-notice {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 2px;
+    }
+
+    &__email-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        font-size: 13px;
+        line-height: 17px;
+    }
+
+    &__email-action {
+        padding: 0;
+        font: inherit;
+        color: $goget-blue;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+
+        &:disabled {
+            color: $color-text-placeholder;
+            cursor: default;
+        }
+    }
+
+    &__email-dot {
+        color: $color-text-placeholder;
+    }
+
+    &__email-confirmed {
+        margin: 0;
+        font-size: 13px;
+        line-height: 17px;
+        color: $color-status-success;
+    }
+
     &__actions {
         display: flex;
         flex-wrap: wrap;

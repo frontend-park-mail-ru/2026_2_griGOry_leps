@@ -5,6 +5,7 @@ export interface ErrorBody {
     listing_ids?: number[];
     order_id?: number;
     order_number?: number;
+    email?: string;
 }
 
 export interface ApiErrorOptions {
@@ -16,6 +17,7 @@ export interface ApiErrorOptions {
     orderId?: number;
     orderNumber?: number;
     retryAfter?: number;
+    email?: string;
 }
 
 export class ApiError extends Error {
@@ -34,6 +36,8 @@ export class ApiError extends Error {
     orderNumber: number | null;
     /** Через сколько секунд можно повторить запрос после 429, 0 — неизвестно */
     retryAfter: number;
+    /** Почта, на которую можно отправить новую ссылку (400 от POST /email/verify) */
+    email: string;
 
     constructor(status: number, options: ApiErrorOptions = {}) {
         const { network = false, timeout = false, field = '', reason = '' } = options;
@@ -54,6 +58,7 @@ export class ApiError extends Error {
         this.orderId = options.orderId ?? null;
         this.orderNumber = options.orderNumber ?? null;
         this.retryAfter = options.retryAfter ?? 0;
+        this.email = options.email ?? '';
     }
 }
 
@@ -74,6 +79,7 @@ export async function ensureOk(response: Response): Promise<void> {
         orderId: body.order_id,
         orderNumber: body.order_number,
         retryAfter: Number(response.headers.get('Retry-After')) || 0,
+        email: body.email,
     });
 }
 

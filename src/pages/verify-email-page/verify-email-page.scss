@@ -1,0 +1,29 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.verify-email-page {
+    @include auth-page;
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+    }
+
+    &__link {
+        font-size: 0.8125rem;
+        line-height: 18px;
+        color: $goget-blue;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__error {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: $color-status-error;
+    }
+}

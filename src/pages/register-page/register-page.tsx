@@ -92,7 +92,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                 password: values.password,
             });
             setUser(user);
-            redirect('/');
+            redirect('/verify-email?sent=1');
         } catch (err) {
             const { field, message } = describeApiError(err, {
                 fields: Object.keys(RULES),

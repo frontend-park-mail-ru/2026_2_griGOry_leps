@@ -13,6 +13,7 @@ export interface User {
     email: string;
     first_name: string;
     phone: string;
+    email_verified: boolean;
 }
 
 export interface City {

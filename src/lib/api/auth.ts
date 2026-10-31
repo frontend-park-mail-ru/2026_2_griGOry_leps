@@ -56,6 +56,27 @@ export async function checkResetToken(token: string): Promise<string> {
     return email;
 }
 
+export interface VerifyEmailResult {
+    email: string;
+    changed: boolean;
+}
+
+export async function verifyEmail(token: string): Promise<VerifyEmailResult> {
+    return json(await request('/email/verify', { method: 'POST', ...jsonBody({ token }) }));
+}
+
+export async function resendVerification(): Promise<string> {
+    const { email } = await json<{ email: string }>(await request('/email/verify/resend', { method: 'POST' }));
+    return email;
+}
+
+export async function resendVerificationByLink(token: string): Promise<string> {
+    const { email } = await json<{ email: string }>(
+        await request('/email/verify/resend-by-link', { method: 'POST', ...jsonBody({ token }) }),
+    );
+    return email;
+}
+
 export async function resetPassword(token: string, password: string): Promise<void> {
     const response = await request('/password/reset', { method: 'POST', ...jsonBody({ token, password }) });
     await ensureOk(response);

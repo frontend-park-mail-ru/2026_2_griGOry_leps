@@ -45,7 +45,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    setUser({ id: 1, email: 't@mail.ru', first_name: 'Тимур', phone: '+79991234567' });
+    setUser({ id: 1, email: 't@mail.ru', first_name: 'Тимур', phone: '+79991234567', email_verified: true });
     api.getCart.mockResolvedValue(cart);
     root = document.createElement('div');
     document.body.innerHTML = '';
