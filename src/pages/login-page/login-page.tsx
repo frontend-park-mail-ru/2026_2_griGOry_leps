@@ -12,7 +12,7 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 import { ApiError, login } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
 import { normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
-import { redirect } from '@/router/router';
+import { nextPath, redirect } from '@/router/router';
 import { setUser } from '@/store';
 
 export interface LoginState {
@@ -97,7 +97,7 @@ export class LoginPage extends Component<object, LoginState> {
                 password: values.password,
             });
             setUser(user);
-            redirect('/');
+            redirect(nextPath());
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) {
                 this.setState({ loginHighlighted: true });
