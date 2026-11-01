@@ -128,6 +128,7 @@ export function recheckGuards(): void {
 /** Перехватывает клики по ссылкам с data-link и кнопки браузера «назад/вперёд» */
 export function initRouter(): void {
     document.body.addEventListener('click', (e) => {
+        if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
         if (!(e.target instanceof Element)) return;
         const link = e.target.closest('a[data-link]');
         if (link instanceof HTMLAnchorElement) {
