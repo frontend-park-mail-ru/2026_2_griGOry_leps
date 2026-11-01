@@ -6,7 +6,8 @@ let router: Router;
 let authorized: boolean;
 
 async function setup(path: string): Promise<void> {
-    history.replaceState({}, '', path);
+    // полный адрес, чтобы // не приняли за ссылку на другой сайт
+    history.replaceState({}, '', location.origin + path);
     vi.resetModules();
     router = await import('./router');
     authorized = false;
@@ -77,6 +78,24 @@ describe('resolveRoute', () => {
         expect(url()).toBe('/profile/edit?tab=1');
         expect(profile).toHaveBeenCalledTimes(1);
     });
+
+    it.each([
+        ['//', '/'],
+        ['///', '/'],
+        ['//profile//edit//', '/profile/edit'],
+    ])('лишние слэши %s → %s без зацикливания', async (path, expected) => {
+        await setup(path);
+        const page = vi.fn();
+        router.registerRoute('/', page);
+        router.registerRoute('/profile/edit', page);
+        const replace = vi.spyOn(history, 'replaceState');
+
+        router.resolveRoute();
+
+        expect(url()).toBe(expected);
+        expect(replace).toHaveBeenCalledTimes(1);
+        expect(page).toHaveBeenCalledTimes(1);
+    });
 });
 
 describe('guards', () => {
@@ -117,6 +136,8 @@ describe('nextPath', () => {
         ['/login?next=%2F%2Fevil.com', '/'],
         ['/login?next=https%3A%2F%2Fevil.com', '/'],
         ['/login?next=%2F%5Cevil.com', '/'],
+        ['/login?next=%2F%09%2Fevil.com', '/'],
+        ['/login?next=%2Flisting%2F3%23photos', '/listing/3#photos'],
     ])('%s → %s', async (path, expected) => {
         await setup(path);
         expect(router.nextPath()).toBe(expected);
