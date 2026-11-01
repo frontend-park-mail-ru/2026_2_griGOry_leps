@@ -7,15 +7,10 @@ import {
     type City,
     type Profile,
 } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
-    LIMITS,
-    sanitizePhone,
-    validateAbout,
-    validateEmail,
-    validateName,
-    validatePhone,
-} from '@/lib/validators';
+    FormValidation, describeApiError, LIMITS, sanitizePhone, validateAbout, validateEmail, validateName,
+    validatePhone, type FieldRule, type FormValues,
+} from '@/lib/forms';
 import { formatAddress, logError, logWarn, ToastTimer, type ToastState } from '@/lib/core';
 import { setUser } from '@/store';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';

@@ -14,7 +14,7 @@ import {
     type SellerProfile,
     type Sort,
 } from '@/lib/api';
-import { describeApiError } from '@/lib/form';
+import { describeApiError } from '@/lib/forms';
 import { logError, logWarn, showToast } from '@/lib/core';
 import { getUser } from '@/store';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';

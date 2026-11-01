@@ -11,15 +11,10 @@ import { PasswordRules, getPasswordRuleStates } from '@/components/password-rule
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { register } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
-    sanitizePhone,
-    validateEmail,
-    validateName,
-    validatePassword,
-    validatePasswordRepeat,
-    validatePhone,
-} from '@/lib/validators';
+    FormValidation, describeApiError, sanitizePhone, validateEmail, validateName, validatePassword,
+    validatePasswordRepeat, validatePhone, type FieldRule, type FormValues,
+} from '@/lib/forms';
 import { redirect } from '@/router/router';
 import { setUser } from '@/store';
 

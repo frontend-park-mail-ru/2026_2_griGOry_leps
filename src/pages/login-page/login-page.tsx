@@ -10,8 +10,9 @@ import { FormNote } from '@/components/form-note/form-note';
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { ApiError, login } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
+import {
+    FormValidation, describeApiError, normalizeLogin, validateLogin, validateLoginPassword, type FormValues,
+} from '@/lib/forms';
 import { redirect } from '@/router/router';
 import { setUser } from '@/store';
 

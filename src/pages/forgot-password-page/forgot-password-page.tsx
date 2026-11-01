@@ -8,8 +8,7 @@ import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
 
 import { requestPasswordReset } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { normalizeLogin, validateLogin } from '@/lib/validators';
+import { FormValidation, describeApiError, normalizeLogin, validateLogin, type FormValues } from '@/lib/forms';
 import { navigate } from '@/router/router';
 
 const RESEND_DELAY_S = 60;

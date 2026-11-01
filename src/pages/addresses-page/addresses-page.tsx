@@ -8,8 +8,9 @@ import {
     type AddressData,
     type Profile,
 } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
-import { LIMITS, validateMaxLength } from '@/lib/validators';
+import {
+    FormValidation, describeApiError, LIMITS, validateMaxLength, type FieldRule, type FormValues,
+} from '@/lib/forms';
 import { logError, ToastTimer, type ToastState } from '@/lib/core';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';

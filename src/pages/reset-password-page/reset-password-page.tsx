@@ -9,8 +9,9 @@ import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 
 import { ApiError, checkResetToken, resetPassword } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { validatePassword, validatePasswordRepeat } from '@/lib/validators';
+import {
+    FormValidation, describeApiError, validatePassword, validatePasswordRepeat, type FormValues,
+} from '@/lib/forms';
 import { navigate } from '@/router/router';
 import { clearUser } from '@/store';
 

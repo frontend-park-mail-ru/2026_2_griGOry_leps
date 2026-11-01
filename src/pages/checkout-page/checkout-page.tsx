@@ -18,7 +18,7 @@ import {
     type CheckoutData, type CheckoutErrors, type CheckoutValues,
 } from '@/lib/checkout';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
-import { sanitizePhone } from '@/lib/validators';
+import { sanitizePhone } from '@/lib/forms';
 import { navigate } from '@/router/router';
 
 export interface CheckoutPageProps {
