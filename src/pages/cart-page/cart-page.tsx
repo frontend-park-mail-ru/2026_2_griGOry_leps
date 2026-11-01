@@ -8,10 +8,9 @@ import { CartSummary } from '@/components/cart-summary/cart-summary';
 import { EmptyState } from '@/components/empty-state/empty-state';
 import { ApiError, addToCart, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
 import {
-    cartItems, getCachedCart, getCartCount, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems, setCartCount,
-    setSelected,
+    cartItems, getCachedCart, getCartCount, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems,
+    setCartCount, setSelected, itemsCountText,
 } from '@/lib/cart';
-import { itemsCountText } from '@/lib/checkout';
 import { logWarn, showToast, type ToastType } from '@/lib/core';
 import { navigate } from '@/router/router';
 

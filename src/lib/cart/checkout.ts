@@ -1,5 +1,5 @@
 import type { CheckoutQuote, CreateOrderData, DeliveryMethod, Order, PaymentMethod } from '@/lib/api';
-import { fromKopecks, toKopecks } from '@/lib/cart';
+import { fromKopecks, toKopecks } from './cart';
 import { plural } from '@/lib/core';
 import { validateName, validatePhone } from '@/lib/forms';
 

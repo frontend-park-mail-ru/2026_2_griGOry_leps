@@ -11,12 +11,11 @@ import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
     ApiError, createOrder, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
-import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
-    COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
-    initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
-    type CheckoutData, type CheckoutErrors, type CheckoutValues,
-} from '@/lib/checkout';
+    DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount, COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel,
+    deliveryLabel, deliveryTotal, formatPhone, initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel,
+    validateCheckout, type CheckoutData, type CheckoutErrors, type CheckoutValues,
+} from '@/lib/cart';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
 import { sanitizePhone } from '@/lib/forms';
 import { navigate } from '@/router/router';

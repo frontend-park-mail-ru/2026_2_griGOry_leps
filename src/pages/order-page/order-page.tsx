@@ -4,8 +4,7 @@ import './order-page.scss';
 import { ChoiceCard } from '@/components/choice-card/choice-card';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { ApiError, getOrder, payOrder, type Order, type PaymentMethod } from '@/lib/api';
-import { PAYMENT_LABELS } from '@/lib/cart';
-import { orderPlacedText, payTimeLeft } from '@/lib/checkout';
+import { PAYMENT_LABELS, orderPlacedText, payTimeLeft } from '@/lib/cart';
 import { logWarn } from '@/lib/core';
 
 const POLL_MS = 2000;
