@@ -27,6 +27,9 @@ export default tseslint.config(
             'prefer-const': 'error',
             'no-console': 'warn',
             'eol-last': ['error', 'always'],
+            'no-restricted-imports': ['error', {
+                patterns: [{ group: ['@/lib/*/*'], message: 'Импортируйте пакет через @/lib/<пакет>' }],
+            }],
         },
     },
     {
