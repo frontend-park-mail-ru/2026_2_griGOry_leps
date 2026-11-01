@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/empty-state/empty-state';
 export interface ScrollSectionProps {
     title: string;
     scrollerClass: string;
+    scrollKey: string;
     children?: Child;
 }
 
@@ -60,7 +61,7 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
     }
 
     render() {
-        const { title, scrollerClass, children } = this.props;
+        const { title, scrollerClass, scrollKey, children } = this.props;
         const { canPrev, canNext } = this.state;
 
         return (
@@ -84,7 +85,7 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
                         ><img class="arrow__icon" src="/img/chevron.svg" alt="" /></button>
                     </div>
                 </div>
-                <div class={scrollerClass} ref={this.setScroller} onScroll={this.updateArrows}>
+                <div class={scrollerClass} data-scroll-key={scrollKey} ref={this.setScroller} onScroll={this.updateArrows}>
                     {(children as VNode[]).map((item) => (
                         <div key={item.key} class="home-section__item">{item}</div>
                     ))}
@@ -105,7 +106,7 @@ export const HomePage = ({ categories, promos, products, user }: HomeData & { us
 
     return (
         <div class="home">
-            <ScrollSection title="Выберите категорию" scrollerClass="home-categories">
+            <ScrollSection title="Выберите категорию" scrollerClass="home-categories" scrollKey="categories">
                 {categories.length
                     ? categories.map((category) => <CategoryCard key={category.slug} {...category} />)
                     : <EmptyState title="Категории временно недоступны" text="Попробуйте обновить страницу позже" />}
@@ -128,6 +129,7 @@ export const HomePage = ({ categories, promos, products, user }: HomeData & { us
             <ScrollSection
                 title={isGuest ? 'Популярное сейчас' : 'Рекомендуем для вас'}
                 scrollerClass={products.length ? 'home-products' : 'home-products home-products--empty'}
+                scrollKey="products"
             >
                 {products.length
                     ? products.map((product) => (
