@@ -1,6 +1,6 @@
 import './category-page.scss';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
-import { CategoryNames } from '@/lib/data';
+import { CategoryNames } from '@/lib/catalog';
 
 export const CategoryPage = ({ slug }: { slug: string }) => {
     const name = CategoryNames[slug] ?? 'Неизвестная категория';

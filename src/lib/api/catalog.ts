@@ -1,4 +1,4 @@
-import { mockCategories, mockPromos, type Category, type Promo } from '../data';
+import { mockCategories, mockPromos, type Category, type Promo } from '@/lib/catalog';
 import { json } from './errors';
 import { request } from './request';
 import { query } from './utils';

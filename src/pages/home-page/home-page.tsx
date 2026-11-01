@@ -1,6 +1,6 @@
 import { Component, type Child, type VNode } from '@/vdom';
 import type { AdCard, User } from '@/lib/api';
-import type { Category, Promo } from '@/lib/data';
+import type { Category, Promo } from '@/lib/catalog';
 import './home-page.scss';
 
 import { CategoryCard } from '@/components/category-card/category-card';

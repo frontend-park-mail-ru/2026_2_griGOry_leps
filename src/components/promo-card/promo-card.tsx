@@ -1,4 +1,4 @@
-import type { Promo } from '@/lib/data';
+import type { Promo } from '@/lib/catalog';
 import './promo-card.scss';
 
 export const PromoCard = ({ title, subtitle, image }: Promo) => (
