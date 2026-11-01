@@ -20,7 +20,7 @@ import {
 import { getUser, setUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
-import { loadCheckout, loadOrder } from '@/app/loaders';
+import { loadCheckout, loadOrder } from '@/app/loaders/orders';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 import type { PageView, Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
