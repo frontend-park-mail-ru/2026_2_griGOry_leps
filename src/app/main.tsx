@@ -1,4 +1,4 @@
-import { render, type Child } from '@/vdom';
+import { render } from '@/vdom';
 import './styles/style.scss';
 
 import { Header } from '@/components/header/header';
@@ -10,19 +10,20 @@ import {
     registerNotFound,
     setAuthCheck,
     initRouter,
-    navigate,
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
 import {
-    ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts, logout,
+    ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts,
     type AdCard, type Listing, type Profile, type User,
 } from '@/lib/api';
-import { getUser, setUser, clearUser, subscribe } from '@/store';
+import { getUser, setUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
 import { loadCheckout, loadOrder } from '@/app/loaders';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
+import type { PageView, Page } from '@/app/page';
+import { handleLogout } from '@/app/auth';
 
 import { HomePage, type HomeData } from '@/pages/home-page/home-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
@@ -42,25 +43,6 @@ import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
 import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
-
-export type Layout = 'main' | 'auth';
-
-export type Tone = 'white' | 'gray';
-
-export interface PageView {
-    name: string;
-    layout: Layout;
-    tone: Tone;
-    view: () => Child;
-}
-
-export interface Page<T> {
-    name: string;
-    layout?: Layout;
-    tone?: Tone;
-    load?: (params: RouteParams) => Promise<T>;
-    view: (data: T, params: RouteParams) => Child;
-}
 
 const app = document.getElementById('app')!;
 
@@ -118,17 +100,6 @@ function route<T = undefined>(
 
     if (path === null) registerNotFound(handler);
     else registerRoute(path, handler, options);
-}
-
-async function handleLogout(): Promise<void> {
-    try {
-        await logout();
-    } catch (err) {
-        logWarn('Не удалось выйти:', err);
-        throw err;
-    }
-    clearUser();
-    navigate('/');
 }
 
 async function loadCurrentUser(): Promise<User | null> {
