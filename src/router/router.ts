@@ -80,7 +80,9 @@ export function goToLogin(): void {
 /** Куда вернуться после входа. Принимаем только свои пути, иначе ?next=//evil.com увёл бы на чужой сайт */
 export function nextPath(): string {
     const next = new URLSearchParams(location.search).get('next') ?? '';
-    return /^\/(?![/\\])/.test(next) ? next : '/';
+    if (!/^\/(?![/\\])/.test(next)) return '/';
+    const url = new URL(next, location.origin);
+    return url.origin === location.origin ? url.pathname + url.search + url.hash : '/';
 }
 
 function getGuardRedirect(route: Route): string | null {
@@ -105,8 +107,9 @@ function renderNotFound(path: string): void {
 
 export function resolveRoute(): void {
     const path = location.pathname;
-    if (path.length > 1 && path.endsWith('/')) {
-        redirect(path.replace(/\/+$/, '') + location.search);
+    const clean = path.replace(/\/{2,}/g, '/').replace(/(.)\/$/, '$1');
+    if (clean !== path) {
+        redirect(clean + location.search);
         return;
     }
 
