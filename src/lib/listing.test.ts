@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Listing } from '@/lib/api';
 import { priceText, statusNotice } from './listing';
-import { formatDay, formatPrice, formatSince, plural } from './format';
+import { formatDay, formatPrice, formatSince, plural } from '@/lib/core';
 
 const listing = (patch: Partial<Listing>) => ({
     is_owner: false, status: 'active', close_reason: null, is_free: false, price: '15000.00', ...patch,

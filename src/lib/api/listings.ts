@@ -1,4 +1,4 @@
-import { logWarn } from '@/lib/logger';
+import { logWarn } from '@/lib/core';
 import { ensureOk, json } from './errors';
 import { request } from './request';
 import { fileBody, jsonBody, query } from './utils';

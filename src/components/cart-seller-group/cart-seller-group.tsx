@@ -1,7 +1,7 @@
 import { CartItem } from '@/components/cart-item/cart-item';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import type { Cart } from '@/lib/api';
-import { formatRating } from '@/lib/format';
+import { formatRating } from '@/lib/core';
 import './cart-seller-group.scss';
 
 export interface CartSellerGroupProps {

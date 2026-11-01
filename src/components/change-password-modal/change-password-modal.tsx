@@ -5,7 +5,7 @@ import { PasswordRules, getPasswordRuleStates } from '@/components/password-rule
 import { changePassword, requestPasswordReset } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
 import { validatePassword, validatePasswordRepeat } from '@/lib/validators';
-import { logWarn } from '@/lib/logger';
+import { logWarn } from '@/lib/core';
 import './change-password-modal.scss';
 
 export interface ChangePasswordModalProps {

@@ -18,7 +18,10 @@ vi.mock('@/lib/api', async (importOriginal) => ({
     ...api,
 }));
 
-vi.mock('@/lib/toast', () => toast);
+vi.mock('@/lib/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/core')>()),
+    ...toast,
+}));
 
 function item(id: number) {
     return {

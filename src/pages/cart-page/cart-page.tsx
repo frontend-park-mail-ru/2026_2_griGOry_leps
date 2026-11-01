@@ -12,8 +12,7 @@ import {
     setSelected,
 } from '@/lib/cart';
 import { itemsCountText } from '@/lib/checkout';
-import { logWarn } from '@/lib/logger';
-import { showToast, type ToastType } from '@/lib/toast';
+import { logWarn, showToast, type ToastType } from '@/lib/core';
 import { navigate } from '@/router/router';
 
 type Status = 'loading' | 'ready' | 'cached' | 'offline' | 'error';

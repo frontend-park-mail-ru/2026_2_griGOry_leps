@@ -6,7 +6,7 @@ import { OrderStatus } from '@/components/order-status/order-status';
 import { ApiError, getOrder, payOrder, type Order, type PaymentMethod } from '@/lib/api';
 import { PAYMENT_LABELS } from '@/lib/cart';
 import { orderPlacedText, payTimeLeft } from '@/lib/checkout';
-import { logWarn } from '@/lib/logger';
+import { logWarn } from '@/lib/core';
 
 const POLL_MS = 2000;
 const POLL_TRIES = 30;

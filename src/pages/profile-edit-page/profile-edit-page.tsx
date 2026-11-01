@@ -16,8 +16,7 @@ import {
     validateName,
     validatePhone,
 } from '@/lib/validators';
-import { formatAddress } from '@/lib/format';
-import { logError, logWarn } from '@/lib/logger';
+import { formatAddress, logError, logWarn, ToastTimer, type ToastState } from '@/lib/core';
 import { setUser } from '@/store';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
@@ -25,7 +24,6 @@ import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { Select } from '@/components/select/select';
 import { Toast } from '@/components/toast/toast';
-import { ToastTimer, type ToastState } from '@/lib/toast';
 import { ChangePasswordModal } from '@/components/change-password-modal/change-password-modal';
 import './profile-edit-page.scss';
 

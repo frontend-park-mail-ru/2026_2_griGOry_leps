@@ -3,7 +3,7 @@ import './categories-page.scss';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { CategoryCardFull } from '@/components/category-card-full/category-card-full';
 import type { Category } from '@/lib/data';
-import { plural } from '@/lib/format';
+import { plural } from '@/lib/core';
 
 export const CategoriesPage = ({ categories }: { categories: Category[] }) => (
     <div class="categories-page">

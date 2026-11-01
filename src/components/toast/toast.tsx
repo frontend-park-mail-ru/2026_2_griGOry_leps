@@ -1,5 +1,5 @@
 import './toast.scss';
-import type { ToastAction, ToastType } from '@/lib/toast';
+import type { ToastAction, ToastType } from '@/lib/core';
 
 export interface ToastProps {
     type: ToastType;

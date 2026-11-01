@@ -1,5 +1,5 @@
 import type { CloseReason, Condition, Listing, ListingStatus } from '@/lib/api';
-import { formatPrice } from '@/lib/format';
+import { formatPrice } from '@/lib/core';
 
 export const CONDITION_LABELS: Record<Condition, string> = {
     new: 'Новое',

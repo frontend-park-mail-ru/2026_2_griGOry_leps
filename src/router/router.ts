@@ -1,4 +1,4 @@
-import { logError } from '@/lib/logger';
+import { logError } from '@/lib/core';
 
 export type RouteParams = Record<string, string>;
 export type RouteHandler = (params: RouteParams) => void | Promise<void>;

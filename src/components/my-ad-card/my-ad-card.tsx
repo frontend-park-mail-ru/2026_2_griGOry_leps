@@ -1,5 +1,5 @@
 import { assetUrl, type ListingStatus, type MyAdCard as MyAd } from '@/lib/api';
-import { formatDay, formatPrice } from '@/lib/format';
+import { formatDay, formatPrice } from '@/lib/core';
 import './my-ad-card.scss';
 
 export interface MyAdCardProps {

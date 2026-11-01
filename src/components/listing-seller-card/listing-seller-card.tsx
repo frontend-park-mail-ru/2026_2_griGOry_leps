@@ -1,7 +1,7 @@
 import { ListingCard } from '@/components/listing-card/listing-card';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import type { SellerShort } from '@/lib/api';
-import { formatRating, formatSince, plural } from '@/lib/format';
+import { formatRating, formatSince, plural } from '@/lib/core';
 import './listing-seller-card.scss';
 
 export const ListingSellerCard = ({ seller }: { seller: SellerShort }) => {

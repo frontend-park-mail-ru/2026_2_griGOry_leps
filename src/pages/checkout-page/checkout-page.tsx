@@ -17,9 +17,7 @@ import {
     initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
     type CheckoutData, type CheckoutErrors, type CheckoutValues,
 } from '@/lib/checkout';
-import { formatPrice } from '@/lib/format';
-import { logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
+import { formatPrice, logWarn, showToast } from '@/lib/core';
 import { sanitizePhone } from '@/lib/validators';
 import { navigate } from '@/router/router';
 

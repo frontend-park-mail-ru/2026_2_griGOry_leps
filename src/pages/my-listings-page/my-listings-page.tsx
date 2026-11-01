@@ -9,7 +9,7 @@ import {
     type MyListingPage,
     type Profile,
 } from '@/lib/api';
-import { logError } from '@/lib/logger';
+import { logError } from '@/lib/core';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { MyAdCard } from '@/components/my-ad-card/my-ad-card';
 import { PageError } from '@/components/page-error/page-error';

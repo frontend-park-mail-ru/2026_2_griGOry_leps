@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@/vdom';
 import type { Review } from '@/lib/api';
-import { formatStars } from '@/lib/format';
+import { formatStars } from '@/lib/core';
 import { ReviewCard } from './review-card';
 
 let root: HTMLElement;

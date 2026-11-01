@@ -1,5 +1,5 @@
 import { getCart, type Cart, type CartItem, type DeliveryMethod, type PaymentMethod } from '@/lib/api';
-import { logWarn } from '@/lib/logger';
+import { logWarn } from '@/lib/core';
 import { getUser } from '@/store';
 
 export const DELIVERY_LABELS: Record<DeliveryMethod, string> = {

@@ -1,6 +1,5 @@
-import { debounce, type Debounced } from '@/lib/debounce';
+import { debounce, plural, type Debounced } from '@/lib/core';
 import { ApiError } from '@/lib/api';
-import { plural } from '@/lib/format';
 
 const VALIDATION_DELAY_MS = 300;
 

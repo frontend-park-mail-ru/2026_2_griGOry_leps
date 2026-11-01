@@ -1,7 +1,7 @@
 import {
     ApiError, type CategoryNode, type Condition, type CreateListingData, type Listing, type UpdateListingData,
 } from '@/lib/api';
-import { plural } from '@/lib/format';
+import { plural } from '@/lib/core';
 
 export const TITLE_MAX = 80;
 export const DESCRIPTION_MAX = 3000;

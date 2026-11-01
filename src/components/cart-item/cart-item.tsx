@@ -1,6 +1,6 @@
 import { assetUrl, type CartItem as CartItemData } from '@/lib/api';
 import { UNAVAILABLE_TEXT, isAvailable } from '@/lib/cart';
-import { formatPrice, formatRating } from '@/lib/format';
+import { formatPrice, formatRating } from '@/lib/core';
 import './cart-item.scss';
 
 export interface CartItemProps {
