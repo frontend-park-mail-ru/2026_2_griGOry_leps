@@ -14,13 +14,14 @@ import {
     type RouteOptions,
 } from '@/router/router';
 import {
-    ApiError, getCategories, getCategoryTree, getListing, getListings, getMe, getPromos, getProducts,
-    type AdCard, type Listing, type Profile, type User,
+    ApiError, getCategories, getCategoryTree, getListing, getListings, getPromos, getProducts,
+    type AdCard, type Listing,
 } from '@/lib/api';
-import { getUser, setUser, subscribe } from '@/store';
+import { getUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
 import { loadCheckout, loadOrder } from '@/app/loaders/orders';
+import { loadCurrentUser, loadProfile, loadResetPassword } from '@/app/loaders/user';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 import type { PageView, Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
@@ -31,7 +32,7 @@ import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password-page/forgot-password-page';
-import { ResetPasswordPage, loadResetPassword } from '@/pages/reset-password-page/reset-password-page';
+import { ResetPasswordPage } from '@/pages/reset-password-page/reset-password-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
@@ -102,17 +103,6 @@ function route<T = undefined>(
     else registerRoute(path, handler, options);
 }
 
-async function loadCurrentUser(): Promise<User | null> {
-    try {
-        const user = await getMe();
-        if (user) setUser(user);
-        return user;
-    } catch (err) {
-        logWarn('Не удалось получить текущего пользователя:', err);
-        return null;
-    }
-}
-
 async function loadHome(): Promise<HomeData> {
     const [categories, promos, products] = await Promise.all([
         getCategories(),
@@ -141,13 +131,6 @@ async function loadSimilar(listing: Listing): Promise<AdCard[]> {
         logWarn('Не удалось загрузить похожие объявления:', err);
         return [];
     }
-}
-
-async function loadProfile(): Promise<Profile> {
-    const profile = await getMe();
-    if (!profile) throw new Error('Пользователь не авторизован');
-    setUser(profile);
-    return profile;
 }
 
 function sellerRoute(path: string, tab: SellerTab) {
