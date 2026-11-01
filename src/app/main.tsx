@@ -13,20 +13,18 @@ import {
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
-import {
-    ApiError, getCategories, getCategoryTree, getListing, getListings, getPromos, getProducts,
-    type AdCard, type Listing,
-} from '@/lib/api';
+import { ApiError } from '@/lib/api';
 import { getUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
 import { loadCheckout, loadOrder } from '@/app/loaders/orders';
 import { loadCurrentUser, loadProfile, loadResetPassword } from '@/app/loaders/user';
+import { loadCategories, loadHome, loadListingEdit, loadListingNew, loadListingPage } from '@/app/loaders/listings';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 import type { PageView, Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
 
-import { HomePage, type HomeData } from '@/pages/home-page/home-page';
+import { HomePage } from '@/pages/home-page/home-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
 import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
@@ -103,36 +101,6 @@ function route<T = undefined>(
     else registerRoute(path, handler, options);
 }
 
-async function loadHome(): Promise<HomeData> {
-    const [categories, promos, products] = await Promise.all([
-        getCategories(),
-        getPromos(),
-        getProducts(),
-    ]);
-    return { categories, promos, products };
-}
-
-async function loadListing(id: string): Promise<Listing | null> {
-    if (!/^\d+$/.test(id)) return null;
-    try {
-        return await getListing(Number(id));
-    } catch (err) {
-        if (err instanceof ApiError && err.status === 404) return null;
-        throw err;
-    }
-}
-
-async function loadSimilar(listing: Listing): Promise<AdCard[]> {
-    if (!listing.category || listing.is_owner) return [];
-    try {
-        const { items } = await getListings({ category_id: listing.category.id, limit: 7 });
-        return items.filter((item) => item.id !== listing.id).slice(0, 6);
-    } catch (err) {
-        logWarn('Не удалось загрузить похожие объявления:', err);
-        return [];
-    }
-}
-
 function sellerRoute(path: string, tab: SellerTab) {
     route(path, {
         name: 'seller',
@@ -166,7 +134,7 @@ async function start() {
     });
     route('/categories', {
         name: 'categories',
-        load: async () => ({ categories: await getCategories() }),
+        load: loadCategories,
         view: ({ categories }) => <CategoriesPage categories={categories} />,
     });
     route('/category/:slug', {
@@ -176,16 +144,13 @@ async function start() {
     route('/listing/new', {
         name: 'listing-new',
         tone: 'gray',
-        load: async () => ({ categories: await getCategoryTree() }),
+        load: loadListingNew,
         view: ({ categories }) => <ListingFormPage categories={categories} />,
     }, { requireAuth: true });
     route('/listing/:id/edit', {
         name: 'listing-edit',
         tone: 'gray',
-        load: async ({ id }) => {
-            const [listing, categories] = await Promise.all([loadListing(id), getCategoryTree()]);
-            return { listing: listing?.is_owner && listing.status !== 'sold' ? listing : null, categories };
-        },
+        load: loadListingEdit,
         view: ({ listing, categories }) => (listing
             ? <ListingFormPage listing={listing} categories={categories} />
             : <NotFoundPage />),
@@ -193,10 +158,7 @@ async function start() {
     route('/listing/:id', {
         name: 'listing',
         tone: 'gray',
-        load: async ({ id }) => {
-            const listing = await loadListing(id);
-            return { listing, similar: listing ? await loadSimilar(listing) : [] };
-        },
+        load: loadListingPage,
         view: ({ listing, similar }) => (listing
             ? <ListingPage listing={listing} similar={similar} user={getUser()} />
             : <NotFoundPage />),
