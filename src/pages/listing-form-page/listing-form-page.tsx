@@ -19,7 +19,7 @@ import {
     PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
     buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
     type ListingFormErrors, type ListingFormValues,
-} from '@/lib/listing-form';
+} from '@/lib/listings';
 import { logWarn, showToast } from '@/lib/core';
 import { navigate } from '@/router/router';
 

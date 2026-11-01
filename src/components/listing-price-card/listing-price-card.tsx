@@ -1,7 +1,7 @@
 import { Button } from '@/components/button/button';
 import { ListingCard } from '@/components/listing-card/listing-card';
 import type { Listing } from '@/lib/api';
-import { STATUS_LABELS, priceText } from '@/lib/listing';
+import { STATUS_LABELS, priceText } from '@/lib/listings';
 import './listing-price-card.scss';
 
 export interface ListingPriceCardProps {

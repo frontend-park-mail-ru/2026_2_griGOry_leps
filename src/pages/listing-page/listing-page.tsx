@@ -15,7 +15,7 @@ import {
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
 import { formatDay, logWarn, showToast } from '@/lib/core';
-import { CONDITION_LABELS, statusNotice } from '@/lib/listing';
+import { CONDITION_LABELS, statusNotice } from '@/lib/listings';
 import { setCartCount } from '@/lib/cart';
 import { navigate } from '@/router/router';
 

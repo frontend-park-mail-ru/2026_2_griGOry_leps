@@ -1,5 +1,5 @@
 import type { Condition } from '@/lib/api';
-import { CONDITION_LABELS } from '@/lib/listing';
+import { CONDITION_LABELS } from '@/lib/listings';
 import './condition-field.scss';
 
 const CONDITIONS = Object.keys(CONDITION_LABELS) as Condition[];

@@ -1,5 +1,5 @@
 import type { CategoryNode } from '@/lib/api';
-import { categoryGroups } from '@/lib/listing-form';
+import { categoryGroups } from '@/lib/listings';
 import './category-select.scss';
 
 export interface CategorySelectProps {

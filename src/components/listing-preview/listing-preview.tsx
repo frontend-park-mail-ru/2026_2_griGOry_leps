@@ -1,5 +1,5 @@
 import { ProductCard } from '@/components/product-card/product-card';
-import { normalizePrice, type ListingFormValues } from '@/lib/listing-form';
+import { normalizePrice, type ListingFormValues } from '@/lib/listings';
 import './listing-preview.scss';
 
 export interface ListingPreviewProps {
