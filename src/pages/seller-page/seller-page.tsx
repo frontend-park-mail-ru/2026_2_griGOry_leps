@@ -16,7 +16,7 @@ import {
 } from '@/lib/api';
 import { describeApiError } from '@/lib/forms';
 import { logError, logWarn, showToast } from '@/lib/core';
-import { getUser } from '@/store';
+import { getUser } from '@/lib/user';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { SellerHeader } from '@/components/seller-header/seller-header';
 import { ProductCard } from '@/components/product-card/product-card';

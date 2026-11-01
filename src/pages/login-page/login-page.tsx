@@ -14,7 +14,7 @@ import {
     FormValidation, describeApiError, normalizeLogin, validateLogin, validateLoginPassword, type FormValues,
 } from '@/lib/forms';
 import { redirect } from '@/router/router';
-import { setUser } from '@/store';
+import { setUser } from '@/lib/user';
 
 export interface LoginState {
     values: FormValues;

@@ -16,7 +16,7 @@ import {
     validatePasswordRepeat, validatePhone, type FieldRule, type FormValues,
 } from '@/lib/forms';
 import { redirect } from '@/router/router';
-import { setUser } from '@/store';
+import { setUser } from '@/lib/user';
 
 const RULES: Record<string, FieldRule> = {
     first_name: { validate: validateName, required: 'Введите имя' },

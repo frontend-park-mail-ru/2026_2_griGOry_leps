@@ -13,7 +13,7 @@ import {
     FormValidation, describeApiError, validatePassword, validatePasswordRepeat, type FormValues,
 } from '@/lib/forms';
 import { navigate } from '@/router/router';
-import { clearUser } from '@/store';
+import { clearUser } from '@/lib/user';
 
 export interface ResetPasswordProps {
     token: string;

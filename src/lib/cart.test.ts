@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Cart, User } from '@/lib/api';
 import { getCachedCart, getUnselected, saveCart, setSelected } from '@/lib/cart';
-import { clearUser, setUser } from '@/store';
+import { clearUser, setUser } from '@/lib/user';
 
 const item = (id: number) => ({ listing_id: id, title: 'Товар', price: '100.00', availability: 'available' }) as Cart['groups'][number]['items'][number];
 const cart = (ids: number[]): Cart => ({

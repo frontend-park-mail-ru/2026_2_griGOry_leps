@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@/vdom';
 import { ApiError, type Cart } from '@/lib/api';
-import { clearUser, setUser } from '@/store';
+import { clearUser, setUser } from '@/lib/user';
 import { CartPage } from './cart-page';
 
 const api = vi.hoisted(() => ({

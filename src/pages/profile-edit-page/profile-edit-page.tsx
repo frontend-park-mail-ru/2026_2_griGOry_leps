@@ -12,7 +12,7 @@ import {
     validatePhone, type FieldRule, type FormValues,
 } from '@/lib/forms';
 import { formatAddress, logError, logWarn, ToastTimer, type ToastState } from '@/lib/core';
-import { setUser } from '@/store';
+import { setUser } from '@/lib/user';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
