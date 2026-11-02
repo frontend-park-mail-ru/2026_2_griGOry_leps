@@ -7,6 +7,7 @@ const api = vi.hoisted(() => ({
     getOrder: vi.fn(),
     payOrder: vi.fn(),
     getCart: vi.fn(),
+    resendVerification: vi.fn(),
 }));
 
 vi.mock('@/lib/api', async (importOriginal) => ({
@@ -72,5 +73,11 @@ describe('OrderPage', () => {
         await vi.advanceTimersByTimeAsync(0);
 
         expect(root.querySelector('.order-page__error')?.textContent).toBe('Подтвердите почту, чтобы оформить заказ');
+
+        api.resendVerification.mockResolvedValue('ivan@mail.ru');
+        root.querySelector<HTMLButtonElement>('.order-page__error ~ .order-page__secondary')!.click();
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(api.resendVerification).toHaveBeenCalledTimes(1);
     });
 });
