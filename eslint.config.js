@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
     {
-        ignores: ['dist/**', 'node_modules/**', 'docs/**'],
+        ignores: ['dist/**', 'packages/*/dist/**', 'node_modules/**', 'docs/**'],
     },
     js.configs.recommended,
     {
@@ -14,7 +14,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ['src/**/*.{ts,tsx}'],
+        files: ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}'],
         extends: [tseslint.configs.recommended],
         languageOptions: {
             ecmaVersion: 2022,
@@ -47,7 +47,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ['src/lib/core/logger.ts'],
+        files: ['packages/logger/src/index.ts'],
         rules: {
             'no-console': 'off',
         },

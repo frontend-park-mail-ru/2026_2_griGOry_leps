@@ -9,16 +9,17 @@ export default defineConfig({
         jsxImportSource: '@/vdom',
     },
     resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src/'),
-        },
+        alias: [
+            { find: '@', replacement: path.resolve(__dirname, './src/') },
+            { find: /^goget-(vdom|utils|logger)(\/.*)?$/, replacement: path.resolve(__dirname, 'packages') + '/$1/src$2' },
+        ],
     },
     server: {
         port: 5173,
     },
     test: {
         environment: 'jsdom',
-        include: ['src/**/*.test.{ts,tsx}'],
+        include: ['src/**/*.test.{ts,tsx}', 'packages/*/src/**/*.test.{ts,tsx}'],
     },
     plugins: [
         {

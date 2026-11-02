@@ -15,9 +15,11 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "@/vdom",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"goget-logger": ["./packages/logger/src"],
+			"goget-logger/*": ["./packages/logger/src/*"]
 		}
 	},
-	"include": ["src"],
+	"include": ["src", "packages/*/src"],
 	"exclude": ["src/**/*.test.tsx"]
 }

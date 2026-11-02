@@ -1,16 +1,7 @@
-const enabled = import.meta.env.DEV;
+import { createLogger } from 'goget-logger';
 
-export function logError(...args: unknown[]): void {
-    if (!enabled) return;
-    console.error(...args);
-}
+const logger = createLogger({ enabled: import.meta.env.DEV });
 
-export function logWarn(...args: unknown[]): void {
-    if (!enabled) return;
-    console.warn(...args);
-}
-
-export function logInfo(...args: unknown[]): void {
-    if (!enabled) return;
-    console.info(...args);
-}
+export const logError = logger.error;
+export const logWarn = logger.warn;
+export const logInfo = logger.info;
