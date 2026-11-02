@@ -4,9 +4,9 @@ type Router = typeof import('./router');
 
 let router: Router;
 let authorized: boolean;
+const windowListeners: [string, EventListenerOrEventListenerObject][] = [];
 
 async function setup(path: string): Promise<void> {
-    // полный адрес, чтобы // не приняли за ссылку на другой сайт
     history.replaceState({}, '', location.origin + path);
     vi.resetModules();
     router = await import('./router');
@@ -27,10 +27,16 @@ function link(href: string, attrs: Record<string, string> = {}): HTMLAnchorEleme
     return a;
 }
 
-/** true, если клик перехватил роутер */
+function scroller(key: string, scrollLeft: number): HTMLElement {
+    const el = document.createElement('div');
+    el.dataset.scrollKey = key;
+    el.scrollLeft = scrollLeft;
+    document.body.append(el);
+    return el;
+}
+
 function click(el: Element, init: MouseEventInit = {}): boolean {
     let handled = false;
-    // jsdom не умеет переходить по ссылкам и ругается, поэтому после роутера гасим клик сами
     document.addEventListener('click', (e) => {
         handled = e.defaultPrevented;
         e.preventDefault();
@@ -42,11 +48,17 @@ function click(el: Element, init: MouseEventInit = {}): boolean {
 beforeEach(async () => {
     document.body.replaceWith(document.createElement('body'));
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    const addListener = window.addEventListener.bind(window);
+    vi.spyOn(window, 'addEventListener').mockImplementation((type, listener, options) => {
+        windowListeners.push([type, listener]);
+        addListener(type, listener, options);
+    });
     await setup('/');
 });
 
 afterEach(() => {
-    window.removeEventListener('popstate', router.resolveRoute);
+    windowListeners.splice(0).forEach(([type, listener]) => window.removeEventListener(type, listener));
+    vi.restoreAllMocks();
 });
 
 describe('resolveRoute', () => {
@@ -164,6 +176,7 @@ describe('ссылки', () => {
         ['ctrl', { ctrlKey: true }],
         ['cmd', { metaKey: true }],
         ['shift', { shiftKey: true }],
+        ['alt', { altKey: true }],
         ['средняя кнопка', { button: 1 }],
     ])('%s + клик оставляем браузеру', (_, init) => {
         expect(click(link('/listing/3'), init)).toBe(false);
@@ -190,5 +203,57 @@ describe('ссылки', () => {
         window.dispatchEvent(new PopStateEvent('popstate'));
 
         expect(listing).toHaveBeenCalledWith({ id: '5' });
+    });
+});
+
+describe('прокрутка', () => {
+    let home: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+        home = vi.fn();
+        router.registerRoute('/', home);
+        router.registerRoute('/listing/:id', vi.fn());
+        router.initRouter();
+        vi.mocked(window.scrollTo).mockClear();
+    });
+
+    it('перед переходом запоминает прокрутку страницы и каруселей', () => {
+        vi.spyOn(window, 'scrollY', 'get').mockReturnValue(500);
+        scroller('products', 240);
+        const replaceState = vi.spyOn(history, 'replaceState');
+
+        router.navigate('/listing/1');
+
+        expect(replaceState).toHaveBeenCalledWith({ scrollY: 500, scrollers: { products: 240 } }, '');
+    });
+
+    it('на «Назад» восстанавливает прокрутку после рендера', async () => {
+        const products = scroller('products', 0);
+        history.replaceState({ scrollY: 500, scrollers: { products: 240 } }, '', '/');
+
+        window.dispatchEvent(new PopStateEvent('popstate'));
+
+        await vi.waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith({ top: 500, behavior: 'instant' }));
+        expect(home).toHaveBeenCalled();
+        expect(products.scrollLeft).toBe(240);
+    });
+
+    it('без сохранённого состояния прокручивает в начало', async () => {
+        window.dispatchEvent(new PopStateEvent('popstate'));
+
+        await vi.waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'instant' }));
+    });
+
+    it('не восстанавливает прокрутку, если за время загрузки ушли на другую страницу', async () => {
+        let finish = () => {};
+        home.mockReturnValueOnce(new Promise<void>((resolve) => { finish = resolve; }));
+        history.replaceState({ scrollY: 500, scrollers: {} }, '', '/');
+
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        history.pushState({}, '', '/listing/2');
+        finish();
+
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(window.scrollTo).not.toHaveBeenCalledWith({ top: 500, behavior: 'instant' });
     });
 });

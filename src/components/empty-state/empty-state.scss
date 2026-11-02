@@ -26,19 +26,22 @@
     &__title {
         font-weight: 700;
         font-size: 20px;
-        line-height: 28px;
+        line-height: 26px;
         color: $color-text-main;
     }
 
     &__text {
         max-width: 420px;
         font-size: 16px;
-        line-height: 24px;
+        line-height: 22px;
         color: $color-text-muted;
     }
 
     &__action {
         @include button-orange;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
     }
 
     &__emoji {

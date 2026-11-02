@@ -261,6 +261,10 @@ describe('assetUrl', () => {
         expect(assetUrl('/uploads/avatars/a.png')).toBe('http://localhost:8080/uploads/avatars/a.png');
     });
 
+    it('оставляет статику фронта на адресе фронта', () => {
+        expect(assetUrl('/img/listings/sofa.jpg')).toBe('/img/listings/sofa.jpg');
+    });
+
     it('не трогает полную ссылку и пустое значение', () => {
         expect(assetUrl('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
         expect(assetUrl(null)).toBeNull();

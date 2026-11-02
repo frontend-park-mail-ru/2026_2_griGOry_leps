@@ -5,6 +5,7 @@ import type { AdCard, AdPage, City, CloseReason, ListingStatus, PageQuery, User 
 
 /** Полный профиль текущего пользователя (GET /me) */
 export interface Profile extends User {
+    pending_email: string | null;
     phone_verified: boolean;
     city: City | null;
     about: string;
@@ -53,6 +54,10 @@ export async function updateProfile(data: UpdateProfileData): Promise<Profile> {
 
 export async function uploadAvatar(file: Blob): Promise<{ avatar_url: string | null }> {
     return json(await request('/me/avatar', { method: 'POST', ...fileBody(file) }));
+}
+
+export async function cancelEmailChange(): Promise<void> {
+    await ensureOk(await request('/me/email/pending', { method: 'DELETE' }));
 }
 
 export async function changePassword(data: { current_password: string; new_password: string }): Promise<void> {

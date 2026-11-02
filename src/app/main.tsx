@@ -32,6 +32,7 @@ import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password-page/forgot-password-page';
 import { ResetPasswordPage, loadResetPassword } from '@/pages/reset-password-page/reset-password-page';
+import { VerifyEmailPage, loadVerifyEmail } from '@/pages/verify-email-page/verify-email-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
@@ -213,6 +214,7 @@ async function start() {
     });
     route('/categories', {
         name: 'categories',
+        tone: 'gray',
         load: async () => ({ categories: await getCategories() }),
         view: ({ categories }) => <CategoriesPage categories={categories} />,
     });
@@ -268,6 +270,12 @@ async function start() {
         layout: 'auth',
         load: loadResetPassword,
         view: (data) => <ResetPasswordPage {...data} />,
+    });
+    route('/verify-email', {
+        name: 'verify-email',
+        layout: 'auth',
+        load: loadVerifyEmail,
+        view: (data) => <VerifyEmailPage {...data} />,
     });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
     registerRoute('/profile', () => redirect('/profile/listings'), { requireAuth: true });

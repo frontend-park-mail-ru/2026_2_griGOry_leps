@@ -144,6 +144,9 @@ export function describeApiError(
     }
 
     if (err.status === 429) return { message: tooManyRequestsText(err.retryAfter) };
+    if (err.status === 403 && err.reason === 'email not verified') {
+        return { message: 'Сначала подтвердите почту — ссылка в письме, которое мы отправили' };
+    }
     if (err.timeout) return { message: 'Сервер не отвечает. Попробуйте ещё раз' };
     if (err.network) return { message: 'Нет соединения с сервером. Проверьте интернет' };
 

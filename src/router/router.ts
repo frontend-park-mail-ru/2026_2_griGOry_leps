@@ -11,6 +11,11 @@ export interface Route {
     guestOnly: boolean;
 }
 
+export interface ScrollState {
+    scrollY: number;
+    scrollers: Record<string, number>;
+}
+
 export interface RouteOptions {
     requireAuth?: boolean;
     guestOnly?: boolean;
@@ -54,7 +59,34 @@ export function registerNotFound(handler: RouteHandler): void {
     notFoundHandler = handler;
 }
 
+function scrollElements(): HTMLElement[] {
+    return [...document.querySelectorAll<HTMLElement>('[data-scroll-key]')];
+}
+
+function saveScroll(): void {
+    const scrollers: Record<string, number> = {};
+    scrollElements().forEach((el) => {
+        scrollers[el.dataset.scrollKey!] = el.scrollLeft;
+    });
+    history.replaceState({ ...history.state, scrollY: window.scrollY, scrollers }, '');
+}
+
+async function restoreScroll(): Promise<void> {
+    const state = history.state as Partial<ScrollState> | null;
+    const href = location.href;
+    await resolveRoute();
+    if (location.href !== href) return;
+
+    window.scrollTo({ top: state?.scrollY ?? 0, behavior: 'instant' });
+    const scrollers = state?.scrollers ?? {};
+    scrollElements().forEach((el) => {
+        const left = scrollers[el.dataset.scrollKey!];
+        if (left !== undefined) el.scrollLeft = left;
+    });
+}
+
 export function navigate(path: string): void {
+    saveScroll();
     history.pushState({}, '', path);
     window.scrollTo(0, 0);
     resolveRoute();
@@ -67,7 +99,6 @@ export function redirect(path: string): void {
     resolveRoute();
 }
 
-/** Адрес входа с возвратом на текущую страницу */
 export function loginUrl(): string {
     const back = location.pathname + location.search;
     return back === '/' ? '/login' : `/login?next=${encodeURIComponent(back)}`;
@@ -77,7 +108,6 @@ export function goToLogin(): void {
     navigate(loginUrl());
 }
 
-/** Куда вернуться после входа. Принимаем только свои пути, иначе ?next=//evil.com увёл бы на чужой сайт */
 export function nextPath(): string {
     const next = new URLSearchParams(location.search).get('next') ?? '';
     if (!/^\/(?![/\\])/.test(next)) return '/';
@@ -99,33 +129,30 @@ function findRoute(path: string): { route: Route; match: RegExpMatchArray } | nu
     return null;
 }
 
-function renderNotFound(path: string): void {
-    Promise.resolve(notFoundHandler?.({})).catch((err) => {
+function renderNotFound(path: string): Promise<void> {
+    return Promise.resolve(notFoundHandler?.({})).catch((err) => {
         logError('Ошибка 404-роута', path, err);
     });
 }
 
-export function resolveRoute(): void {
+export function resolveRoute(): Promise<void> {
     const path = location.pathname;
     const clean = path.replace(/\/{2,}/g, '/').replace(/(.)\/$/, '$1');
     if (clean !== path) {
         redirect(clean + location.search);
-        return;
+        return Promise.resolve();
     }
 
     const found = findRoute(path);
 
-    if (!found) {
-        renderNotFound(path);
-        return;
-    }
+    if (!found) return renderNotFound(path);
 
     const { route, match } = found;
 
     const guardRedirect = getGuardRedirect(route);
     if (guardRedirect) {
         redirect(guardRedirect);
-        return;
+        return Promise.resolve();
     }
 
     const params: RouteParams = {};
@@ -134,11 +161,10 @@ export function resolveRoute(): void {
             params[key] = decodeURIComponent(match[i + 1]);
         });
     } catch {
-        renderNotFound(path);
-        return;
+        return renderNotFound(path);
     }
 
-    Promise.resolve(route.handler(params)).catch((err) => {
+    return Promise.resolve(route.handler(params)).catch((err) => {
         logError('Ошибка роута', path, err);
     });
 }
@@ -169,6 +195,7 @@ function handleLinkClick(e: MouseEvent): void {
 /** Перехватывает клики по ссылкам с data-link и кнопки браузера «назад/вперёд» */
 export function initRouter(): void {
     document.body.addEventListener('click', handleLinkClick);
-    window.addEventListener('popstate', resolveRoute);
+    history.scrollRestoration = 'manual';
+    window.addEventListener('popstate', () => void restoreScroll());
     resolveRoute();
 }
