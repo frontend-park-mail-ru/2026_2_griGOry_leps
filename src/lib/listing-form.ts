@@ -33,6 +33,7 @@ export const SERVER_FIELDS: Record<string, keyof ListingFormErrors> = {
     price: 'price',
     condition: 'condition',
     address: 'address',
+    has_delivery: 'has_delivery',
 };
 
 export const SERVER_MESSAGES: Partial<Record<keyof ListingFormErrors, string>> = {
@@ -43,6 +44,7 @@ export const SERVER_MESSAGES: Partial<Record<keyof ListingFormErrors, string>> =
     price: 'Укажите цену в рублях',
     condition: 'Выберите состояние',
     address: 'Укажите адрес',
+    has_delivery: 'В этой категории доставка недоступна',
 };
 
 export function initialValues(listing?: Listing): ListingFormValues {
@@ -165,6 +167,11 @@ export function saveErrorText(err: unknown): string {
 }
 
 /** Путь от корня до категории с этим id, пустой — если такой нет */
+export function deliveryAllowed(tree: CategoryNode[], categoryId: string): boolean {
+    const path = categoryPath(tree, Number(categoryId));
+    return path.length === 0 || path[path.length - 1].delivery_allowed;
+}
+
 export function categoryPath(tree: CategoryNode[], id: number): CategoryNode[] {
     for (const node of tree) {
         if (node.id === id) return [node];

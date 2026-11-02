@@ -19,7 +19,7 @@ import {
 import { describeApiError } from '@/lib/form';
 import {
     ADDRESS_MAX, PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
-    buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
+    buildCreateData, buildUpdateData, deliveryAllowed, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
     type ListingFormErrors, type ListingFormValues,
 } from '@/lib/listing-form';
 import { logWarn } from '@/lib/logger';
@@ -97,6 +97,11 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
     setField = <K extends keyof ListingFormValues>(name: K) => (value: ListingFormValues[K]) => {
         this.update({ [name]: value } as Partial<ListingFormValues>);
+    };
+
+    handleCategory = (categoryId: string) => {
+        const keepDelivery = deliveryAllowed(this.props.categories, categoryId);
+        this.update({ category_id: categoryId, ...(keepDelivery ? {} : { has_delivery: false }) });
     };
 
     handleInput = (e: Event) => {
@@ -389,7 +394,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                                 categories={categories}
                                 value={values.category_id}
                                 error={errors.category_id}
-                                onChange={this.setField('category_id')}
+                                onChange={this.handleCategory}
                             />
                         </section>
 
@@ -482,13 +487,15 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                                 error={errors.address}
                                 onInput={this.handleInput}
                             />
-                            <CheckboxField
-                                name="has_delivery"
-                                label="Отправлю через GoGET Доставку"
-                                hint="Покупатель оплатит доставку, деньги придут вам после получения"
-                                value={values.has_delivery}
-                                onChange={this.setField('has_delivery')}
-                            />
+                            {deliveryAllowed(categories, values.category_id) && (
+                                <CheckboxField
+                                    name="has_delivery"
+                                    label="Отправлю через GoGET Доставку"
+                                    hint="Покупатель оплатит доставку, деньги придут вам после получения"
+                                    value={values.has_delivery}
+                                    onChange={this.setField('has_delivery')}
+                                />
+                            )}
                         </section>
 
                         {formError && <p class="listing-form__error" role="alert">{formError}</p>}
