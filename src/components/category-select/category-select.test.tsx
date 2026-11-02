@@ -4,11 +4,11 @@ import type { CategoryNode } from '@/lib/api';
 import { CategorySelect } from './category-select';
 
 const tree: CategoryNode[] = [
-    { id: 1, name: 'Электроника', slug: 'e', children: [
-        { id: 11, name: 'Ноутбуки', slug: 'n', children: [] },
-        { id: 12, name: 'Телефоны', slug: 't', children: [] },
+    { id: 1, name: 'Электроника', slug: 'e', delivery_allowed: true, children: [
+        { id: 11, name: 'Ноутбуки', slug: 'n', delivery_allowed: true, children: [] },
+        { id: 12, name: 'Телефоны', slug: 't', delivery_allowed: true, children: [] },
     ] },
-    { id: 2, name: 'Недвижимость', slug: 'r', children: [] },
+    { id: 2, name: 'Недвижимость', slug: 'r', delivery_allowed: true, children: [] },
 ];
 
 let root: HTMLElement;

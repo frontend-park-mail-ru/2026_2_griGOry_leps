@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-    buildCreateData, buildUpdateData, categoryPath, initialValues, normalizePrice, sanitizePrice, summaryText, validateListing,
+    buildCreateData, buildUpdateData, categoryPath, deliveryAllowed, initialValues, normalizePrice, sanitizePrice, summaryText, validateListing,
     type ListingFormValues,
 } from './listing-form';
 
@@ -60,13 +60,13 @@ describe('validateListing', () => {
 
 describe('categoryPath', () => {
     const tree = [
-        { id: 1, name: 'Спорт', slug: 's', children: [
-            { id: 12, name: 'Велосипеды', slug: 'b', children: [] },
-            { id: 13, name: 'Самокаты', slug: 'k', children: [
-                { id: 131, name: 'Электрические', slug: 'e', children: [] },
+        { id: 1, name: 'Спорт', slug: 's', delivery_allowed: true, children: [
+            { id: 12, name: 'Велосипеды', slug: 'b', delivery_allowed: true, children: [] },
+            { id: 13, name: 'Самокаты', slug: 'k', delivery_allowed: true, children: [
+                { id: 131, name: 'Электрические', slug: 'e', delivery_allowed: true, children: [] },
             ] },
         ] },
-        { id: 3, name: 'Отдам даром', slug: 'f', children: [] },
+        { id: 3, name: 'Отдам даром', slug: 'f', delivery_allowed: true, children: [] },
     ];
 
     it('находит путь от корня до листа', () => {
@@ -76,6 +76,13 @@ describe('categoryPath', () => {
 
     it('для неизвестной категории пусто', () => {
         expect(categoryPath(tree, 99)).toEqual([]);
+    });
+
+    it('доставку решает выбранная категория, без категории она разрешена', () => {
+        const realty = [...tree, { id: 4, name: 'Недвижимость', slug: 'r', delivery_allowed: false, children: [] }];
+        expect(deliveryAllowed(realty, '4')).toBe(false);
+        expect(deliveryAllowed(realty, '12')).toBe(true);
+        expect(deliveryAllowed(realty, '')).toBe(true);
     });
 });
 
