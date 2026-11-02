@@ -8,7 +8,7 @@ import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 
-import { ApiError, checkResetToken, resetPassword } from '@/lib/api';
+import { ApiError, resetPassword } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
 import { validatePassword, validatePasswordRepeat } from '@/lib/validators';
 import { navigate } from '@/router/router';
@@ -17,18 +17,6 @@ import { clearUser } from '@/store';
 export interface ResetPasswordProps {
     token: string;
     email: string | null;
-}
-
-export async function loadResetPassword(): Promise<ResetPasswordProps> {
-    const token = new URLSearchParams(location.search).get('token') ?? '';
-    if (!token) return { token, email: null };
-
-    try {
-        return { token, email: await checkResetToken(token) };
-    } catch (err) {
-        if (err instanceof ApiError && err.status === 400) return { token, email: null };
-        throw err;
-    }
 }
 
 export interface ResetPasswordState {
