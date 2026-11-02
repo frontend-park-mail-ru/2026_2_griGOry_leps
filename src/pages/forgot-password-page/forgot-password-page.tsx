@@ -8,16 +8,12 @@ import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
 
 import { requestPasswordReset } from '@/lib/api';
-import { FormValidation, describeApiError, normalizeLogin, validateLogin, type FormValues } from '@/lib/forms';
+import { formatCountdown } from '@/lib/core';
+import { FormValidation, describeApiError, type FormValues, normalizeLogin, validateLogin } from '@/lib/forms';
 import { navigate } from '@/router/router';
 
 const RESEND_DELAY_S = 60;
 const LOGIN_ERROR = 'Введите email в формате name@example.ru или номер телефона';
-
-export function formatCountdown(seconds: number): string {
-    const s = Math.max(0, seconds);
-    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
 
 export interface ForgotPasswordState {
     values: FormValues;

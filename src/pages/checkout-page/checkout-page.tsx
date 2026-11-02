@@ -18,7 +18,8 @@ import {
 } from '@/lib/cart';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
 import { sanitizePhone } from '@/lib/forms';
-import { navigate } from '@/router/router';
+import { goToLogin, navigate } from '@/router/router';
+import { clearUser } from '@/lib/user';
 
 export interface CheckoutPageProps {
     quote: CheckoutQuote;
@@ -154,7 +155,8 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
         if (!err.network && !err.timeout) this.idempotencyKey = '';
 
         if (err.status === 401) {
-            navigate('/login');
+            clearUser();
+            goToLogin();
             return;
         }
         if (err.status === 409) {
