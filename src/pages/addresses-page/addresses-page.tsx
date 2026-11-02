@@ -308,6 +308,7 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
                     <FormField
                         {...this.fieldProps('street')}
                         id="address-street"
+                        maxLength={LIMITS.streetMax}
                         label="Город и улица"
                         placeholder="Например, Москва, ул. Тверская"
                         autocomplete="street-address"
@@ -318,6 +319,7 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
                 <FormField
                     {...this.fieldProps('house')}
                     id="address-house"
+                    maxLength={LIMITS.houseMax}
                     label="Дом и квартира"
                     placeholder="Например, д. 12, кв. 34"
                 />

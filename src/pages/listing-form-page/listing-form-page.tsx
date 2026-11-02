@@ -18,7 +18,7 @@ import {
 } from '@/lib/api';
 import { describeApiError } from '@/lib/form';
 import {
-    PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
+    ADDRESS_MAX, PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
     buildCreateData, buildUpdateData, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
     type ListingFormErrors, type ListingFormValues,
 } from '@/lib/listing-form';
@@ -344,7 +344,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
             <Button text="Сохранить черновик" variant="outline" disabled={disabled} onClick={() => this.submit(true)} />,
             <p class="listing-form__terms">
                 Нажимая «Опубликовать», вы соглашаетесь с{' '}
-                <a class="listing-form__terms-link" href="/terms" data-link>правилами размещения</a>
+                <a class="listing-form__terms-link" href="/terms" target="_blank" rel="noopener">правилами размещения</a>
             </p>,
         ];
     }
@@ -397,6 +397,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                             <h2 class="listing-form__section-title">Название</h2>
                             <FormField
                                 id="listing-title"
+                                maxLength={TITLE_MAX}
                                 name="title"
                                 label="Название объявления *"
                                 placeholder={'Например, велосипед горный Stels 26"'}
@@ -472,6 +473,7 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                             <h2 class="listing-form__section-title">Где и как получить</h2>
                             <FormField
                                 id="listing-address"
+                                maxLength={ADDRESS_MAX}
                                 name="address"
                                 label="Адрес или метро"
                                 placeholder="Москва, м. Сокол"

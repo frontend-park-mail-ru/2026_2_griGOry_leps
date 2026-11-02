@@ -11,7 +11,7 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { ApiError, login } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
+import { LIMITS, normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
 import { nextPath, redirect } from '@/router/router';
 import { setUser } from '@/store';
 
@@ -141,6 +141,7 @@ export class LoginPage extends Component<object, LoginState> {
                         >
                             <FormField
                                 id="login-input"
+                                maxLength={LIMITS.emailMax}
                                 name="login"
                                 label="Телефон или email"
                                 large
@@ -154,6 +155,7 @@ export class LoginPage extends Component<object, LoginState> {
                             />
                             <FormField
                                 id="login-password-input"
+                                maxLength={LIMITS.passwordMax}
                                 name="password"
                                 label="Пароль"
                                 large

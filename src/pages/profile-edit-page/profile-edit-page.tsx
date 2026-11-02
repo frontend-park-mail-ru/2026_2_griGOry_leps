@@ -414,6 +414,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                             <FormField
                                 {...this.fieldProps('first_name')}
                                 id="profile-first-name"
+                                maxLength={LIMITS.nameMax}
                                 label="Имя или никнейм"
                                 placeholder="Например, Иван"
                                 autocomplete="given-name"
@@ -432,6 +433,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                             <FormField
                                 {...this.fieldProps('email')}
                                 id="profile-email"
+                                maxLength={LIMITS.emailMax}
                                 label="Email"
                                 type="email"
                                 placeholder="name@mail.ru"

@@ -10,11 +10,12 @@ import {
     registerNotFound,
     setAuthCheck,
     initRouter,
+    recheckGuards,
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
-import { ApiError } from '@/lib/api';
-import { getUser, subscribe } from '@/store';
+import { ApiError, getMe, onSessionExpired } from '@/lib/api';
+import { clearUser, getUser, subscribe } from '@/store';
 import { logError, logWarn } from '@/lib/logger';
 import { getToast, subscribeToast } from '@/lib/toast';
 import { loadCurrentUser } from '@/app/loaders/user';
@@ -91,6 +92,15 @@ async function start() {
     subscribeToast(renderApp);
     subscribeCartCount(renderApp);
     void refreshCartCount(Boolean(getUser()));
+
+    onSessionExpired(() => {
+        if (!getUser()) return;
+        clearUser();
+        recheckGuards();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && getUser()) getMe().catch(() => null);
+    });
 
     registerRoutes(route);
     initRouter();

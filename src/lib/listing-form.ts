@@ -5,6 +5,7 @@ import { plural } from '@/lib/format';
 
 export const TITLE_MAX = 80;
 export const DESCRIPTION_MAX = 3000;
+export const ADDRESS_MAX = 255;
 export const PHOTOS_MAX = 10;
 export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 export const PHOTO_TYPES = ['image/jpeg', 'image/png'];
@@ -163,25 +164,12 @@ export function saveErrorText(err: unknown): string {
     return 'Не удалось сохранить объявление. Попробуйте ещё раз';
 }
 
-export interface CategoryOption {
-    id: number;
-    label: string;
-}
-
-export interface CategoryGroup {
-    name: string;
-    options: CategoryOption[];
-}
-
-export function categoryGroups(tree: CategoryNode[]): CategoryGroup[] {
-    const leaves = (node: CategoryNode, path: string[]): CategoryOption[] => (
-        node.children.length
-            ? node.children.flatMap((child) => leaves(child, [...path, child.name]))
-            : [{ id: node.id, label: path.join(' → ') }]
-    );
-
-    return tree.map((root) => ({
-        name: root.name,
-        options: leaves(root, [root.name]),
-    }));
+/** Путь от корня до категории с этим id, пустой — если такой нет */
+export function categoryPath(tree: CategoryNode[], id: number): CategoryNode[] {
+    for (const node of tree) {
+        if (node.id === id) return [node];
+        const rest = categoryPath(node.children, id);
+        if (rest.length) return [node, ...rest];
+    }
+    return [];
 }

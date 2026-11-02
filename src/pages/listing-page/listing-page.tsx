@@ -48,7 +48,8 @@ function actionError(err: unknown, fallback: string): string {
 }
 
 function listingSpecs(listing: Listing) {
-    const location = [listing.city, listing.address].filter(Boolean).join(', ');
+    const sameCity = listing.address?.toLowerCase().startsWith(listing.city.toLowerCase());
+    const location = listing.city && !sameCity ? `${listing.city}, ${listing.address}` : listing.address;
     return [
         ...(listing.condition ? [{ key: 'condition', name: 'Состояние', value: CONDITION_LABELS[listing.condition] }] : []),
         ...listing.attributes,
@@ -178,8 +179,6 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
         const title = listing.title || 'Без названия';
         const notice = statusNotice(listing);
         const specs = listingSpecs(listing);
-        const meta = [`Объявление № ${listing.id}`];
-        if (listing.published_at) meta.push(`Размещено ${formatDay(listing.published_at)}`);
 
         return (
             <div class="listing-page">
@@ -214,7 +213,9 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                             </ListingCard>
                         )}
 
-                        <p class="listing-page__meta">{meta.join(' · ')}</p>
+                        {listing.published_at && (
+                            <p class="listing-page__meta">Размещено {formatDay(listing.published_at)}</p>
+                        )}
                     </div>
 
                     <aside class="listing-page__aside">
