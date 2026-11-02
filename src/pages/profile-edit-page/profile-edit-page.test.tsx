@@ -5,6 +5,9 @@ import { AVATAR_COLORS, getAvatarColor } from '@/components/user-avatar/user-ava
 import { ProfileEditPage } from './profile-edit-page';
 
 const api = vi.hoisted(() => ({
+    getMe: vi.fn(),
+    cancelEmailChange: vi.fn(),
+    resendVerification: vi.fn(),
     getCities: vi.fn(),
     getMyListingsCount: vi.fn(),
     getAddresses: vi.fn(),
@@ -22,6 +25,8 @@ const profile: Profile = {
     email: 'ivan@example.com',
     first_name: 'иван',
     phone: '+79990000000',
+    email_verified: true,
+    pending_email: null,
     phone_verified: true,
     city: { id: 1, name: 'Москва' },
     about: 'Продаю вещи после переезда',
@@ -35,8 +40,8 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 let root: HTMLElement;
 
-function renderPage() {
-    render(root, <ProfileEditPage profile={profile} onLogout={async () => {}} />);
+function renderPage(data: Profile = profile) {
+    render(root, <ProfileEditPage profile={data} onLogout={async () => {}} />);
 }
 
 function query<T extends HTMLElement>(selector: string): T {
@@ -342,5 +347,48 @@ describe('getAvatarColor', () => {
         expect(getAvatarColor(7)).toBe(getAvatarColor(7));
         expect(AVATAR_COLORS).toContain(getAvatarColor(123));
         expect(AVATAR_COLORS.length).toBeLessThanOrEqual(10);
+    });
+
+    it('показывает, что новая почта ждёт подтверждения, и отменяет смену', async () => {
+        const pending = { ...profile, pending_email: 'new@example.com' };
+        api.cancelEmailChange.mockResolvedValue(undefined);
+        api.getMe.mockResolvedValue(profile);
+        renderPage(pending);
+        await tick();
+
+        expect(query<HTMLInputElement>('#profile-email').value).toBe('new@example.com');
+        expect(root.textContent).toContain('Подтвердите новую почту: отправили письмо на new@example.com');
+        expect(root.textContent).toContain('уведомления приходят на ivan@example.com');
+
+        const cancel = [...root.querySelectorAll<HTMLButtonElement>('.profile-edit__email-action')].find((b) => b.textContent?.includes('Отменить'));
+        cancel!.click();
+        await tick();
+        await tick();
+
+        expect(api.cancelEmailChange).toHaveBeenCalled();
+        expect(query<HTMLInputElement>('#profile-email').value).toBe('ivan@example.com');
+        expect(root.querySelector('.alert-banner')).toBeNull();
+    });
+
+    it('просит подтвердить почту и отправляет письмо ещё раз', async () => {
+        api.resendVerification.mockResolvedValue('ivan@example.com');
+        renderPage({ ...profile, email_verified: false });
+        await tick();
+
+        expect(root.textContent).toContain('Подтвердите почту: отправили письмо на ivan@example.com');
+        query<HTMLButtonElement>('.profile-edit__email-action').click();
+        await tick();
+
+        expect(api.resendVerification).toHaveBeenCalled();
+        expect(root.textContent).toContain('Отправили письмо на ivan@example.com');
+    });
+
+    it('после подтверждения новой почты показывает подсказку', async () => {
+        history.replaceState({}, '', '/profile/edit?email=confirmed');
+        renderPage();
+        await tick();
+
+        expect(query('.profile-edit__email-confirmed').textContent).toContain('Почта подтверждена');
+        history.replaceState({}, '', '/');
     });
 });

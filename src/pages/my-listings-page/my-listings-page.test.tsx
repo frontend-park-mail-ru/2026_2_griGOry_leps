@@ -19,6 +19,8 @@ const profile: Profile = {
     email: 'ivan@example.com',
     first_name: 'Иван',
     phone: '+79990000000',
+    email_verified: true,
+    pending_email: null,
     phone_verified: true,
     city: null,
     about: '',

@@ -1,4 +1,4 @@
-import type { RouteOptions } from '@/router/router';
+import { redirect, registerRoute, type RouteOptions } from '@/router/router';
 import { getUser } from '@/store';
 import { loadCheckout, loadOrder } from '@/app/loaders/orders';
 import { loadProfile, loadResetPassword } from '@/app/loaders/user';
@@ -13,6 +13,7 @@ import { LoginPage } from '@/pages/login-page/login-page';
 import { RegisterPage } from '@/pages/register-page/register-page';
 import { ForgotPasswordPage } from '@/pages/forgot-password-page/forgot-password-page';
 import { ResetPasswordPage } from '@/pages/reset-password-page/reset-password-page';
+import { VerifyEmailPage, loadVerifyEmail } from '@/pages/verify-email-page/verify-email-page';
 import { TermsPage } from '@/pages/terms-page/terms-page';
 import { NotFoundPage } from '@/pages/not-found-page/not-found-page';
 import { ListingPage } from '@/pages/listing-page/listing-page';
@@ -50,6 +51,7 @@ export function registerRoutes(route: RouteRegistrar): void {
     });
     route('/categories', {
         name: 'categories',
+        tone: 'gray',
         load: loadCategories,
         view: ({ categories }) => <CategoriesPage categories={categories} />,
     });
@@ -100,7 +102,14 @@ export function registerRoutes(route: RouteRegistrar): void {
         load: loadResetPassword,
         view: (data) => <ResetPasswordPage {...data} />,
     });
+    route('/verify-email', {
+        name: 'verify-email',
+        layout: 'auth',
+        load: loadVerifyEmail,
+        view: (data) => <VerifyEmailPage {...data} />,
+    });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
+    registerRoute('/profile', () => redirect('/profile/listings'), { requireAuth: true });
     myListingsRoute('/profile/listings', 'active');
     myListingsRoute('/profile/listings/closed', 'closed');
     myListingsRoute('/profile/listings/drafts', 'drafts');

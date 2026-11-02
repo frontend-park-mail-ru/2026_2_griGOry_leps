@@ -12,7 +12,7 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 import { ApiError, login } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
 import { normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
-import { redirect } from '@/router/router';
+import { nextPath, redirect } from '@/router/router';
 import { setUser } from '@/store';
 
 export interface LoginState {
@@ -97,7 +97,7 @@ export class LoginPage extends Component<object, LoginState> {
                 password: values.password,
             });
             setUser(user);
-            redirect('/');
+            redirect(nextPath());
         } catch (err) {
             if (err instanceof ApiError && err.status === 401) {
                 this.setState({ loginHighlighted: true });
@@ -143,6 +143,7 @@ export class LoginPage extends Component<object, LoginState> {
                                 id="login-input"
                                 name="login"
                                 label="Телефон или email"
+                                large
                                 placeholder="+7 900 000-00-00 или name@mail.ru"
                                 autocomplete="username"
                                 value={values.login}
@@ -155,6 +156,7 @@ export class LoginPage extends Component<object, LoginState> {
                                 id="login-password-input"
                                 name="password"
                                 label="Пароль"
+                                large
                                 placeholder="Введите пароль"
                                 autocomplete="current-password"
                                 password

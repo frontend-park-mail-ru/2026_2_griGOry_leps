@@ -19,7 +19,7 @@ import { CONDITION_LABELS, statusNotice } from '@/lib/listing';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { setCartCount } from '@/lib/cart';
-import { navigate } from '@/router/router';
+import { goToLogin, navigate } from '@/router/router';
 
 export interface ListingPageProps {
     listing: Listing;
@@ -114,7 +114,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
 
     handleAddToCart = async () => {
         if (!this.props.user) {
-            navigate('/login');
+            goToLogin();
             return;
         }
 
@@ -134,7 +134,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
 
     handleBuyNow = async () => {
         if (!this.props.user) {
-            navigate('/login');
+            goToLogin();
             return;
         }
 

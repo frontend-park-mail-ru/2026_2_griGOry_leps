@@ -402,7 +402,7 @@ describe('SellerPage', () => {
     });
 
     it('не даёт пожаловаться на себя', async () => {
-        setUser({ id: 5, email: 'timur@mail.ru', first_name: 'Тимур', phone: '+79990000000' });
+        setUser({ id: 5, email: 'timur@mail.ru', first_name: 'Тимур', phone: '+79990000000', email_verified: true });
         renderPage();
         await tick();
 

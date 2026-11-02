@@ -1,7 +1,10 @@
 import { Component } from '@/vdom';
 import {
+    cancelEmailChange,
     getAddresses,
     getCities,
+    getMe,
+    resendVerification,
     updateProfile,
     type Address,
     type City,
@@ -27,6 +30,7 @@ import { Select } from '@/components/select/select';
 import { Toast } from '@/components/toast/toast';
 import { ToastTimer, type ToastState } from '@/lib/toast';
 import { ChangePasswordModal } from '@/components/change-password-modal/change-password-modal';
+import { AlertBanner } from '@/components/alert-banner/alert-banner';
 import './profile-edit-page.scss';
 
 const RULES: Record<string, FieldRule> = {
@@ -42,7 +46,7 @@ function profileValues(profile: Profile): FormValues {
     return {
         first_name: profile.first_name ?? '',
         phone: profile.phone ?? '',
-        email: profile.email ?? '',
+        email: profile.pending_email ?? profile.email ?? '',
         about: profile.about ?? '',
     };
 }
@@ -71,6 +75,8 @@ export interface ProfileEditPageState {
     addressesError: boolean;
     saving: boolean;
     passwordModal: boolean;
+    emailConfirmed: boolean;
+    emailBusy: boolean;
     toast: ToastState | null;
 }
 
@@ -94,6 +100,8 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             addressesError: false,
             saving: false,
             passwordModal: false,
+            emailConfirmed: new URLSearchParams(location.search).get('email') === 'confirmed',
+            emailBusy: false,
             toast: null,
         };
     }
@@ -207,6 +215,86 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
     handleCancel = () => {
         this.fillForm(this.state.profile);
     };
+
+    handleResendVerification = async () => {
+        this.setState({ emailBusy: true });
+        try {
+            const email = await resendVerification();
+            this.toasts.show('success', `Отправили письмо на ${email}`);
+        } catch (err) {
+            logWarn('Не удалось отправить письмо для подтверждения:', err);
+            const { message } = describeApiError(err, {
+                fields: [],
+                fallback: 'Не удалось отправить письмо. Попробуйте ещё раз',
+            });
+            this.toasts.show('error', message);
+        } finally {
+            this.setState({ emailBusy: false });
+        }
+    };
+
+    handleCancelEmailChange = async () => {
+        this.setState({ emailBusy: true });
+        try {
+            await cancelEmailChange();
+            const profile = await getMe();
+            if (profile) {
+                this.applyProfile(profile);
+                this.fillForm(profile);
+            }
+            this.toasts.show('success', 'Смена почты отменена');
+        } catch (err) {
+            logWarn('Не удалось отменить смену почты:', err);
+            this.toasts.show('error', 'Не удалось отменить смену почты. Попробуйте ещё раз');
+        } finally {
+            this.setState({ emailBusy: false });
+        }
+    };
+
+    emailHint(): string | undefined {
+        const { profile, emailConfirmed } = this.state;
+        if (profile.pending_email || !profile.email_verified || emailConfirmed) return undefined;
+        return 'Для входа в аккаунт и уведомлений';
+    }
+
+    renderEmailNotice() {
+        const { profile, emailConfirmed, emailBusy } = this.state;
+        const resend = (
+            <button type="button" class="profile-edit__email-action" disabled={emailBusy} onClick={this.handleResendVerification}>
+                Отправить письмо ещё раз
+            </button>
+        );
+
+        if (profile.pending_email) {
+            return (
+                <div class="profile-edit__email-notice">
+                    <AlertBanner>
+                        {`Подтвердите новую почту: отправили письмо на ${profile.pending_email}, ссылка действует 30 минут. `
+                            + `Пока почта не подтверждена, уведомления приходят на ${profile.email}`}
+                    </AlertBanner>
+                    <p class="profile-edit__email-actions">
+                        {resend}
+                        <span class="profile-edit__email-dot" aria-hidden="true">·</span>
+                        <button type="button" class="profile-edit__email-action" disabled={emailBusy} onClick={this.handleCancelEmailChange}>
+                            Отменить смену почты
+                        </button>
+                    </p>
+                </div>
+            );
+        }
+        if (!profile.email_verified) {
+            return (
+                <div class="profile-edit__email-notice">
+                    <AlertBanner>{`Подтвердите почту: отправили письмо на ${profile.email}, ссылка действует 30 минут.`}</AlertBanner>
+                    <p class="profile-edit__email-actions">{resend}</p>
+                </div>
+            );
+        }
+        if (emailConfirmed) {
+            return <p class="profile-edit__email-confirmed">Почта подтверждена. Уведомления о заказах теперь приходят сюда</p>;
+        }
+        return null;
+    }
 
     handlePasswordChanged = () => {
         this.setState({ passwordModal: false });
@@ -348,8 +436,10 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                                 type="email"
                                 placeholder="name@mail.ru"
                                 autocomplete="email"
-                                hint="Для входа в аккаунт и уведомлений"
-                            />
+                                hint={this.emailHint()}
+                            >
+                                {this.renderEmailNotice()}
+                            </FormField>
                             {this.renderCity()}
                         </div>
                         {this.renderAbout()}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCountdown } from './forgot-password-page';
+import { formatCountdown } from '@/lib/format';
 
 describe('formatCountdown', () => {
     it('показывает минуты и секунды с ведущим нулём', () => {

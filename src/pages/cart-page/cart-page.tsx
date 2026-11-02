@@ -14,7 +14,8 @@ import {
 import { itemsCountText } from '@/lib/checkout';
 import { logWarn } from '@/lib/logger';
 import { showToast, type ToastType } from '@/lib/toast';
-import { navigate } from '@/router/router';
+import { goToLogin, navigate } from '@/router/router';
+import { clearUser } from '@/store';
 
 type Status = 'loading' | 'ready' | 'cached' | 'offline' | 'error';
 
@@ -67,7 +68,8 @@ export class CartPage extends Component<object, CartPageState> {
         } catch (err) {
             logWarn('Не удалось загрузить корзину:', err);
             if (err instanceof ApiError && err.status === 401) {
-                navigate('/login');
+                clearUser();
+                goToLogin();
                 return;
             }
             const offline = err instanceof ApiError && (err.network || err.timeout);
