@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
     ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
-    requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
+    onSessionExpired, requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
 interface Call {
@@ -269,5 +269,39 @@ describe('assetUrl', () => {
         expect(assetUrl('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
         expect(assetUrl(null)).toBeNull();
         expect(assetUrl('')).toBeNull();
+    });
+});
+
+describe('протухшая сессия', () => {
+    const expired = () => ({ status: 401, body: { error: 'not authenticated' } });
+
+    it('сообщает, когда бэк не узнал сессию', async () => {
+        const listener = vi.fn();
+        onSessionExpired(listener);
+        replies.push(expired);
+
+        await expect(getMe()).resolves.toBeNull();
+
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('ловит и изменяющие запросы', async () => {
+        const listener = vi.fn();
+        onSessionExpired(listener);
+        replies.push(csrf('t1'), expired);
+
+        await expect(addToCart(3)).rejects.toMatchObject({ status: 401 });
+
+        expect(listener).toHaveBeenCalledTimes(1);
+    });
+
+    it('неверный пароль при входе — не протухшая сессия', async () => {
+        const listener = vi.fn();
+        onSessionExpired(listener);
+        replies.push(csrf('t1'), () => ({ status: 401, body: { error: 'invalid credentials' } }));
+
+        await expect(login({ login: 'a@b.ru', password: 'x' })).rejects.toMatchObject({ status: 401 });
+
+        expect(listener).not.toHaveBeenCalled();
     });
 });
