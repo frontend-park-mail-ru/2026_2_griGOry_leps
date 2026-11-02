@@ -21,7 +21,8 @@ import { formatPrice } from '@/lib/format';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { sanitizePhone } from '@/lib/validators';
-import { navigate } from '@/router/router';
+import { goToLogin, navigate } from '@/router/router';
+import { clearUser } from '@/store';
 
 export interface CheckoutPageProps {
     quote: CheckoutQuote;
@@ -157,7 +158,8 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
         if (!err.network && !err.timeout) this.idempotencyKey = '';
 
         if (err.status === 401) {
-            navigate('/login');
+            clearUser();
+            goToLogin();
             return;
         }
         if (err.status === 409) {

@@ -11,6 +11,7 @@ import {
     setAuthCheck,
     initRouter,
     navigate,
+    redirect,
     type RouteParams,
     type RouteOptions,
 } from '@/router/router';
@@ -277,6 +278,7 @@ async function start() {
         view: (data) => <VerifyEmailPage {...data} />,
     });
     route('/terms', { name: 'terms', view: () => <TermsPage /> });
+    registerRoute('/profile', () => redirect('/profile/listings'), { requireAuth: true });
     myListingsRoute('/profile/listings', 'active');
     myListingsRoute('/profile/listings/closed', 'closed');
     myListingsRoute('/profile/listings/drafts', 'drafts');

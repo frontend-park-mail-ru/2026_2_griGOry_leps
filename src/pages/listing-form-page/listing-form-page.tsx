@@ -24,8 +24,8 @@ import {
 } from '@/lib/listing-form';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
-import { navigate } from '@/router/router';
-import { getUser } from '@/store';
+import { goToLogin, navigate } from '@/router/router';
+import { clearUser, getUser } from '@/store';
 
 export interface ListingFormPageProps {
     categories: CategoryNode[];
@@ -156,7 +156,8 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         } catch (err) {
             logWarn('Не удалось загрузить фото:', err);
             if (err instanceof ApiError && err.status === 401) {
-                navigate('/login');
+                clearUser();
+                goToLogin();
                 return;
             }
             patch = { uploading: false, error: photoError(err) };
@@ -252,7 +253,8 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
     showServerError(err: unknown) {
         if (err instanceof ApiError && err.status === 401) {
-            navigate('/login');
+            clearUser();
+            goToLogin();
             return;
         }
 

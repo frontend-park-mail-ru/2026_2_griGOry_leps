@@ -99,9 +99,25 @@ export function redirect(path: string): void {
     resolveRoute();
 }
 
+export function loginUrl(): string {
+    const back = location.pathname + location.search;
+    return back === '/' ? '/login' : `/login?next=${encodeURIComponent(back)}`;
+}
+
+export function goToLogin(): void {
+    navigate(loginUrl());
+}
+
+export function nextPath(): string {
+    const next = new URLSearchParams(location.search).get('next') ?? '';
+    if (!/^\/(?![/\\])/.test(next)) return '/';
+    const url = new URL(next, location.origin);
+    return url.origin === location.origin ? url.pathname + url.search + url.hash : '/';
+}
+
 function getGuardRedirect(route: Route): string | null {
-    if (route.requireAuth && !isAuthenticated()) return '/login';
-    if (route.guestOnly && isAuthenticated()) return '/';
+    if (route.requireAuth && !isAuthenticated()) return loginUrl();
+    if (route.guestOnly && isAuthenticated()) return nextPath();
     return null;
 }
 
@@ -121,6 +137,12 @@ function renderNotFound(path: string): Promise<void> {
 
 export function resolveRoute(): Promise<void> {
     const path = location.pathname;
+    const clean = path.replace(/\/{2,}/g, '/').replace(/(.)\/$/, '$1');
+    if (clean !== path) {
+        redirect(clean + location.search);
+        return Promise.resolve();
+    }
+
     const found = findRoute(path);
 
     if (!found) return renderNotFound(path);
@@ -153,19 +175,26 @@ export function recheckGuards(): void {
     if (found && getGuardRedirect(found.route)) resolveRoute();
 }
 
+function handleLinkClick(e: MouseEvent): void {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!(e.target instanceof Element)) return;
+
+    const link = e.target.closest('a[data-link]');
+    if (!(link instanceof HTMLAnchorElement)) return;
+    if ((link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+
+    e.preventDefault();
+    const path = url.pathname + url.search + url.hash;
+    if (path === location.pathname + location.search + location.hash) redirect(path);
+    else navigate(path);
+}
+
 /** Перехватывает клики по ссылкам с data-link и кнопки браузера «назад/вперёд» */
 export function initRouter(): void {
-    document.body.addEventListener('click', (e) => {
-        if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-        if (!(e.target instanceof Element)) return;
-        const link = e.target.closest('a[data-link]');
-        if (link instanceof HTMLAnchorElement) {
-            e.preventDefault();
-            const href = link.getAttribute('href') ?? '/';
-            navigate(href);
-        }
-    });
-
+    document.body.addEventListener('click', handleLinkClick);
     history.scrollRestoration = 'manual';
     window.addEventListener('popstate', () => void restoreScroll());
     resolveRoute();
