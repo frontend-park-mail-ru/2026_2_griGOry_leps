@@ -22,6 +22,7 @@ import { formatPrice } from '@/lib/format';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { sanitizePhone } from '@/lib/validators';
+import { resendVerificationEmail } from '@/lib/verify-email';
 import { goToLogin, navigate } from '@/router/router';
 import { clearUser } from '@/store';
 
@@ -410,7 +411,9 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                                 <span class="checkout-page__alert-icon" aria-hidden="true">!</span>
                                 {formError}
                                 {formError === VERIFY_EMAIL_TEXT && (
-                                    <a class="checkout-page__alert-link" href="/profile/edit" data-link>Отправить письмо ещё раз</a>
+                                    <button type="button" class="checkout-page__alert-link" onClick={() => void resendVerificationEmail()}>
+                                        Отправить письмо ещё раз
+                                    </button>
                                 )}
                             </p>
                         )}
@@ -441,9 +444,11 @@ export function checkoutView(data: CheckoutData) {
                 <OrderStatus
                     kind="error"
                     title={VERIFY_EMAIL_TEXT}
-                    text="Мы отправили письмо со ссылкой на вашу почту. Не нашли его — проверьте «Спам» или отправьте письмо ещё раз в настройках профиля."
+                    text="Мы отправили письмо со ссылкой на вашу почту. Не нашли его — проверьте «Спам» или отправьте письмо ещё раз."
                 >
-                    <a class="order-page__primary" href="/profile/edit" data-link>Перейти в настройки</a>
+                    <button type="button" class="order-page__primary" onClick={() => void resendVerificationEmail()}>
+                        Отправить письмо ещё раз
+                    </button>
                     <a class="order-page__secondary" href="/cart" data-link>Вернуться в корзину</a>
                 </OrderStatus>
             </div>

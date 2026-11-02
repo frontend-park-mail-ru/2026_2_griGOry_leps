@@ -7,6 +7,7 @@ import { ApiError, getOrder, isEmailNotVerified, payOrder, type Order, type Paym
 import { PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import { VERIFY_EMAIL_TEXT, orderPlacedText, payTimeLeft } from '@/lib/checkout';
 import { logWarn } from '@/lib/logger';
+import { resendVerificationEmail } from '@/lib/verify-email';
 
 const POLL_MS = 2000;
 const POLL_TRIES = 30;
@@ -177,6 +178,11 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
                     </button>,
                 ]}
                 {error ? <p class="order-page__error" role="alert">{error}</p> : null}
+                {error === VERIFY_EMAIL_TEXT && (
+                    <button type="button" class="order-page__secondary" onClick={() => void resendVerificationEmail()}>
+                        Отправить письмо ещё раз
+                    </button>
+                )}
             </OrderStatus>
         );
     }
