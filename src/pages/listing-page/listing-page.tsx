@@ -15,7 +15,7 @@ import {
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
 import { formatDay } from '@/lib/format';
-import { CONDITION_LABELS, statusNotice } from '@/lib/listing';
+import { CONDITION_LABELS, pickupLocation, statusNotice } from '@/lib/listing';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { setCartCount } from '@/lib/cart';
@@ -48,12 +48,11 @@ function actionError(err: unknown, fallback: string): string {
 }
 
 function listingSpecs(listing: Listing) {
-    const sameCity = listing.address?.toLowerCase().startsWith(listing.city.toLowerCase());
-    const location = listing.city && !sameCity ? `${listing.city}, ${listing.address}` : listing.address;
+    const location = pickupLocation(listing);
     return [
         ...(listing.condition ? [{ key: 'condition', name: 'Состояние', value: CONDITION_LABELS[listing.condition] }] : []),
         ...listing.attributes,
-        ...(listing.address ? [{ key: 'address', name: 'Где забрать', value: location }] : []),
+        ...(location ? [{ key: 'address', name: 'Где забрать', value: location }] : []),
     ];
 }
 
