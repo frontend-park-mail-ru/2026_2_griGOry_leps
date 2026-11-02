@@ -62,6 +62,10 @@ export class ApiError extends Error {
     }
 }
 
+export function isEmailNotVerified(err: unknown): boolean {
+    return err instanceof ApiError && err.status === 403 && err.reason === 'email not verified';
+}
+
 export async function readErrorBody(response: Response): Promise<ErrorBody> {
     const body = await response.clone().json().catch(() => null);
     return body && typeof body === 'object' ? body : {};

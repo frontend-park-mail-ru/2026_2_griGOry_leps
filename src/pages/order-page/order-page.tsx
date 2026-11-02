@@ -3,9 +3,9 @@ import './order-page.scss';
 
 import { ChoiceCard } from '@/components/choice-card/choice-card';
 import { OrderStatus } from '@/components/order-status/order-status';
-import { ApiError, getOrder, payOrder, type Order, type PaymentMethod } from '@/lib/api';
-import { PAYMENT_LABELS } from '@/lib/cart';
-import { orderPlacedText, payTimeLeft } from '@/lib/checkout';
+import { ApiError, getOrder, isEmailNotVerified, payOrder, type Order, type PaymentMethod } from '@/lib/api';
+import { PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
+import { VERIFY_EMAIL_TEXT, orderPlacedText, payTimeLeft } from '@/lib/checkout';
 import { logWarn } from '@/lib/logger';
 
 const POLL_MS = 2000;
@@ -32,6 +32,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     tries = 0;
     pollId = 0;
     mounted = false;
+    cartSynced = false;
 
     constructor(props: { order: Order }) {
         super(props);
@@ -48,6 +49,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
 
     componentDidMount() {
         this.mounted = true;
+        this.syncCart(this.state.order);
         if (isPending(this.state.order)) this.schedulePoll();
         this.clockTimer = setInterval(this.tick, 1000);
         window.addEventListener('pageshow', this.handlePageShow);
@@ -58,6 +60,12 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
         this.stopPoll();
         if (this.clockTimer) clearInterval(this.clockTimer);
         window.removeEventListener('pageshow', this.handlePageShow);
+    }
+
+    syncCart(order: Order) {
+        if (this.cartSynced || order.status !== 'placed') return;
+        this.cartSynced = true;
+        void refreshCartCount(true);
     }
 
     tick = () => {
@@ -92,6 +100,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
             const order = await getOrder(this.state.order.id);
             if (id !== this.pollId || !this.mounted) return;
             this.setState({ order });
+            this.syncCart(order);
             pending = isPending(order);
         } catch (err) {
             if (id !== this.pollId || !this.mounted) return;
@@ -119,11 +128,13 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
             }
             this.tries = 0;
             this.setState({ order, busy: false, choosing: false });
+            this.syncCart(order);
             if (isPending(order)) this.schedulePoll();
         } catch (err) {
             logWarn('Не удалось повторить оплату:', err);
             let error = 'Не удалось начать оплату. Попробуйте ещё раз';
-            if (err instanceof ApiError && err.status === 409) error = 'Заказ уже оплачен или отменён. Обновите страницу';
+            if (isEmailNotVerified(err)) error = VERIFY_EMAIL_TEXT;
+            else if (err instanceof ApiError && err.status === 409) error = 'Заказ уже оплачен или отменён. Обновите страницу';
             else if (err instanceof ApiError && (err.network || err.timeout)) error = 'Нет соединения. Проверьте интернет';
             this.setState({ busy: false, error });
         }

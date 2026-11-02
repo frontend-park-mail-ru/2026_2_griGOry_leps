@@ -44,6 +44,13 @@
         color: $color-status-error;
     }
 
+    &__alert-link {
+        margin-left: auto;
+        font-weight: 500;
+        color: $goget-blue;
+        white-space: nowrap;
+    }
+
     &__layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 420px;
