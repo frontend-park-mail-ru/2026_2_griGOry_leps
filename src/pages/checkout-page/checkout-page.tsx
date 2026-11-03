@@ -9,18 +9,18 @@ import { FormField } from '@/components/form-field/form-field';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
-    ApiError, createOrder, isEmailNotVerified, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
+    ApiError, createOrder, isEmailNotVerified, newIdempotencyKey, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
 import {
     DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount, ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData,
     checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone, initialCheckout, itemsCountText,
-    needsCourier, orderTotal, slotLabel, validateCheckout, type CheckoutData, type CheckoutErrors,
-    type CheckoutValues, VERIFY_EMAIL_TEXT,
+    needsCourier, orderTotal, slotLabel, validateCheckout, VERIFY_EMAIL_TEXT, type CheckoutData,
+    type CheckoutErrors, type CheckoutValues,
 } from '@/lib/cart';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
 import { LIMITS, sanitizePhone } from '@/lib/forms';
-import { goToLogin, navigate } from 'goget-router';
 import { resendVerificationEmail, clearUser } from '@/lib/user';
+import { goToLogin, navigate, redirect } from 'goget-router';
 
 export interface CheckoutPageProps {
     quote: CheckoutQuote;
@@ -82,7 +82,12 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
     }
 
     handlePageShow = (e: PageTransitionEvent) => {
-        if (e.persisted) this.setState({ redirecting: false, submitting: false });
+        if (!e.persisted) return;
+        if (location.pathname !== '/checkout') {
+            redirect(location.pathname);
+            return;
+        }
+        this.setState({ redirecting: false, submitting: false });
     };
 
     update(patch: Partial<CheckoutValues>) {
@@ -128,7 +133,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             return;
         }
 
-        this.idempotencyKey ||= crypto.randomUUID();
+        this.idempotencyKey ||= newIdempotencyKey();
         this.setState({ submitting: true });
         try {
             const order = await createOrder(buildOrderData(quote, values), this.idempotencyKey);
@@ -137,6 +142,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
 
             if (order.status === 'awaiting_payment' && order.payment.confirmation_url) {
                 this.setState({ redirecting: true });
+                history.replaceState({}, '', `/orders/${order.id}`);
                 window.location.assign(order.payment.confirmation_url);
                 return;
             }

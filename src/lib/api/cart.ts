@@ -11,7 +11,7 @@ export interface CartItem {
     address: string | null;
     delivery_from: string | null;
     availability: 'available' | 'unavailable';
-    unavailable_reason: 'sold' | 'closed' | 'deleted' | null;
+    unavailable_reason: 'sold' | 'reserved' | 'closed' | 'deleted' | null;
 }
 
 export interface Cart {

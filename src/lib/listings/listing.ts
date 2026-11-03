@@ -1,4 +1,4 @@
-import type { CloseReason, Condition, Listing, ListingStatus } from '@/lib/api';
+import { ApiError, type CloseReason, type Condition, type Listing, type ListingStatus } from '@/lib/api';
 import { formatPrice } from '@/lib/core';
 
 export const CONDITION_LABELS: Record<Condition, string> = {
@@ -52,4 +52,10 @@ export function pickupLocation({ city, address }: Pick<Listing, 'city' | 'addres
     if (!address) return '';
     if (!city || address.toLowerCase().includes(city.toLowerCase())) return address;
     return `${city}, ${address}`;
+}
+
+export const UNPAID_ORDER_TEXT = 'Покупатель сейчас оплачивает этот товар. Попробуйте, когда оплата пройдёт или заказ отменится';
+
+export function hasUnpaidOrder(err: unknown): boolean {
+    return err instanceof ApiError && err.status === 409 && Boolean(err.orderNumber);
 }

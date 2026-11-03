@@ -9,6 +9,7 @@ import {
     type MyListingPage,
     type Profile,
 } from '@/lib/api';
+import { UNPAID_ORDER_TEXT, hasUnpaidOrder } from '@/lib/listings';
 import { logError } from '@/lib/core';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { MyAdCard } from '@/components/my-ad-card/my-ad-card';
@@ -185,7 +186,8 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
             }));
         } catch (err) {
             logError('Не удалось снять объявление с продажи:', err);
-            this.setState({ pending: false, actionError: 'Не удалось снять объявление. Попробуйте ещё раз' });
+            const actionError = hasUnpaidOrder(err) ? UNPAID_ORDER_TEXT : 'Не удалось снять объявление. Попробуйте ещё раз';
+            this.setState({ pending: false, actionError });
         }
     };
 
@@ -204,7 +206,8 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
             }));
         } catch (err) {
             logError('Не удалось удалить объявление:', err);
-            this.setState({ pending: false, actionError: 'Не удалось удалить объявление. Попробуйте ещё раз' });
+            const actionError = hasUnpaidOrder(err) ? UNPAID_ORDER_TEXT : 'Не удалось удалить объявление. Попробуйте ещё раз';
+            this.setState({ pending: false, actionError });
         }
     };
 

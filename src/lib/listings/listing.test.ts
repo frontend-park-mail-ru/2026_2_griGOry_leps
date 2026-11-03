@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Listing } from '@/lib/api';
-import { pickupLocation, priceText, statusNotice } from './listing';
+import { ApiError, type Listing } from '@/lib/api';
+import { hasUnpaidOrder, pickupLocation, priceText, statusNotice } from './listing';
 import { formatDay, formatPrice, formatSince, plural } from '@/lib/core';
 
 const listing = (patch: Partial<Listing>) => ({
@@ -63,5 +63,13 @@ describe('pickupLocation', () => {
     it('без адреса пусто, без города — только адрес', () => {
         expect(pickupLocation({ city: 'Москва', address: null })).toBe('');
         expect(pickupLocation({ city: '', address: 'м. Сокол' })).toBe('м. Сокол');
+    });
+});
+
+describe('hasUnpaidOrder', () => {
+    it('узнаёт 409 с номером заказа', () => {
+        expect(hasUnpaidOrder(new ApiError(409, { orderNumber: 10245 }))).toBe(true);
+        expect(hasUnpaidOrder(new ApiError(409, { reason: 'listing is not active' }))).toBe(false);
+        expect(hasUnpaidOrder(new Error('409'))).toBe(false);
     });
 });

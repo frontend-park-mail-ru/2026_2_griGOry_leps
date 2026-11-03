@@ -16,6 +16,7 @@ export const PAYMENT_LABELS: Record<PaymentMethod, { title: string; hint: string
 
 export const UNAVAILABLE_TEXT: Record<NonNullable<CartItem['unavailable_reason']>, string> = {
     sold: 'Товар уже продан, уберите его из корзины',
+    reserved: 'Товар сейчас оформляет другой покупатель. Если он не оплатит заказ, товар снова станет доступен',
     closed: 'Продавец снял товар с продажи',
     deleted: 'Продавец удалил объявление, уберите его из корзины',
 };
