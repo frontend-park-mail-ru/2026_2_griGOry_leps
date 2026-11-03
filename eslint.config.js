@@ -41,6 +41,14 @@ export default tseslint.config(
         },
     },
     {
+        files: ['packages/**/*.{ts,tsx}'],
+        rules: {
+            'no-restricted-imports': ['error', {
+                patterns: [{ group: ['@/*'], message: 'Пакеты не импортируют код приложения' }],
+            }],
+        },
+    },
+    {
         files: ['src/**/*.test.tsx'],
         rules: {
             '@typescript-eslint/no-this-alias': 'off',

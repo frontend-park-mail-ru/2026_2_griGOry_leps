@@ -4,18 +4,19 @@
   "version": "0.0.1",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/logger"
   ],
   "scripts": {
+    "build:packages": "npm run build --workspaces",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run build:packages && tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc",
-    "lint": "eslint .",
+    "typecheck": "npm run build:packages && tsc",
+    "lint": "npm run build:packages && eslint .",
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "lint:css:fix": "stylelint \"src/**/*.scss\" --fix",
-    "test": "vitest run",
+    "test": "npm run build:packages && vitest run",
     "start": "node server.js",
     "docs": "typedoc"
   },

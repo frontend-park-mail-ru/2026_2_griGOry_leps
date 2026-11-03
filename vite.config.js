@@ -9,10 +9,9 @@ export default defineConfig({
         jsxImportSource: '@/vdom',
     },
     resolve: {
-        alias: [
-            { find: '@', replacement: path.resolve(__dirname, './src/') },
-            { find: /^goget-(vdom|utils|logger)(\/.*)?$/, replacement: path.resolve(__dirname, 'packages') + '/$1/src$2' },
-        ],
+        alias: {
+            '@': path.resolve(__dirname, './src/'),
+        },
     },
     server: {
         port: 5173,
