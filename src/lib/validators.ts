@@ -3,6 +3,7 @@ const EMAIL_CHARS_PATTERN = /^[A-Za-z0-9._%+@-]+$/;
 const EMOJI_PATTERN = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
 const PHONE_PATTERN = /^\+7\d{10}$/;
 const NAME_PATTERN = /^[A-Za-zА-Яа-яЁё0-9_. -]+$/;
+const CITY_PATTERN = /^\p{L}[\p{L} .'-]*$/u;
 const PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
 
 const PASSWORD_TOO_LONG = 'Пароль слишком длинный: максимум 72 байта (русская буква — 2 байта)';
@@ -15,8 +16,10 @@ export const LIMITS = {
     passwordMin: 8,
     passwordMax: 72,
     aboutMax: 500,
+    cityMax: 100,
     streetMax: 200,
     houseMax: 50,
+    apartmentMax: 20,
     courierCommentMax: 200,
 } as const;
 
@@ -81,6 +84,14 @@ export function validateMaxLength(limit: number): (value: string) => string {
 }
 
 export const validateAbout = validateMaxLength(LIMITS.aboutMax);
+
+export function validateCity(value: string): string {
+    const city = value.trim();
+    if (!city) return '';
+    if (city.length > LIMITS.cityMax) return `Не более ${LIMITS.cityMax} символов`;
+    if (!CITY_PATTERN.test(city)) return 'Только буквы, пробел, точка, дефис и апостроф';
+    return '';
+}
 
 export function validateLogin(value: string): string {
     if (!value) return '';

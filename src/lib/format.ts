@@ -44,8 +44,10 @@ export function plural(count: number, [one, few, many]: [string, string, string]
     return many;
 }
 
-export function formatAddress({ street, house }: { street: string; house: string }): string {
-    return [street.trim(), house.trim()].filter(Boolean).join(', ');
+export function formatAddress({ city = '', street, house, apartment = '' }: {
+    city?: string; street: string; house: string; apartment?: string;
+}): string {
+    return [city, street, house, apartment && `кв. ${apartment}`].map((part) => part.trim()).filter(Boolean).join(', ');
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

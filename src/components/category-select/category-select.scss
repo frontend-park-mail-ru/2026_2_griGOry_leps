@@ -1,27 +1,89 @@
 @use '@/shared/styles/variables' as *;
 
 .category-select {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
-    &__input {
-        height: 100%;
-        appearance: none;
-        cursor: pointer;
+    &__columns {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
 
-        &--empty {
-            color: $color-text-placeholder;
+        @media (max-width: 640px) {
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 
-    &::after {
-        content: '';
-        position: absolute;
-        right: 16px;
-        width: 7px;
-        height: 7px;
-        border-right: 1.5px solid $color-text-secondary;
-        border-bottom: 1.5px solid $color-text-secondary;
-        transform: translateY(-2px) rotate(45deg);
-        pointer-events: none;
+    &__column {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-main;
+        text-align: left;
+        background: none;
+        border: none;
+        border-radius: $radius-lg;
+        cursor: pointer;
+
+        &:hover,
+        &--active {
+            background: $surface-1;
+        }
+    }
+
+    &__chevron {
+        flex-shrink: 0;
+        color: $color-text-secondary;
+    }
+
+    &--error &__columns,
+    &--error &__current {
+        padding: 4px;
+        border: 1px solid $color-status-error;
+        border-radius: $radius-lg;
+    }
+
+    &__current {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+    }
+
+    &__path {
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-text-main;
+    }
+
+    &__change {
+        padding: 0;
+        font: inherit;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+        color: $goget-blue;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 }

@@ -24,12 +24,14 @@ import './addresses-page.scss';
 const trim = (value: string) => value.trim();
 
 const RULES: Record<string, FieldRule> = {
-    street: { validate: validateMaxLength(LIMITS.streetMax), normalize: trim, required: 'Укажите город и улицу' },
-    house: { validate: validateMaxLength(LIMITS.houseMax), normalize: trim, required: 'Укажите дом и квартиру' },
+    city: { validate: validateMaxLength(LIMITS.cityMax), normalize: trim, required: 'Укажите город' },
+    street: { validate: validateMaxLength(LIMITS.streetMax), normalize: trim, required: 'Укажите улицу' },
+    house: { validate: validateMaxLength(LIMITS.houseMax), normalize: trim, required: 'Укажите дом' },
+    apartment: { validate: validateMaxLength(LIMITS.apartmentMax), normalize: trim },
     comment: { validate: validateMaxLength(LIMITS.courierCommentMax) },
 };
 
-const EMPTY_VALUES: FormValues = { street: '', house: '', comment: '' };
+const EMPTY_VALUES: FormValues = { city: '', street: '', house: '', apartment: '', comment: '' };
 
 const PlusIcon = () => (
     <svg viewBox="0 0 20 20" width="20" height="20" fill="none"
@@ -40,7 +42,21 @@ const PlusIcon = () => (
 
 function addressValues(address: Address | null): FormValues {
     if (!address) return { ...EMPTY_VALUES };
-    return { street: address.street, house: address.house, comment: address.comment ?? '' };
+    return {
+        city: address.city ?? '',
+        street: address.street,
+        house: address.house,
+        apartment: address.apartment ?? '',
+        comment: address.comment ?? '',
+    };
+}
+
+function streetLine(address: Address): string {
+    return address.city ? `${address.city}, ${address.street}` : address.street;
+}
+
+function houseLine(address: Address): string {
+    return address.apartment ? `${address.house}, кв. ${address.apartment}` : address.house;
 }
 
 function pickAddress(addresses: Address[]): Address | null {
@@ -182,8 +198,10 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
 
         const { selectedId, isDefault, addresses } = this.state;
         const data: AddressData = {
+            city: values.city,
             street: values.street,
             house: values.house,
+            apartment: values.apartment,
             comment: values.comment.trim(),
             is_default: isDefault || addresses.length === 0,
         };
@@ -275,9 +293,9 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
                                 onChange={() => this.handleSelect(address)}
                             />
                             <span class="addresses__option-text">
-                                <span class="addresses__option-title">{address.street}</span>
+                                <span class="addresses__option-title">{streetLine(address)}</span>
                                 <span class="addresses__option-description">
-                                    {address.is_default ? `${address.house} · основной` : address.house}
+                                    {address.is_default ? `${houseLine(address)} · основной` : houseLine(address)}
                                 </span>
                             </span>
                         </label>
@@ -304,23 +322,44 @@ export class AddressesPage extends Component<AddressesPageProps, AddressesPageSt
             <form class="addresses__form" novalidate onSubmit={this.handleSubmit}>
                 <h2 class="addresses__form-title">{isNew ? 'Новый адрес' : 'Изменить адрес'}</h2>
 
+                <FormField
+                    {...this.fieldProps('city')}
+                    id="address-city"
+                    maxLength={LIMITS.cityMax}
+                    label="Город"
+                    placeholder="Например, Москва"
+                    autocomplete="address-level2"
+                />
+
                 <div class="addresses__street">
                     <FormField
                         {...this.fieldProps('street')}
                         id="address-street"
-                        label="Город и улица"
-                        placeholder="Например, Москва, ул. Тверская"
-                        autocomplete="street-address"
+                        maxLength={LIMITS.streetMax}
+                        label="Улица"
+                        placeholder="Например, ул. Тверская"
+                        autocomplete="address-line1"
                     />
                     <button type="button" class="addresses__map" disabled title="Скоро">Указать на карте</button>
                 </div>
 
-                <FormField
-                    {...this.fieldProps('house')}
-                    id="address-house"
-                    label="Дом и квартира"
-                    placeholder="Например, д. 12, кв. 34"
-                />
+                <div class="addresses__row">
+                    <FormField
+                        {...this.fieldProps('house')}
+                        id="address-house"
+                        maxLength={LIMITS.houseMax}
+                        label="Дом"
+                        placeholder="Например, 12 или 5с1"
+                    />
+                    <FormField
+                        {...this.fieldProps('apartment')}
+                        id="address-apartment"
+                        maxLength={LIMITS.apartmentMax}
+                        label="Квартира или офис"
+                        placeholder="Необязательно"
+                        autocomplete="address-line2"
+                    />
+                </div>
 
                 <TextareaField
                     id="address-comment"

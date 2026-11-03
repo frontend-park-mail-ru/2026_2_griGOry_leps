@@ -10,7 +10,7 @@ import { FormField } from '@/components/form-field/form-field';
 import { requestPasswordReset } from '@/lib/api';
 import { formatCountdown } from '@/lib/format';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { normalizeLogin, validateLogin } from '@/lib/validators';
+import { LIMITS, normalizeLogin, validateLogin } from '@/lib/validators';
 import { navigate } from '@/router/router';
 
 const RESEND_DELAY_S = 60;
@@ -166,6 +166,7 @@ export class ForgotPasswordPage extends Component<object, ForgotPasswordState> {
                 >
                     <FormField
                         id="forgot-login-input"
+                        maxLength={LIMITS.emailMax}
                         name="login"
                         label="Телефон или email"
                         placeholder="+7 900 000-00-00 или name@mail.ru"
