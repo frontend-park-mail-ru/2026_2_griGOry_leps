@@ -5,7 +5,8 @@
   "type": "module",
   "workspaces": [
     "packages/logger",
-    "packages/debounce"
+    "packages/debounce",
+    "packages/format"
   ],
   "scripts": {
     "build:packages": "npm run build --workspaces",
@@ -47,6 +48,7 @@
   "dependencies": {
     "express": "^5.2.1",
     "goget-logger": "0.1.0",
-    "goget-debounce": "0.1.0"
+    "goget-debounce": "0.1.0",
+    "goget-format": "0.1.0"
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatPrice } from './format';
+import { formatPrice } from './index.js';
 
 const plain = (s: string) => s.replace(/\s/g, ' ');
 
