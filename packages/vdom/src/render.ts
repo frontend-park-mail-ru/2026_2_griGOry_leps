@@ -1,6 +1,6 @@
-import { TEXT, EMPTY, createEmptyVNode, isComponentClass, normalizeChildren, type Child, type VNode } from './h';
-import { setProp, updateProps } from './props';
-import type { Component } from './component';
+import { TEXT, EMPTY, createEmptyVNode, isComponentClass, normalizeChildren, type Child, type VNode } from './h.js';
+import { setProp, updateProps } from './props.js';
+import type { Component } from './component.js';
 
 export type Ref = (dom: Node | null) => void;
 export type Container = Element & { __vchildren?: VNode[] };

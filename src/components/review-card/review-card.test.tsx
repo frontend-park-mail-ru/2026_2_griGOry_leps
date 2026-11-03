@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import type { Review } from '@/lib/api';
 import { formatStars } from '@/lib/core';
 import { ReviewCard } from './review-card';

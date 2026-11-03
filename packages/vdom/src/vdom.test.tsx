@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { h, Component, render } from './index';
+import { h, Component, render } from 'goget-vdom';
 
 let root;
 

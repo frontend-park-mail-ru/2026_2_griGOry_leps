@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import type { ReportReason } from '@/lib/api';
 import { Modal } from '@/components/modal/modal';
 import { TextareaField } from '@/components/textarea-field/textarea-field';

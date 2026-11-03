@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { getMyListingsCount, type Profile } from '@/lib/api';
 import { logWarn, formatRating, formatSince, plural } from '@/lib/core';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';

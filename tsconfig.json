@@ -13,7 +13,7 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"jsx": "react-jsx",
-		"jsxImportSource": "@/vdom",
+		"jsxImportSource": "goget-vdom",
 		"paths": {
 			"@/*": ["./src/*"]
 		}

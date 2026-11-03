@@ -49,7 +49,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ['src/**/*.test.tsx'],
+        files: ['src/**/*.test.tsx', 'packages/*/src/**/*.test.tsx'],
         rules: {
             '@typescript-eslint/no-this-alias': 'off',
         },

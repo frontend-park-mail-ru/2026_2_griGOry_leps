@@ -1,5 +1,5 @@
 import { CartLink } from '@/components/cart-link/cart-link';
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import type { User } from '@/lib/api';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './header.scss';

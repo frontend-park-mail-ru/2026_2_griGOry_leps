@@ -1,4 +1,4 @@
-import { Component, type Child, type VNode } from '@/vdom';
+import { Component, type Child, type VNode } from 'goget-vdom';
 import type { AdCard, User } from '@/lib/api';
 import type { Category, Promo } from '@/lib/catalog';
 import './home-page.scss';

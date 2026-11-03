@@ -1,4 +1,4 @@
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import './styles/style.scss';
 
 import { Header } from '@/components/header/header';

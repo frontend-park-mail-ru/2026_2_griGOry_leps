@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import type { SellerProfile } from '@/lib/api';
 import { formatRating, formatSinceYear, plural } from '@/lib/core';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';

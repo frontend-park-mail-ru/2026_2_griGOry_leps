@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { Modal } from '@/components/modal/modal';
 import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';

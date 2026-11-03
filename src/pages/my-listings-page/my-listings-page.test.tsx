@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import type { MyAdCard, MyListingPage, Profile } from '@/lib/api';
 import { MyListingsPage, type MyListingsTab } from './my-listings-page';
 

@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './forgot-password-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';

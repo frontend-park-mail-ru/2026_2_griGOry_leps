@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { ApiError, type Profile } from '@/lib/api';
 import { AVATAR_COLORS, getAvatarColor } from '@/components/user-avatar/user-avatar';
 import { ProfileEditPage } from './profile-edit-page';

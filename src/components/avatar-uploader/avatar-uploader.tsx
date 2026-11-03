@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { uploadAvatar } from '@/lib/api';
 import { describeApiError } from '@/lib/forms';
 import { logError } from '@/lib/core';

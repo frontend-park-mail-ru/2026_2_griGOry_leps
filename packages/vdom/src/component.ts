@@ -1,5 +1,5 @@
-import { enqueueUpdate } from './render';
-import type { Child, VNode } from './h';
+import { enqueueUpdate } from './render.js';
+import type { Child, VNode } from './h.js';
 
 /**
  * setState перерисовывает только этот компонент.

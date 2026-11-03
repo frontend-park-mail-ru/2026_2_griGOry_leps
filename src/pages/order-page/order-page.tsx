@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './order-page.scss';
 
 import { ChoiceCard } from '@/components/choice-card/choice-card';

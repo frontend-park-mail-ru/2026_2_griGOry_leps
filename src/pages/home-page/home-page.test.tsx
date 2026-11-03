@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import type { AdCard } from '@/lib/api';
 import { HomePage } from './home-page';
 

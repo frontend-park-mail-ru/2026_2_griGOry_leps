@@ -1,4 +1,4 @@
-import { Component, type Child } from '@/vdom';
+import { Component, type Child } from 'goget-vdom';
 import './form-field.scss';
 
 /** Перечёркнута, пока пароль скрыт (.form-field__toggle-slash) */

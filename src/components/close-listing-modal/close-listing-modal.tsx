@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import type { CloseReason } from '@/lib/api';
 import { Modal } from '@/components/modal/modal';
 import './close-listing-modal.scss';

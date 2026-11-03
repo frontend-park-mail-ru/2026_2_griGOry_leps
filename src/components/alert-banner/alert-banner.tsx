@@ -1,4 +1,4 @@
-import type { Child } from '@/vdom';
+import type { Child } from 'goget-vdom';
 import './alert-banner.scss';
 
 export const AlertBanner = ({ children }: { children?: Child }) => (

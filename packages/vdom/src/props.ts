@@ -1,4 +1,4 @@
-import type { Props } from './h';
+import type { Props } from './h.js';
 
 export type Listener = (event: Event) => void;
 export type ListenedElement = Element & { __listeners?: Record<string, Listener> };

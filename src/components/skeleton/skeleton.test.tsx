@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { Skeleton } from './skeleton';
 
 let root: HTMLElement;

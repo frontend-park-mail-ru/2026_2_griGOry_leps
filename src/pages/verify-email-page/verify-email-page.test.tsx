@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { ApiError, type Profile } from '@/lib/api';
 import { setUser } from '@/lib/user';
 import { VerifyEmailPage, loadVerifyEmail, type VerifyEmailProps } from './verify-email-page';

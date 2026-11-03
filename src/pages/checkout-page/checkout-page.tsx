@@ -1,4 +1,4 @@
-import { Component, type Child } from '@/vdom';
+import { Component, type Child } from 'goget-vdom';
 import './checkout-page.scss';
 
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';

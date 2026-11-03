@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './listing-page.scss';
 
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';

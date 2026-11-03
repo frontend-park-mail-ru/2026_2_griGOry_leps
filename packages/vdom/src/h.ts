@@ -1,4 +1,4 @@
-import type { Component } from './component';
+import type { Component } from './component.js';
 
 export const TEXT = '#text';
 

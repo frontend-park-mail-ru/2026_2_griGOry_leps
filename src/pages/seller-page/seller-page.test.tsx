@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { ApiError, type AdCard, type Review, type ReviewPage, type SellerAdPage, type SellerProfile } from '@/lib/api';
 import { formatPosted } from '@/lib/core';
 import { clearUser, setUser } from '@/lib/user';

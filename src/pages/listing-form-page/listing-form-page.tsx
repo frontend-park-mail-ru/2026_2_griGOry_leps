@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './listing-form-page.scss';
 
 import { AlertBanner } from '@/components/alert-banner/alert-banner';
