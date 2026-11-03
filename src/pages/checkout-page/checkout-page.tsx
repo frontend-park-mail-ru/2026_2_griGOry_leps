@@ -9,18 +9,20 @@ import { FormField } from '@/components/form-field/form-field';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
-    ApiError, createOrder, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
+    ApiError, createOrder, isEmailNotVerified, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
 import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
     ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
     initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
     type CheckoutData, type CheckoutErrors, type CheckoutValues,
+    VERIFY_EMAIL_TEXT,
 } from '@/lib/checkout';
 import { formatPrice } from '@/lib/format';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { LIMITS, sanitizePhone } from '@/lib/validators';
+import { resendVerificationEmail } from '@/lib/verify-email';
 import { goToLogin, navigate } from '@/router/router';
 import { clearUser } from '@/store';
 
@@ -160,6 +162,10 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
         if (err.status === 401) {
             clearUser();
             goToLogin();
+            return;
+        }
+        if (isEmailNotVerified(err)) {
+            this.setState({ formError: VERIFY_EMAIL_TEXT });
             return;
         }
         if (err.status === 409) {
@@ -406,6 +412,11 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                             <p class="checkout-page__alert" role="alert">
                                 <span class="checkout-page__alert-icon" aria-hidden="true">!</span>
                                 {formError}
+                                {formError === VERIFY_EMAIL_TEXT && (
+                                    <button type="button" class="checkout-page__alert-link" onClick={() => void resendVerificationEmail()}>
+                                        Отправить письмо ещё раз
+                                    </button>
+                                )}
                             </p>
                         )}
                     </div>
@@ -429,6 +440,22 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
 
 export function checkoutView(data: CheckoutData) {
     if ('quote' in data) return <CheckoutPage quote={data.quote} />;
+    if (data.problem === 'unverified') {
+        return (
+            <div class="order-page">
+                <OrderStatus
+                    kind="error"
+                    title={VERIFY_EMAIL_TEXT}
+                    text="Мы отправили письмо со ссылкой на вашу почту. Не нашли его — проверьте «Спам» или отправьте письмо ещё раз."
+                >
+                    <button type="button" class="order-page__primary" onClick={() => void resendVerificationEmail()}>
+                        Отправить письмо ещё раз
+                    </button>
+                    <a class="order-page__secondary" href="/cart" data-link>Вернуться в корзину</a>
+                </OrderStatus>
+            </div>
+        );
+    }
     return (
         <div class="order-page">
             <OrderStatus

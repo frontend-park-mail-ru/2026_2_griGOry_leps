@@ -3,7 +3,9 @@ import { fromKopecks, toKopecks } from '@/lib/cart';
 import { plural } from '@/lib/format';
 import { validateName, validatePhone } from '@/lib/validators';
 
-export type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' };
+export type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' | 'unverified' };
+
+export const VERIFY_EMAIL_TEXT = 'Подтвердите почту, чтобы оформить заказ';
 
 export const COMMENT_MAX = 200;
 export const ADDRESS_TEXT_MAX = 300;

@@ -44,6 +44,18 @@
         color: $color-status-error;
     }
 
+    &__alert-link {
+        margin-left: auto;
+        padding: 0;
+        font: inherit;
+        font-weight: 500;
+        color: $goget-blue;
+        white-space: nowrap;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
     &__layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 420px;
