@@ -39,6 +39,11 @@
             background: #ffebeb;
         }
 
+        &--waiting {
+            color: $goget-blue;
+            background: #e5f0ff;
+        }
+
         &--pending {
             border: 4px solid $gray-150;
             border-top-color: $goget-blue;

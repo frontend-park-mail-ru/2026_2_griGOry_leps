@@ -9,7 +9,7 @@ import { FormField } from '@/components/form-field/form-field';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
-    ApiError, createOrder, isEmailNotVerified, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
+    ApiError, createOrder, isEmailNotVerified, newIdempotencyKey, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
 import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
@@ -132,7 +132,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             return;
         }
 
-        this.idempotencyKey ||= crypto.randomUUID();
+        this.idempotencyKey ||= newIdempotencyKey();
         this.setState({ submitting: true });
         try {
             const order = await createOrder(buildOrderData(quote, values), this.idempotencyKey);

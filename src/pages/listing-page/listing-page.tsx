@@ -15,7 +15,7 @@ import {
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
 import { formatDay } from '@/lib/format';
-import { CONDITION_LABELS, pickupLocation, statusNotice } from '@/lib/listing';
+import { CONDITION_LABELS, UNPAID_ORDER_TEXT, hasUnpaidOrder, pickupLocation, statusNotice } from '@/lib/listing';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { setCartCount } from '@/lib/cart';
@@ -41,6 +41,7 @@ function actionError(err: unknown, fallback: string): string {
     if (!(err instanceof ApiError)) return fallback;
     if (err.network) return 'Нет соединения с сервером. Проверьте интернет';
     if (err.timeout) return 'Сервер не отвечает. Попробуйте ещё раз';
+    if (hasUnpaidOrder(err)) return UNPAID_ORDER_TEXT;
     if (err.status === 409) return 'Объявление уже не активно. Обновите страницу';
     if (err.status === 404) return 'Объявление уже удалено';
     if (err.status === 401) return 'Сессия истекла. Войдите заново';
@@ -104,7 +105,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
             navigate('/');
         } catch (err) {
             logWarn('Не удалось удалить объявление:', err);
-            if (err instanceof ApiError && err.status === 409) {
+            if (hasUnpaidOrder(err)) {
                 this.setState({ busy: false, dialog: 'blocked' });
                 return;
             }
