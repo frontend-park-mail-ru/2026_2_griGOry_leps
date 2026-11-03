@@ -1,0 +1,32 @@
+{
+  "name": "goget-toast",
+  "version": "0.1.0",
+  "description": "Framework-agnostic toast notification store with auto-hide and subscriptions",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "toast",
+    "notification",
+    "store"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frontend-park-mail-ru/2026_2_griGOry_leps.git",
+    "directory": "packages/toast"
+  }
+}
