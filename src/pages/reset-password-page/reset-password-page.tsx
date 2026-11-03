@@ -10,7 +10,7 @@ import { PasswordRules, getPasswordRuleStates } from '@/components/password-rule
 
 import { ApiError, resetPassword } from '@/lib/api';
 import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { validatePassword, validatePasswordRepeat } from '@/lib/validators';
+import { LIMITS, validatePassword, validatePasswordRepeat } from '@/lib/validators';
 import { navigate } from '@/router/router';
 import { clearUser } from '@/store';
 
@@ -142,6 +142,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
                 >
                     <FormField
                         id="reset-password-input"
+                        maxLength={LIMITS.passwordMax}
                         name="password"
                         label="Пароль"
                         placeholder="Придумайте пароль"
@@ -157,6 +158,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
                     </FormField>
                     <FormField
                         id="reset-password-repeat-input"
+                        maxLength={LIMITS.passwordMax}
                         name="passwordRepeat"
                         label="Повторите пароль"
                         placeholder="Ещё раз пароль"

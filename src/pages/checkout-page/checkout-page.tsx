@@ -13,7 +13,7 @@ import {
 } from '@/lib/api';
 import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
-    COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
+    ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
     initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
     type CheckoutData, type CheckoutErrors, type CheckoutValues,
     VERIFY_EMAIL_TEXT,
@@ -21,7 +21,7 @@ import {
 import { formatPrice } from '@/lib/format';
 import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
-import { sanitizePhone } from '@/lib/validators';
+import { LIMITS, sanitizePhone } from '@/lib/validators';
 import { resendVerificationEmail } from '@/lib/verify-email';
 import { goToLogin, navigate } from '@/router/router';
 import { clearUser } from '@/store';
@@ -256,6 +256,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                 {values.address === 'new' && (
                     <FormField
                         id="checkout-new-address"
+                        maxLength={ADDRESS_TEXT_MAX}
                         name="newAddress"
                         label="Новый адрес"
                         placeholder="Город, улица, дом, квартира"
@@ -331,6 +332,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             <div class="checkout-page__recipient-fields">
                 <FormField
                     id="checkout-name"
+                    maxLength={LIMITS.nameMax}
                     name="name"
                     label="Имя"
                     autocomplete="given-name"

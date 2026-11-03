@@ -13,6 +13,7 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 import { register } from '@/lib/api';
 import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
+    LIMITS,
     sanitizePhone,
     validateEmail,
     validateName,
@@ -147,6 +148,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('first_name')}
                                 id="first-name-input"
+                                maxLength={LIMITS.nameMax}
                                 label="Имя или никнейм"
                                 large
                                 placeholder="Например, Иван"
@@ -167,6 +169,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('email')}
                                 id="email-input"
+                                maxLength={LIMITS.emailMax}
                                 label="Email"
                                 large
                                 type="email"
@@ -177,6 +180,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('password')}
                                 id="password-input"
+                                maxLength={LIMITS.passwordMax}
                                 label="Пароль"
                                 large
                                 placeholder="Придумайте пароль"
@@ -189,6 +193,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('passwordRepeat')}
                                 id="password-repeat-input"
+                                maxLength={LIMITS.passwordMax}
                                 label="Повторите пароль"
                                 large
                                 placeholder="Ещё раз пароль"

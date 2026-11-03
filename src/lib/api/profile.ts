@@ -19,21 +19,25 @@ export interface UpdateProfileData {
     first_name?: string;
     phone?: string;
     email?: string;
-    city_id?: number;
+    city?: string;
     about?: string;
 }
 
 export interface Address {
     id: number;
+    city: string;
     street: string;
     house: string;
+    apartment: string;
     comment: string;
     is_default: boolean;
 }
 
 export interface AddressData {
+    city: string;
     street: string;
     house: string;
+    apartment: string;
     comment: string;
     is_default: boolean;
 }

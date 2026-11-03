@@ -35,6 +35,7 @@
         font-size: 12px;
         line-height: 16px;
         color: $color-text-muted;
+        overflow-wrap: anywhere;
     }
 
     &__skeleton {

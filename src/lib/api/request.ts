@@ -1,4 +1,6 @@
 import { CSRF_HEADER, getCsrfToken, isCsrfRejected, resetCsrfToken } from './csrf';
+import { readErrorBody } from './errors';
+import { notifySessionExpired } from './session';
 import { send, type RequestOptions } from './utils';
 
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
@@ -19,7 +21,7 @@ export async function request(endpoint: string, options: RequestOptions = {}): P
     }
 
     if (!UNSAFE_METHODS.has(method)) {
-        return send(endpoint, { ...options, headers });
+        return checkSession(await send(endpoint, { ...options, headers }));
     }
 
     const sendWithToken = async () => {
@@ -30,8 +32,15 @@ export async function request(endpoint: string, options: RequestOptions = {}): P
     };
 
     const response = await sendWithToken();
-    if (!(await isCsrfRejected(response))) return response;
+    if (!(await isCsrfRejected(response))) return checkSession(response);
 
     resetCsrfToken();
-    return sendWithToken();
+    return checkSession(await sendWithToken());
+}
+
+async function checkSession(response: Response): Promise<Response> {
+    if (response.status === 401 && (await readErrorBody(response)).error === 'not authenticated') {
+        notifySessionExpired();
+    }
+    return response;
 }

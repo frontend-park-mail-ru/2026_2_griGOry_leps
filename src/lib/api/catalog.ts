@@ -8,6 +8,7 @@ export interface CategoryNode {
     id: number;
     name: string;
     slug: string;
+    delivery_allowed: boolean;
     /** Пустой массив у листа */
     children: CategoryNode[];
 }
