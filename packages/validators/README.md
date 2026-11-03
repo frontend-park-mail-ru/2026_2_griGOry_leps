@@ -14,4 +14,4 @@ validateEmail('user@mail.ru');
 validatePassword('qwerty');
 ```
 
-Exports: `LIMITS`, `sanitizePhone`, `normalizeLogin`, `byteLength`, `validateName`, `validatePhone`, `validateEmail`, `validateLogin`, `validateMaxLength`, `validateAbout`, `checkPasswordRules`, `validatePassword`, `validateLoginPassword`, `validatePasswordRepeat`.
+Exports: `LIMITS`, `sanitizePhone`, `normalizeLogin`, `byteLength`, `validateName`, `validatePhone`, `validateEmail`, `validateCity`, `validateLogin`, `validateMaxLength`, `validateAbout`, `checkPasswordRules`, `validatePassword`, `validateLoginPassword`, `validatePasswordRepeat`.

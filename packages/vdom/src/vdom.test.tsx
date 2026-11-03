@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { h, Component, render } from 'goget-vdom';
+import { h, Component, render, type VNode } from 'goget-vdom';
 
-let root;
+let root: HTMLElement;
+
+const rootChild = <T extends Element = HTMLElement>() => root.firstElementChild as T;
 
 /** Дождаться отложенной перерисовки после setState */
 const flush = () => Promise.resolve();
@@ -14,17 +16,17 @@ beforeEach(() => {
 
 describe('h', () => {
     it('null и false становятся пустым местом, массивы и фрагменты раскрываются', () => {
-        const vnode = h('ul', null, [h('li', null, 'a'), null, false], <>{'b'}</>);
+        const vnode = h('ul', null, [h('li', null, 'a'), null, false], <>{'b'}</>) as VNode;
         expect(vnode.children.map((c) => c.props.nodeValue ?? c.type)).toEqual(['li', '#empty', '#empty', 'b']);
     });
 
     it('переносит key функционального компонента на его разметку', () => {
-        const Item = ({ text }) => <li>{text}</li>;
+        const Item = ({ text }: { text: string }) => <li>{text}</li>;
         expect(<Item key="a" text="A" />).toMatchObject({ type: 'li', key: 'a' });
     });
 
     it('сразу вызывает функциональный компонент', () => {
-        const Title = ({ text }) => <h1>{text}</h1>;
+        const Title = ({ text }: { text: string }) => <h1>{text}</h1>;
         expect(<Title text="Привет" />).toMatchObject({ type: 'h1' });
     });
 });
@@ -38,11 +40,11 @@ describe('render', () => {
 
     it('обновляет только изменившиеся атрибуты и текст, не пересоздавая узлы', () => {
         render(root, <p class="a">один</p>);
-        const p = root.firstChild;
+        const p = rootChild();
 
         render(root, <p class="b">два</p>);
 
-        expect(root.firstChild).toBe(p);
+        expect(rootChild()).toBe(p);
         expect(p.className).toBe('b');
         expect(p.textContent).toBe('два');
     });
@@ -54,7 +56,7 @@ describe('render', () => {
     });
 
     it('при перестановке по key переиспользует DOM-узлы', () => {
-        const list = (items) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
+        const list = (items: string[]) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
         render(root, list(['a', 'b', 'c']));
         const [a, b, c] = root.querySelectorAll('li');
 
@@ -68,20 +70,20 @@ describe('render', () => {
     });
 
     it('удаляет лишние и добавляет новые элементы списка', () => {
-        const list = (items) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
+        const list = (items: string[]) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
         render(root, list(['a', 'b', 'c']));
         render(root, list(['b', 'd']));
-        expect(root.querySelector('ul').innerHTML).toBe('<li>b</li><li>d</li>');
+        expect(root.querySelector('ul')!.innerHTML).toBe('<li>b</li><li>d</li>');
     });
 
     it('условный рендер: {cond && <Tag />} не сдвигает соседей', () => {
-        const view = (show) => <div>{show && <b>есть</b>}<i>всегда</i></div>;
+        const view = (show: boolean) => <div>{show && <b>есть</b>}<i>всегда</i></div>;
         render(root, view(false));
         const always = root.querySelector('i');
-        expect(root.firstChild.textContent).toBe('всегда');
+        expect(rootChild().textContent).toBe('всегда');
 
         render(root, view(true));
-        expect(root.firstChild.innerHTML).toBe('<b>есть</b><i>всегда</i>');
+        expect(rootChild().innerHTML).toBe('<b>есть</b><i>всегда</i>');
         expect(root.querySelector('i')).toBe(always);
 
         render(root, view(false));
@@ -95,12 +97,12 @@ describe('render', () => {
     });
 
     it('дубли key не оставляют в DOM лишних узлов', () => {
-        const list = (items) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
+        const list = (items: string[]) => <ul>{items.map((x) => <li key={x}>{x}</li>)}</ul>;
         render(root, list(['a', 'a', 'b']));
         expect(root.querySelectorAll('li')).toHaveLength(3);
 
         render(root, list(['b']));
-        expect(root.querySelector('ul').innerHTML).toBe('<li>b</li>');
+        expect(root.querySelector('ul')!.innerHTML).toBe('<li>b</li>');
     });
 
     it('вешает обработчики событий и меняет их без повторной подписки', () => {
@@ -108,11 +110,11 @@ describe('render', () => {
         const second = vi.fn();
 
         render(root, <button onClick={first}>ok</button>);
-        root.firstChild.click();
+        rootChild().click();
         render(root, <button onClick={second}>ok</button>);
-        root.firstChild.click();
+        rootChild().click();
         render(root, <button>ok</button>);
-        root.firstChild.click();
+        rootChild().click();
 
         expect(first).toHaveBeenCalledTimes(1);
         expect(second).toHaveBeenCalledTimes(1);
@@ -120,14 +122,14 @@ describe('render', () => {
 
     it('булевы атрибуты: disabled добавляется и снимается', () => {
         render(root, <button disabled>ok</button>);
-        expect(root.firstChild.disabled).toBe(true);
+        expect(rootChild<HTMLButtonElement>().disabled).toBe(true);
         render(root, <button disabled={false}>ok</button>);
-        expect(root.firstChild.hasAttribute('disabled')).toBe(false);
+        expect(rootChild().hasAttribute('disabled')).toBe(false);
     });
 
     it('value поля ввода пишется в свойство и не трогается, если не изменилось', () => {
         render(root, <input value="abc" />);
-        const input = root.firstChild;
+        const input = rootChild<HTMLInputElement>();
         const setter = vi.spyOn(input, 'value', 'set');
 
         render(root, <input value="abc" />);
@@ -139,17 +141,17 @@ describe('render', () => {
 
     it('числовое value не перезаписывается на каждой перерисовке', () => {
         render(root, <input value={5} />);
-        const setter = vi.spyOn(root.firstChild, 'value', 'set');
+        const setter = vi.spyOn(rootChild<HTMLInputElement>(), 'value', 'set');
 
         render(root, <input value={5} />);
 
         expect(setter).not.toHaveBeenCalled();
-        expect(root.firstChild.value).toBe('5');
+        expect(rootChild<HTMLInputElement>().value).toBe('5');
     });
 
     it('создаёт SVG в правильном пространстве имён', () => {
         render(root, <svg viewBox="0 0 10 10"><path d="M0 0" /></svg>);
-        expect(root.querySelector('path').namespaceURI).toBe('http://www.w3.org/2000/svg');
+        expect(root.querySelector('path')!.namespaceURI).toBe('http://www.w3.org/2000/svg');
     });
 
     it('вызывает ref с элементом и null при удалении', () => {
@@ -167,15 +169,15 @@ describe('render', () => {
 
     it('value у select выставляется после того, как появились option', () => {
         render(root, <select value="b"><option value="a">A</option><option value="b">B</option></select>);
-        expect(root.querySelector('select').value).toBe('b');
+        expect(root.querySelector('select')!.value).toBe('b');
 
         render(root, <select value="c"><option value="a">A</option><option value="c">C</option></select>);
-        expect(root.querySelector('select').value).toBe('c');
+        expect(root.querySelector('select')!.value).toBe('c');
     });
 });
 
 describe('Component', () => {
-    class Counter extends Component {
+    class Counter extends Component<{ label: string }, { count: number }> {
         state = { count: 0 };
 
         render() {
@@ -189,20 +191,20 @@ describe('Component', () => {
 
     it('перерисовывается по setState, сохраняя DOM-узел', async () => {
         render(root, <Counter label="Клики" />);
-        const button = root.firstChild;
+        const button = rootChild();
 
         button.click();
         await flush();
         button.click();
         await flush();
 
-        expect(root.firstChild).toBe(button);
+        expect(rootChild()).toBe(button);
         expect(button.textContent).toBe('Клики: 2');
     });
 
     it('сохраняет состояние, когда родитель меняет пропсы', async () => {
         render(root, <div><Counter label="A" /></div>);
-        root.querySelector('button').click();
+        root.querySelector('button')!.click();
         await flush();
 
         render(root, <div><Counter label="B" /></div>);
@@ -211,11 +213,11 @@ describe('Component', () => {
     });
 
     it('вызывает componentDidMount после вставки и componentWillUnmount при удалении', () => {
-        const calls = [];
+        const calls: unknown[][] = [];
 
         class Probe extends Component {
             componentDidMount() {
-                calls.push(['mount', document.body.contains(this._rendered.dom)]);
+                calls.push(['mount', document.body.contains(this._rendered!.dom)]);
             }
             componentWillUnmount() {
                 calls.push(['unmount']);
@@ -232,9 +234,9 @@ describe('Component', () => {
     });
 
     it('не перерисовывается после удаления', async () => {
-        let instance;
-        class Late extends Component {
-            constructor(props) {
+        let instance!: Late;
+        class Late extends Component<object, { text?: string }> {
+            constructor(props: object) {
                 super(props);
                 instance = this;
             }
@@ -262,22 +264,22 @@ describe('Component', () => {
         }
 
         render(root, <section><Toggle /><span>после</span></section>);
-        root.querySelector('i').click();
+        root.querySelector('i')!.click();
         await flush();
 
-        expect(root.firstChild.innerHTML).toBe('<b>on</b><span>после</span>');
+        expect(rootChild().innerHTML).toBe('<b>on</b><span>после</span>');
 
         render(root, <section><Toggle /><span>после!</span></section>);
-        expect(root.firstChild.innerHTML).toBe('<b>on</b><span>после!</span>');
+        expect(rootChild().innerHTML).toBe('<b>on</b><span>после!</span>');
     });
 
     it('объединяет несколько setState подряд в одну перерисовку', async () => {
         const renders = vi.fn();
-        let instance;
+        let instance!: Form;
 
-        class Form extends Component {
+        class Form extends Component<object, { a: number; b: number }> {
             state = { a: 0, b: 0 };
-            constructor(props) {
+            constructor(props: object) {
                 super(props);
                 instance = this;
             }
@@ -302,10 +304,10 @@ describe('Component', () => {
 
     it('вызывает componentDidUpdate после перерисовки — своей и от родителя', async () => {
         const updates = vi.fn();
-        let instance;
+        let instance!: Probe;
 
-        class Probe extends Component {
-            constructor(props) {
+        class Probe extends Component<{ text: string }, { extra?: string }> {
+            constructor(props: { text: string }) {
                 super(props);
                 instance = this;
             }

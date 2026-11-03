@@ -20,6 +20,7 @@ export interface FormFieldProps {
     placeholder?: string;
     autocomplete?: string;
     inputmode?: string;
+    maxLength?: number;
     password?: boolean;
     value?: string;
     hint?: string;
@@ -42,7 +43,7 @@ export class FormField extends Component<FormFieldProps, { passwordVisible: bool
 
     render() {
         const {
-            id, name, label, type = 'text', placeholder, autocomplete, inputmode,
+            id, name, label, type = 'text', placeholder, autocomplete, inputmode, maxLength,
             password = false, value = '', hint, error = '', invalid = false, large = false,
             onInput, onChange, children,
         } = this.props;
@@ -69,6 +70,7 @@ export class FormField extends Component<FormFieldProps, { passwordVisible: bool
                         placeholder={placeholder}
                         autocomplete={autocomplete}
                         inputmode={inputmode}
+                        maxlength={maxLength}
                         value={value}
                         aria-invalid={String(Boolean(error) || invalid)}
                         onInput={onInput}

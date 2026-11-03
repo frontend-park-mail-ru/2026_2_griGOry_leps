@@ -15,7 +15,7 @@ import {
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
 import { formatDay, logWarn, showToast } from '@/lib/core';
-import { CONDITION_LABELS, statusNotice } from '@/lib/listings';
+import { CONDITION_LABELS, pickupLocation, statusNotice } from '@/lib/listings';
 import { setCartCount } from '@/lib/cart';
 import { goToLogin, navigate } from 'goget-router';
 
@@ -46,11 +46,11 @@ function actionError(err: unknown, fallback: string): string {
 }
 
 function listingSpecs(listing: Listing) {
-    const location = [listing.city, listing.address].filter(Boolean).join(', ');
+    const location = pickupLocation(listing);
     return [
         ...(listing.condition ? [{ key: 'condition', name: 'Состояние', value: CONDITION_LABELS[listing.condition] }] : []),
         ...listing.attributes,
-        ...(listing.address ? [{ key: 'address', name: 'Где забрать', value: location }] : []),
+        ...(location ? [{ key: 'address', name: 'Где забрать', value: location }] : []),
     ];
 }
 
@@ -176,8 +176,6 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
         const title = listing.title || 'Без названия';
         const notice = statusNotice(listing);
         const specs = listingSpecs(listing);
-        const meta = [`Объявление № ${listing.id}`];
-        if (listing.published_at) meta.push(`Размещено ${formatDay(listing.published_at)}`);
 
         return (
             <div class="listing-page">
@@ -212,7 +210,9 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                             </ListingCard>
                         )}
 
-                        <p class="listing-page__meta">{meta.join(' · ')}</p>
+                        {listing.published_at && (
+                            <p class="listing-page__meta">Размещено {formatDay(listing.published_at)}</p>
+                        )}
                     </div>
 
                     <aside class="listing-page__aside">

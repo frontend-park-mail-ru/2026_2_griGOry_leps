@@ -10,6 +10,7 @@ export interface SellerHeaderProps {
     onShare: () => void;
     onCopyLink: () => void;
     onReport?: () => void;
+    own?: boolean;
 }
 
 export interface SellerHeaderState {
@@ -58,6 +59,7 @@ export class SellerHeader extends Component<SellerHeaderProps, SellerHeaderState
 
     renderRating() {
         const { seller, reviewsHref } = this.props;
+        if (seller.reviews_count === 0) return <p class="seller-header__no-reviews">Пока нет отзывов</p>;
 
         return (
             <div class="seller-header__rating">
@@ -121,7 +123,7 @@ export class SellerHeader extends Component<SellerHeaderProps, SellerHeaderState
     }
 
     render() {
-        const { seller } = this.props;
+        const { seller, own } = this.props;
         const { menuOpen } = this.state;
         const since = formatSinceYear(seller.created_at);
         const details = [since && `На GoGET с ${since}`, seller.location].filter(Boolean).join(' · ');
@@ -138,9 +140,11 @@ export class SellerHeader extends Component<SellerHeaderProps, SellerHeaderState
                 </div>
 
                 <div class="seller-header__actions">
-                    <button type="button" class="seller-header__message" disabled>Написать продавцу</button>
+                    {!own && <button type="button" class="seller-header__message" disabled>Написать продавцу</button>}
                     <div class="seller-header__row">
-                        <button type="button" class="seller-header__follow" disabled>Подписаться</button>
+                        {own
+                            ? <a href="/profile/edit" data-link class="seller-header__follow">Редактировать профиль</a>
+                            : <button type="button" class="seller-header__follow" disabled>Подписаться</button>}
                         <div
                             class={menuOpen ? 'seller-header__more seller-header__more--open' : 'seller-header__more'}
                             ref={(el) => { this.menu = el as HTMLElement | null; }}

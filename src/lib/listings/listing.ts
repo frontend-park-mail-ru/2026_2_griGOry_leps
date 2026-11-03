@@ -47,3 +47,9 @@ export function priceText(listing: Pick<Listing, 'is_free' | 'price'>): string {
     if (listing.price === null) return 'Цена не указана';
     return `${formatPrice(listing.price)} ₽`;
 }
+
+export function pickupLocation({ city, address }: Pick<Listing, 'city' | 'address'>): string {
+    if (!address) return '';
+    if (!city || address.toLowerCase().includes(city.toLowerCase())) return address;
+    return `${city}, ${address}`;
+}

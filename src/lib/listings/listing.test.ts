@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Listing } from '@/lib/api';
-import { priceText, statusNotice } from './listing';
+import { pickupLocation, priceText, statusNotice } from './listing';
 import { formatDay, formatPrice, formatSince, plural } from '@/lib/core';
 
 const listing = (patch: Partial<Listing>) => ({
@@ -47,5 +47,21 @@ describe('format', () => {
     it('даты для объявления и продавца', () => {
         expect(formatDay('2026-10-21T10:00:00Z')).toBe('21 октября');
         expect(formatSince('2025-03-14T10:00:00Z')).toBe('марта 2025');
+    });
+});
+
+describe('pickupLocation', () => {
+    it('добавляет город, если его нет в адресе', () => {
+        expect(pickupLocation({ city: 'Москва', address: 'м. Сокол' })).toBe('Москва, м. Сокол');
+    });
+
+    it('не дублирует город, где бы он ни стоял в адресе', () => {
+        expect(pickupLocation({ city: 'Москва', address: 'Москва, м. Сокол' })).toBe('Москва, м. Сокол');
+        expect(pickupLocation({ city: 'Москва', address: 'г. москва, м. Сокол' })).toBe('г. москва, м. Сокол');
+    });
+
+    it('без адреса пусто, без города — только адрес', () => {
+        expect(pickupLocation({ city: 'Москва', address: null })).toBe('');
+        expect(pickupLocation({ city: '', address: 'м. Сокол' })).toBe('м. Сокол');
     });
 });

@@ -12,8 +12,8 @@ import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { register } from '@/lib/api';
 import {
-    FormValidation, describeApiError, sanitizePhone, validateEmail, validateName, validatePassword,
-    validatePasswordRepeat, validatePhone, type FieldRule, type FormValues,
+    FormValidation, describeApiError, type FieldRule, type FormValues, LIMITS, sanitizePhone, validateEmail,
+    validateName, validatePassword, validatePasswordRepeat, validatePhone,
 } from '@/lib/forms';
 import { redirect } from 'goget-router';
 import { setUser } from '@/lib/user';
@@ -142,6 +142,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('first_name')}
                                 id="first-name-input"
+                                maxLength={LIMITS.nameMax}
                                 label="Имя или никнейм"
                                 large
                                 placeholder="Например, Иван"
@@ -162,6 +163,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('email')}
                                 id="email-input"
+                                maxLength={LIMITS.emailMax}
                                 label="Email"
                                 large
                                 type="email"
@@ -172,6 +174,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('password')}
                                 id="password-input"
+                                maxLength={LIMITS.passwordMax}
                                 label="Пароль"
                                 large
                                 placeholder="Придумайте пароль"
@@ -184,6 +187,7 @@ export class RegisterPage extends Component<object, RegisterState> {
                             <FormField
                                 {...this.fieldProps('passwordRepeat')}
                                 id="password-repeat-input"
+                                maxLength={LIMITS.passwordMax}
                                 label="Повторите пароль"
                                 large
                                 placeholder="Ещё раз пароль"

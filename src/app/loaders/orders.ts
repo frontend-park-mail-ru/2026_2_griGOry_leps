@@ -1,4 +1,4 @@
-import { ApiError, getCheckoutQuote, getOrder, type Order } from '@/lib/api';
+import { ApiError, getCheckoutQuote, getOrder, isEmailNotVerified, type Order } from '@/lib/api';
 import type { CheckoutData } from '@/lib/cart';
 
 export async function loadCheckout(): Promise<CheckoutData> {
@@ -12,6 +12,7 @@ export async function loadCheckout(): Promise<CheckoutData> {
         return { quote: await getCheckoutQuote(ids) };
     } catch (err) {
         if (err instanceof ApiError && (err.status === 409 || err.status === 400)) return { problem: 'unavailable' };
+        if (isEmailNotVerified(err)) return { problem: 'unverified' };
         throw err;
     }
 }

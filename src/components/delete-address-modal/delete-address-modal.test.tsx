@@ -14,7 +14,9 @@ describe('DeleteAddressModal', () => {
     it('называет удаляемый адрес', () => {
         render(root, (
             <DeleteAddressModal
-                address={{ id: 1, street: 'Москва, ул. Тверская', house: 'д. 12, кв. 34', comment: '', is_default: true }}
+                address={{
+                    id: 1, city: 'Москва', street: 'ул. Тверская', house: 'д. 12', apartment: '34', comment: '', is_default: true,
+                }}
                 pending={false}
                 error=""
                 onConfirm={() => {}}

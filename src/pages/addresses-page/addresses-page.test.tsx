@@ -32,8 +32,12 @@ const profile: Profile = {
     created_at: '2024-03-05T10:00:00Z',
 };
 
-const home: Address = { id: 1, street: 'Москва, ул. Тверская', house: 'д. 12, кв. 34', comment: 'Домофон 34', is_default: true };
-const work: Address = { id: 2, street: 'Москва, Ленинский пр.', house: 'д. 1', comment: '', is_default: false };
+const home: Address = {
+    id: 1, city: 'Москва', street: 'ул. Тверская', house: 'д. 12', apartment: '34', comment: 'Домофон 34', is_default: true,
+};
+const work: Address = {
+    id: 2, city: '', street: 'Москва, Ленинский пр.', house: 'д. 1', apartment: '', comment: '', is_default: false,
+};
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -76,9 +80,13 @@ describe('AddressesPage', () => {
 
         expect(root.querySelectorAll('.addresses__option')).toHaveLength(2);
         expect(query('.addresses__option--selected').dataset.addressId).toBe('1');
+        expect(query('[data-address-id="1"] .addresses__option-title').textContent).toBe('Москва, ул. Тверская');
         expect(query('[data-address-id="1"] .addresses__option-description').textContent).toBe('д. 12, кв. 34 · основной');
+        expect(query('[data-address-id="2"] .addresses__option-title').textContent).toBe('Москва, Ленинский пр.');
         expect(query('.addresses__form-title').textContent).toBe('Изменить адрес');
-        expect(query<HTMLInputElement>('#address-street').value).toBe('Москва, ул. Тверская');
+        expect(query<HTMLInputElement>('#address-city').value).toBe('Москва');
+        expect(query<HTMLInputElement>('#address-street').value).toBe('ул. Тверская');
+        expect(query<HTMLInputElement>('#address-apartment').value).toBe('34');
         expect(query('#address-comment ~ .textarea-field__counter').textContent).toBe('10 / 200');
         expect(query('.profile-sidebar__menu-item--active').textContent).toBe('Адреса доставки');
         expect(query('.profile-sidebar__menu-count').textContent).toBe('0');
@@ -110,7 +118,9 @@ describe('AddressesPage', () => {
     });
 
     it('добавляет новый адрес', async () => {
-        const created: Address = { id: 3, street: 'Казань, ул. Баумана', house: 'д. 5', comment: '', is_default: false };
+        const created: Address = {
+            id: 3, city: 'Казань', street: 'ул. Баумана', house: 'д. 5', apartment: '7', comment: '', is_default: false,
+        };
         api.createAddress.mockResolvedValue(created);
         renderPage();
         await tick();
@@ -119,13 +129,17 @@ describe('AddressesPage', () => {
         await tick();
         expect(query('.addresses__form-title').textContent).toBe('Новый адрес');
 
-        type('#address-street', '  Казань, ул. Баумана ');
+        type('#address-city', ' Казань ');
+        type('#address-street', '  ул. Баумана ');
         type('#address-house', 'д. 5');
+        type('#address-apartment', ' 7');
         await submit();
 
         expect(api.createAddress).toHaveBeenCalledWith({
-            street: 'Казань, ул. Баумана',
+            city: 'Казань',
+            street: 'ул. Баумана',
             house: 'д. 5',
+            apartment: '7',
             comment: '',
             is_default: false,
         });
@@ -134,7 +148,7 @@ describe('AddressesPage', () => {
         expect(query('.toast--success .toast__message').textContent).toBe('Адрес сохранён');
     });
 
-    it('делает адрес основным', async () => {
+    it('делает адрес основным, у старого адреса сначала просит город', async () => {
         api.updateAddress.mockResolvedValue({ ...work, is_default: true });
         renderPage();
         await tick();
@@ -149,7 +163,16 @@ describe('AddressesPage', () => {
         checkbox.dispatchEvent(new Event('change', { bubbles: true }));
         await submit();
 
-        expect(api.updateAddress).toHaveBeenCalledWith(2, expect.objectContaining({ is_default: true }));
+        expect(api.updateAddress).not.toHaveBeenCalled();
+        expect(query('[data-error-for="city"]').textContent).toBe('Укажите город');
+
+        type('#address-city', 'Москва');
+        type('#address-street', 'Ленинский пр.');
+        await submit();
+
+        expect(api.updateAddress).toHaveBeenCalledWith(2, expect.objectContaining({
+            city: 'Москва', street: 'Ленинский пр.', is_default: true,
+        }));
         expect(query('[data-address-id="2"] .addresses__option-description').textContent).toBe('д. 1 · основной');
         expect(query('[data-address-id="1"] .addresses__option-description').textContent).toBe('д. 12, кв. 34');
     });
@@ -162,8 +185,10 @@ describe('AddressesPage', () => {
         await submit();
 
         expect(api.createAddress).not.toHaveBeenCalled();
-        expect(query('[data-error-for="street"]').textContent).toBe('Укажите город и улицу');
-        expect(query('[data-error-for="house"]').textContent).toBe('Укажите дом и квартиру');
+        expect(query('[data-error-for="city"]').textContent).toBe('Укажите город');
+        expect(query('[data-error-for="street"]').textContent).toBe('Укажите улицу');
+        expect(query('[data-error-for="house"]').textContent).toBe('Укажите дом');
+        expect(query('[data-error-for="apartment"]').textContent).toBe('');
     });
 
     it('показывает уведомление, если сервер не сохранил адрес', async () => {

@@ -102,7 +102,9 @@ describe('MyListingsPage', () => {
         expect(root.querySelector('.empty-state__title')?.textContent).toBe('У вас пока нет объявлений');
         expect(root.querySelector('.empty-state')?.classList.contains('empty-state--card')).toBe(true);
         expect(root.querySelector('.empty-state__emoji')?.textContent).toBe('📦');
-        expect(root.querySelector<HTMLButtonElement>('.empty-state__action')?.textContent).toBe('Разместить объявление');
+        const action = root.querySelector<HTMLAnchorElement>('a.empty-state__action');
+        expect(action?.textContent).toBe('Разместить объявление');
+        expect(action?.getAttribute('href')).toBe('/listing/new');
     });
 
     it('при ошибке загрузки показывает ошибку с повтором', async () => {
@@ -142,7 +144,8 @@ describe('MyListingsPage', () => {
         renderPage();
         await tick();
 
-        click('[data-ad-id="1"] .my-ad-card__action:not(:disabled)');
+        expect(root.querySelector('[data-ad-id="1"] a.my-ad-card__action')?.getAttribute('href')).toBe('/listing/1/edit');
+        click('[data-ad-id="1"] button.my-ad-card__action');
         await tick();
 
         expect(root.querySelector<HTMLButtonElement>('.close-listing-modal__confirm')?.disabled).toBe(true);

@@ -42,25 +42,24 @@
     }
 
     &__card {
-        width: 200px;
+        width: 260px;
+        max-width: 100%;
         margin: 8px 0;
         text-align: left;
+
+        .product-card {
+            overflow: visible;
+        }
 
         .product-card__img {
             height: 150px;
             border-radius: $radius-lg;
+            overflow: hidden;
         }
 
         .product-card__body {
             padding: 0;
         }
-    }
-
-    &__meta {
-        margin: 4px 0 0;
-        font-size: 12px;
-        line-height: 16px;
-        color: $color-text-muted;
     }
 
     &__actions {

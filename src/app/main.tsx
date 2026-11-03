@@ -11,11 +11,12 @@ import {
     setAuthCheck,
     setErrorHandler,
     initRouter,
+    recheckGuards,
     type RouteParams,
     type RouteOptions,
 } from 'goget-router';
-import { ApiError } from '@/lib/api';
-import { getUser, subscribe } from '@/lib/user';
+import { ApiError, getMe, onSessionExpired } from '@/lib/api';
+import { clearUser, getUser, subscribe } from '@/lib/user';
 import { logError, logWarn, getToast, subscribeToast } from '@/lib/core';
 import { loadCurrentUser } from '@/app/loaders/user';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
@@ -92,6 +93,15 @@ async function start() {
     subscribeToast(renderApp);
     subscribeCartCount(renderApp);
     void refreshCartCount(Boolean(getUser()));
+
+    onSessionExpired(() => {
+        if (!getUser()) return;
+        clearUser();
+        recheckGuards();
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && getUser()) getMe().catch(() => null);
+    });
 
     registerRoutes(route);
     initRouter();

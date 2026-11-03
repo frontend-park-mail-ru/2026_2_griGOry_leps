@@ -10,7 +10,7 @@ import { PasswordRules, getPasswordRuleStates } from '@/components/password-rule
 
 import { ApiError, resetPassword } from '@/lib/api';
 import {
-    FormValidation, describeApiError, type FormValues, validatePassword, validatePasswordRepeat,
+    FormValidation, describeApiError, type FormValues, LIMITS, validatePassword, validatePasswordRepeat,
 } from '@/lib/forms';
 import { navigate } from 'goget-router';
 import { clearUser } from '@/lib/user';
@@ -143,6 +143,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
                 >
                     <FormField
                         id="reset-password-input"
+                        maxLength={LIMITS.passwordMax}
                         name="password"
                         label="Пароль"
                         placeholder="Придумайте пароль"
@@ -158,6 +159,7 @@ export class ResetPasswordPage extends Component<ResetPasswordProps, ResetPasswo
                     </FormField>
                     <FormField
                         id="reset-password-repeat-input"
+                        maxLength={LIMITS.passwordMax}
                         name="passwordRepeat"
                         label="Повторите пароль"
                         placeholder="Ещё раз пароль"

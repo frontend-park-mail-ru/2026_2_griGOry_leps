@@ -22,8 +22,10 @@ function metaText(item: CartItemData, selected: boolean): string {
 export const CartItem = ({ item, sellerName, sellerRating, selected, disabled, onToggle, onRemove }: CartItemProps) => {
     const available = isAvailable(item);
     const checked = available && selected;
-    const title = item.title || 'Объявление удалено';
+    const deleted = item.unavailable_reason === 'deleted';
+    const title = deleted ? 'Объявление удалено' : item.title || 'Без названия';
     const image = assetUrl(item.image_url);
+    const href = `/listing/${item.listing_id}`;
     const classes = ['cart-item'];
     if (!available) classes.push('cart-item--unavailable');
 
@@ -37,11 +39,25 @@ export const CartItem = ({ item, sellerName, sellerRating, selected, disabled, o
                 disabled={!available || disabled}
                 onChange={(e: Event) => onToggle(item.listing_id, (e.target as HTMLInputElement).checked)}
             />
-            <a class="cart-item__photo" href={`/listing/${item.listing_id}`} data-link tabindex="-1" aria-hidden="true">
-                {image && <img class="cart-item__image" src={image} alt="" loading="lazy" />}
-            </a>
+            {deleted ? (
+                <span class="cart-item__photo cart-item__photo--empty" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="2" />
+                        <circle cx="9" cy="10" r="1.5" />
+                        <path d="M21 16l-5-5-9 9" />
+                        <path d="M3 3l18 18" />
+                    </svg>
+                </span>
+            ) : (
+                <a class="cart-item__photo" href={href} data-link tabindex="-1" aria-hidden="true">
+                    {image && <img class="cart-item__image" src={image} alt="" loading="lazy" />}
+                </a>
+            )}
             <div class="cart-item__body">
-                <a class="cart-item__title" href={`/listing/${item.listing_id}`} data-link>{title}</a>
+                {deleted
+                    ? <span class="cart-item__title">{title}</span>
+                    : <a class="cart-item__title" href={href} data-link>{title}</a>}
                 <span class="cart-item__seller">
                     Продавец: {sellerName} · <span class="cart-item__rating">★ {formatRating(sellerRating)}</span>
                 </span>
