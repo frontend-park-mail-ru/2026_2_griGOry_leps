@@ -1,2 +1,2 @@
 export * from './form';
-export * from './validators';
+export * from 'goget-validators';
