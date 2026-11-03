@@ -23,7 +23,7 @@ import {
     validateListing, type ListingFormErrors, type ListingFormValues,
 } from '@/lib/listings';
 import { logWarn, showToast } from '@/lib/core';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate } from 'goget-router';
 import { clearUser, getUser } from '@/lib/user';
 
 export interface ListingFormPageProps {

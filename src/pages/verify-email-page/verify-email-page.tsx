@@ -8,7 +8,7 @@ import { Button } from '@/components/button/button';
 import { ApiError, getMe, resendVerification, resendVerificationByLink, verifyEmail } from '@/lib/api';
 import { describeApiError } from '@/lib/forms';
 import { formatCountdown, logWarn } from '@/lib/core';
-import { navigate, redirect } from '@/router/router';
+import { navigate, redirect } from 'goget-router';
 import { getUser, setUser } from '@/lib/user';
 
 const RESEND_DELAY_S = 60;

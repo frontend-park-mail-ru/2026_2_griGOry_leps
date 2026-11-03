@@ -13,7 +13,7 @@ import { ApiError, login } from '@/lib/api';
 import {
     FormValidation, describeApiError, type FormValues, normalizeLogin, validateLogin, validateLoginPassword,
 } from '@/lib/forms';
-import { nextPath, redirect } from '@/router/router';
+import { nextPath, redirect } from 'goget-router';
 import { setUser } from '@/lib/user';
 
 export interface LoginState {

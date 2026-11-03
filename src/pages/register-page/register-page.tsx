@@ -15,7 +15,7 @@ import {
     FormValidation, describeApiError, sanitizePhone, validateEmail, validateName, validatePassword,
     validatePasswordRepeat, validatePhone, type FieldRule, type FormValues,
 } from '@/lib/forms';
-import { redirect } from '@/router/router';
+import { redirect } from 'goget-router';
 import { setUser } from '@/lib/user';
 
 const RULES: Record<string, FieldRule> = {

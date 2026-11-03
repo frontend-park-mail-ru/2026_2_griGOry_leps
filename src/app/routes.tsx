@@ -1,4 +1,4 @@
-import { redirect, registerRoute, type RouteOptions } from '@/router/router';
+import { redirect, registerRoute, type RouteOptions } from 'goget-router';
 import { getUser } from '@/lib/user';
 import { loadCheckout, loadOrder } from '@/app/loaders/orders';
 import { loadProfile, loadResetPassword } from '@/app/loaders/user';

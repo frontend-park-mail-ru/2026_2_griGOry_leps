@@ -9,7 +9,8 @@
     "packages/format",
     "packages/validators",
     "packages/toast",
-    "packages/forms"
+    "packages/forms",
+    "packages/router"
   ],
   "scripts": {
     "build:packages": "npm run build --workspaces",
@@ -55,6 +56,7 @@
     "goget-format": "0.1.0",
     "goget-validators": "0.1.0",
     "goget-toast": "0.1.0",
-    "goget-forms": "0.1.0"
+    "goget-forms": "0.1.0",
+    "goget-router": "0.1.0"
   }
 }

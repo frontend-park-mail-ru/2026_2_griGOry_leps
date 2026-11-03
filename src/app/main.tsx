@@ -9,10 +9,11 @@ import {
     registerRoute,
     registerNotFound,
     setAuthCheck,
+    setErrorHandler,
     initRouter,
     type RouteParams,
     type RouteOptions,
-} from '@/router/router';
+} from 'goget-router';
 import { ApiError } from '@/lib/api';
 import { getUser, subscribe } from '@/lib/user';
 import { logError, logWarn, getToast, subscribeToast } from '@/lib/core';
@@ -84,6 +85,7 @@ async function start() {
     render(app, <div class="app-loader" aria-label="Загрузка" />);
 
     setAuthCheck(() => getUser() !== null);
+    setErrorHandler(logError);
     await loadCurrentUser();
     subscribe(renderApp);
     subscribe((user) => void refreshCartCount(Boolean(user)));

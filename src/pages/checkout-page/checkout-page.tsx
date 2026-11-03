@@ -18,7 +18,7 @@ import {
 } from '@/lib/cart';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
 import { sanitizePhone } from '@/lib/forms';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate } from 'goget-router';
 import { clearUser } from '@/lib/user';
 
 export interface CheckoutPageProps {

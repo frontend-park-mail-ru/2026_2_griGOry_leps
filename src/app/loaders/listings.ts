@@ -4,7 +4,7 @@ import {
 } from '@/lib/api';
 import type { Category } from '@/lib/catalog';
 import { logWarn } from '@/lib/core';
-import type { RouteParams } from '@/router/router';
+import type { RouteParams } from 'goget-router';
 import type { HomeData } from '@/pages/home-page/home-page';
 
 export async function loadHome(): Promise<HomeData> {

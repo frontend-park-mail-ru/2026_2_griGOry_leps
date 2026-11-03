@@ -12,7 +12,7 @@ import { ApiError, resetPassword } from '@/lib/api';
 import {
     FormValidation, describeApiError, type FormValues, validatePassword, validatePasswordRepeat,
 } from '@/lib/forms';
-import { navigate } from '@/router/router';
+import { navigate } from 'goget-router';
 import { clearUser } from '@/lib/user';
 
 export interface ResetPasswordProps {

@@ -1,5 +1,3 @@
-import { logError } from '@/lib/core';
-
 export type RouteParams = Record<string, string>;
 export type RouteHandler = (params: RouteParams) => void | Promise<void>;
 
@@ -21,7 +19,13 @@ export interface RouteOptions {
     guestOnly?: boolean;
 }
 
+export type ErrorHandler = (...args: unknown[]) => void;
+
 const routes: Route[] = [];
+
+let handleError: ErrorHandler = () => {};
+
+let loginPath = '/login';
 
 let notFoundHandler: RouteHandler | null = null;
 
@@ -30,6 +34,14 @@ let isAuthenticated = (): boolean => false;
 
 export function setAuthCheck(fn: () => boolean): void {
     isAuthenticated = fn;
+}
+
+export function setErrorHandler(fn: ErrorHandler): void {
+    handleError = fn;
+}
+
+export function setLoginPath(path: string): void {
+    loginPath = path;
 }
 
 /** path вида "/category/:slug", slug придёт в params обработчика */
@@ -101,7 +113,7 @@ export function redirect(path: string): void {
 
 export function loginUrl(): string {
     const back = location.pathname + location.search;
-    return back === '/' ? '/login' : `/login?next=${encodeURIComponent(back)}`;
+    return back === '/' ? loginPath : `${loginPath}?next=${encodeURIComponent(back)}`;
 }
 
 export function goToLogin(): void {
@@ -131,7 +143,7 @@ function findRoute(path: string): { route: Route; match: RegExpMatchArray } | nu
 
 function renderNotFound(path: string): Promise<void> {
     return Promise.resolve(notFoundHandler?.({})).catch((err) => {
-        logError('Ошибка 404-роута', path, err);
+        handleError('Ошибка 404-роута', path, err);
     });
 }
 
@@ -165,7 +177,7 @@ export function resolveRoute(): Promise<void> {
     }
 
     return Promise.resolve(route.handler(params)).catch((err) => {
-        logError('Ошибка роута', path, err);
+        handleError('Ошибка роута', path, err);
     });
 }
 

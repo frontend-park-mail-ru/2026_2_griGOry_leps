@@ -10,7 +10,7 @@ import { FormField } from '@/components/form-field/form-field';
 import { requestPasswordReset } from '@/lib/api';
 import { formatCountdown } from '@/lib/core';
 import { FormValidation, describeApiError, type FormValues, normalizeLogin, validateLogin } from '@/lib/forms';
-import { navigate } from '@/router/router';
+import { navigate } from 'goget-router';
 
 const RESEND_DELAY_S = 60;
 const LOGIN_ERROR = 'Введите email в формате name@example.ru или номер телефона';

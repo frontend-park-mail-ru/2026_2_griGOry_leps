@@ -12,7 +12,7 @@ import {
     setCartCount, setSelected, itemsCountText,
 } from '@/lib/cart';
 import { logWarn, showToast, type ToastType } from '@/lib/core';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate } from 'goget-router';
 import { clearUser } from '@/lib/user';
 
 type Status = 'loading' | 'ready' | 'cached' | 'offline' | 'error';

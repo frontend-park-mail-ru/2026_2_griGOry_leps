@@ -17,7 +17,7 @@ import {
 import { formatDay, logWarn, showToast } from '@/lib/core';
 import { CONDITION_LABELS, statusNotice } from '@/lib/listings';
 import { setCartCount } from '@/lib/cart';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate } from 'goget-router';
 
 export interface ListingPageProps {
     listing: Listing;

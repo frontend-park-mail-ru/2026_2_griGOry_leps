@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-type Router = typeof import('./router');
+type Router = typeof import('./index.js');
 
 let router: Router;
 let authorized: boolean;
@@ -9,7 +9,7 @@ const windowListeners: [string, EventListenerOrEventListenerObject][] = [];
 async function setup(path: string): Promise<void> {
     history.replaceState({}, '', location.origin + path);
     vi.resetModules();
-    router = await import('./router');
+    router = await import('./index.js');
     authorized = false;
     router.setAuthCheck(() => authorized);
 }
@@ -255,5 +255,31 @@ describe('прокрутка', () => {
 
         await new Promise((resolve) => setTimeout(resolve));
         expect(window.scrollTo).not.toHaveBeenCalledWith({ top: 500, behavior: 'instant' });
+    });
+});
+
+describe('настройка', () => {
+    it('ошибку обработчика роута отдаёт в setErrorHandler', async () => {
+        const onError = vi.fn();
+        const failure = new Error('сломалось');
+        router.setErrorHandler(onError);
+        router.registerRoute('/', () => Promise.reject(failure));
+
+        await router.resolveRoute();
+
+        expect(onError).toHaveBeenCalledWith('Ошибка роута', '/', failure);
+    });
+
+    it('без обработчика ошибка роута не падает', async () => {
+        router.registerRoute('/', () => Promise.reject(new Error('сломалось')));
+
+        await expect(router.resolveRoute()).resolves.toBeUndefined();
+    });
+
+    it('setLoginPath меняет адрес входа', async () => {
+        await setup('/cart');
+        router.setLoginPath('/signin');
+
+        expect(router.loginUrl()).toBe('/signin?next=%2Fcart');
     });
 });
