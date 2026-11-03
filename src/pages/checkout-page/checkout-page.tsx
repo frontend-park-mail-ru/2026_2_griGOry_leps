@@ -23,7 +23,7 @@ import { logWarn } from '@/lib/logger';
 import { showToast } from '@/lib/toast';
 import { LIMITS, sanitizePhone } from '@/lib/validators';
 import { resendVerificationEmail } from '@/lib/verify-email';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate, redirect } from '@/router/router';
 import { clearUser } from '@/store';
 
 export interface CheckoutPageProps {
@@ -86,7 +86,12 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
     }
 
     handlePageShow = (e: PageTransitionEvent) => {
-        if (e.persisted) this.setState({ redirecting: false, submitting: false });
+        if (!e.persisted) return;
+        if (location.pathname !== '/checkout') {
+            redirect(location.pathname);
+            return;
+        }
+        this.setState({ redirecting: false, submitting: false });
     };
 
     update(patch: Partial<CheckoutValues>) {
@@ -141,6 +146,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
 
             if (order.status === 'awaiting_payment' && order.payment.confirmation_url) {
                 this.setState({ redirecting: true });
+                history.replaceState({}, '', `/orders/${order.id}`);
                 window.location.assign(order.payment.confirmation_url);
                 return;
             }
