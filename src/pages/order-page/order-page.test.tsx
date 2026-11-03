@@ -65,6 +65,34 @@ describe('OrderPage', () => {
         expect(api.getOrder).not.toHaveBeenCalled();
     });
 
+    it('если покупатель вернулся без оплаты, даёт перейти к оплате и не опрашивает бэк', async () => {
+        api.payOrder.mockResolvedValue(order({}, { status: 'pending', confirmation_url: 'http://api.test/pay/abc' }));
+        const assign = vi.fn();
+        vi.stubGlobal('location', { ...window.location, assign });
+        render(root, <OrderPage order={order({}, { status: 'pending', confirmation_url: 'http://api.test/pay/old' })} />);
+
+        expect(root.querySelector('.order-status__title')?.textContent).toBe('Заказ ждёт оплаты');
+        await vi.advanceTimersByTimeAsync(10_000);
+        expect(api.getOrder).not.toHaveBeenCalled();
+
+        root.querySelector<HTMLButtonElement>('.order-page__primary')!.click();
+        await vi.advanceTimersByTimeAsync(0);
+
+        expect(api.payOrder).toHaveBeenCalledWith(5, 'card');
+        expect(assign).toHaveBeenCalledWith('http://api.test/pay/abc');
+        vi.unstubAllGlobals();
+    });
+
+    it('когда время на оплату вышло, перезапрашивает заказ и показывает отмену', async () => {
+        api.getOrder.mockResolvedValue(order({ status: 'cancelled', pay_until: null }, { status: 'failed' }));
+        render(root, <OrderPage order={order({ pay_until: new Date(Date.now() + 3000).toISOString() }, { status: 'failed' })} />);
+
+        await vi.advanceTimersByTimeAsync(5000);
+
+        expect(api.getOrder).toHaveBeenCalledTimes(1);
+        expect(root.querySelector('.order-status__title')?.textContent).toBe('Заказ отменён');
+    });
+
     it('на 403 email not verified при повторной оплате просит подтвердить почту', async () => {
         api.payOrder.mockRejectedValue(new ApiError(403, { reason: 'email not verified' }));
         render(root, <OrderPage order={order({}, { status: 'failed' })} />);

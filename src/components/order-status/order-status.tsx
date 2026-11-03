@@ -1,7 +1,7 @@
 import type { Child } from '@/vdom';
 import './order-status.scss';
 
-export type OrderStatusKind = 'success' | 'error' | 'pending';
+export type OrderStatusKind = 'success' | 'error' | 'pending' | 'waiting';
 
 export interface OrderStatusProps {
     kind: OrderStatusKind;
@@ -11,7 +11,7 @@ export interface OrderStatusProps {
     children?: Child;
 }
 
-const ICONS: Record<OrderStatusKind, string> = { success: '✓', error: '!', pending: '' };
+const ICONS: Record<OrderStatusKind, string> = { success: '✓', error: '!', pending: '', waiting: '₽' };
 
 export const OrderStatus = ({ kind, title, text, note, children }: OrderStatusProps) => (
     <section class="order-status" role={kind === 'error' ? 'alert' : 'status'}>

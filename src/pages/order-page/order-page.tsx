@@ -23,8 +23,12 @@ export interface OrderPageState {
     now: number;
 }
 
-function isPending(order: Order): boolean {
-    return order.status === 'awaiting_payment' && ['pending', 'processing'].includes(order.payment.status);
+function isProcessing(order: Order): boolean {
+    return order.status === 'awaiting_payment' && order.payment.status === 'processing';
+}
+
+function waitsForBuyer(order: Order): boolean {
+    return order.status === 'awaiting_payment' && order.payment.status !== 'processing';
 }
 
 export class OrderPage extends Component<{ order: Order }, OrderPageState> {
@@ -34,6 +38,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     pollId = 0;
     mounted = false;
     cartSynced = false;
+    expiryChecked = false;
 
     constructor(props: { order: Order }) {
         super(props);
@@ -51,7 +56,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
     componentDidMount() {
         this.mounted = true;
         this.syncCart(this.state.order);
-        if (isPending(this.state.order)) this.schedulePoll();
+        if (isProcessing(this.state.order)) this.schedulePoll();
         this.clockTimer = setInterval(this.tick, 1000);
         window.addEventListener('pageshow', this.handlePageShow);
     }
@@ -71,7 +76,13 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
 
     tick = () => {
         const { order } = this.state;
-        if (order.payment.status === 'failed' && order.pay_until) this.setState({ now: Date.now() });
+        if (!waitsForBuyer(order) || !order.pay_until) return;
+        const now = Date.now();
+        this.setState({ now });
+        if (!payTimeLeft(order.pay_until, now) && !this.expiryChecked) {
+            this.expiryChecked = true;
+            void this.poll();
+        }
     };
 
     handlePageShow = (e: PageTransitionEvent) => {
@@ -96,13 +107,13 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
         this.stopPoll();
         const id = this.pollId;
         this.tries += 1;
-        let pending = true;
+        let pending = isProcessing(this.state.order);
         try {
             const order = await getOrder(this.state.order.id);
             if (id !== this.pollId || !this.mounted) return;
             this.setState({ order });
             this.syncCart(order);
-            pending = isPending(order);
+            pending = isProcessing(order);
         } catch (err) {
             if (id !== this.pollId || !this.mounted) return;
             logWarn('Не удалось получить статус заказа:', err);
@@ -130,7 +141,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
             this.tries = 0;
             this.setState({ order, busy: false, choosing: false });
             this.syncCart(order);
-            if (isPending(order)) this.schedulePoll();
+            if (isProcessing(order)) this.schedulePoll();
         } catch (err) {
             logWarn('Не удалось повторить оплату:', err);
             let error = 'Не удалось начать оплату. Попробуйте ещё раз';
@@ -141,15 +152,18 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
         }
     };
 
-    renderFailed() {
+    renderAwaiting() {
         const { order, choosing, method, busy, error, now } = this.state;
         const left = payTimeLeft(order.pay_until, now);
+        const failed = order.payment.status === 'failed';
 
         return (
             <OrderStatus
-                kind="error"
-                title="Оплата не прошла"
-                text="Банк отклонил платёж, деньги не списаны. Заказ ждёт оплаты 1 час — оплатить можно здесь. Если не успеете, товары останутся в корзине, а заказ нужно будет оформить заново."
+                kind={failed ? 'error' : 'waiting'}
+                title={failed ? 'Оплата не прошла' : 'Заказ ждёт оплаты'}
+                text={failed
+                    ? 'Банк отклонил платёж, деньги не списаны. Заказ ждёт оплаты 1 час — оплатить можно здесь. Если не успеете, товары останутся в корзине, а заказ нужно будет оформить заново.'
+                    : 'Оплатите заказ в течение часа после оформления. Если не успеете, заказ отменится, а товары останутся в корзине.'}
                 note={left ? `Заказ № ${order.number} · ждёт оплаты ещё ${left}` : `Заказ № ${order.number}`}
             >
                 {choosing ? [
@@ -171,7 +185,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
                     </button>,
                 ] : [
                     <button type="button" class="order-page__primary" disabled={busy} onClick={() => void this.pay(order.payment.method)}>
-                        Попробовать снова
+                        {failed ? 'Попробовать снова' : 'Перейти к оплате'}
                     </button>,
                     <button type="button" class="order-page__secondary" disabled={busy} onClick={() => this.setState({ choosing: true })}>
                         Выбрать другой способ
@@ -202,8 +216,8 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
             return (
                 <OrderStatus
                     kind="error"
-                    title="Время на оплату истекло"
-                    text="Заказ отменён, деньги не списаны. Товары остались в корзине — оформите заказ заново."
+                    title="Заказ отменён"
+                    text="Время на оплату истекло или эти товары оформлены в другом заказе. Деньги не списаны, товары остались в корзине."
                     note={`Заказ № ${order.number}`}
                 >
                     <a class="order-page__primary" href="/cart" data-link>Вернуться в корзину</a>
@@ -211,7 +225,7 @@ export class OrderPage extends Component<{ order: Order }, OrderPageState> {
             );
         }
 
-        if (order.payment.status === 'failed') return this.renderFailed();
+        if (waitsForBuyer(order)) return this.renderAwaiting();
 
         return (
             <OrderStatus
