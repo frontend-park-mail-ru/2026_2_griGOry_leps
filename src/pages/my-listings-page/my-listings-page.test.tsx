@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@/vdom';
-import type { MyAdCard, MyListingPage, Profile } from '@/lib/api';
+import { ApiError, type MyAdCard, type MyListingPage, type Profile } from '@/lib/api';
 import { MyListingsPage, type MyListingsTab } from './my-listings-page';
 
 const api = vi.hoisted(() => ({
@@ -175,6 +175,21 @@ describe('MyListingsPage', () => {
 
         expect(root.querySelector('.delete-listing-modal__error')?.textContent).toBe('Не удалось удалить объявление. Попробуйте ещё раз');
         expect(root.querySelectorAll('.my-ad-card')).toHaveLength(1);
+    });
+
+    it('объясняет, почему нельзя удалить объявление, которое сейчас оплачивают', async () => {
+        api.getMyListings.mockResolvedValue(listingsPage([ad(1, 'active')]));
+        api.deleteListing.mockRejectedValue(new ApiError(409, { orderNumber: 10245 }));
+        renderPage();
+        await tick();
+
+        click('[data-ad-id="1"] .my-ad-card__delete');
+        await tick();
+        click('.delete-listing-modal__confirm');
+        await tick();
+
+        expect(root.querySelector('.delete-listing-modal__error')?.textContent)
+            .toBe('Покупатель сейчас оплачивает этот товар. Попробуйте, когда оплата пройдёт или заказ отменится');
     });
 
     it('считает вкладки по реальным объявлениям, а не по counts бэка', async () => {

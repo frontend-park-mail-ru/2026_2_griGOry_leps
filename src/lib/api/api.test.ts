@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
     ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
-    onSessionExpired, requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
+    newIdempotencyKey, onSessionExpired, requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
 interface Call {
@@ -195,6 +195,17 @@ describe('запросы', () => {
 
         expect(calls[1].headers.get('Idempotency-Key')).toBe('key-1');
         expect(calls[1].headers.get('X-CSRF-Token')).toBe('t1');
+    });
+
+    it('ключ идемпотентности работает и без crypto.randomUUID, как на http', () => {
+        vi.stubGlobal('crypto', { getRandomValues: crypto.getRandomValues.bind(crypto) });
+        try {
+            const key = newIdempotencyKey();
+            expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+            expect(newIdempotencyKey()).not.toBe(key);
+        } finally {
+            vi.unstubAllGlobals();
+        }
     });
 });
 
