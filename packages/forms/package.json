@@ -1,0 +1,36 @@
+{
+  "name": "goget-forms",
+  "version": "0.1.0",
+  "description": "Form validation state for vanilla UIs: touched fields, debounced errors, required on submit",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "goget-debounce": "0.1.0"
+  },
+  "keywords": [
+    "forms",
+    "validation",
+    "form-state"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frontend-park-mail-ru/2026_2_griGOry_leps.git",
+    "directory": "packages/forms"
+  }
+}

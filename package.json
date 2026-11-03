@@ -8,7 +8,8 @@
     "packages/debounce",
     "packages/format",
     "packages/validators",
-    "packages/toast"
+    "packages/toast",
+    "packages/forms"
   ],
   "scripts": {
     "build:packages": "npm run build --workspaces",
@@ -53,6 +54,7 @@
     "goget-debounce": "0.1.0",
     "goget-format": "0.1.0",
     "goget-validators": "0.1.0",
-    "goget-toast": "0.1.0"
+    "goget-toast": "0.1.0",
+    "goget-forms": "0.1.0"
   }
 }
