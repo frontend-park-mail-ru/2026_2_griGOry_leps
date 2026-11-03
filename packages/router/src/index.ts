@@ -29,7 +29,7 @@ let loginPath = '/login';
 
 let notFoundHandler: RouteHandler | null = null;
 
-/** Задаётся из main.ts через setAuthCheck() */
+/** Задаётся через setAuthCheck() */
 let isAuthenticated = (): boolean => false;
 
 export function setAuthCheck(fn: () => boolean): void {

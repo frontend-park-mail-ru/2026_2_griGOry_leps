@@ -15,4 +15,4 @@ formatPosted('2026-11-01T10:00:00Z');
 plural(5, ['день', 'дня', 'дней']);
 ```
 
-Exports: `formatPrice`, `formatDay`, `formatSince`, `formatSinceYear`, `formatPosted`, `formatRating`, `formatStars`, `formatAddress`, `plural`.
+Exports: `formatPrice`, `formatDay`, `formatSince`, `formatSinceYear`, `formatPosted`, `formatCountdown`, `formatRating`, `formatStars`, `formatAddress`, `plural`.

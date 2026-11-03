@@ -26,7 +26,7 @@ Frontend-репозиторий проекта «Go&Get» команды «griGO
 ## Технологический стек
 
 - **Язык:** TypeScript (ES-модули, без фреймворка)
-- **Рендер:** собственный виртуальный DOM (`src/vdom`), разметка компонентов на JSX — см. [Как устроен VDOM](#как-устроен-vdom)
+- **Рендер:** собственный виртуальный DOM (пакет `goget-vdom`, `packages/vdom`), разметка компонентов на JSX — см. [Как устроен VDOM](#как-устроен-vdom)
 - **Стили:** SCSS (препроцессор Sass) и PostCSS с autoprefixer (постпроцессор), именование классов по БЭМ — см. [Стили](#стили)
 - **Сборка:** [Vite](https://vitejs.dev/)
 - **Раздача собранного фронта:** [Express](https://expressjs.com/) (`server.js`)
@@ -137,9 +137,10 @@ Express раздаёт собранный фронт из `dist/` на `http://l
 
 | Команда | Что делает |
 |---|---|
+| `npm run build:packages` | сборка npm-пакетов `packages/*` в `dist/` (запускается сама перед `dev`, `build`, `typecheck`, `test`, `lint`) |
 | `npm run dev` | dev-сервер Vite с горячей перезагрузкой |
 | `npm run build` | проверка типов и сборка в `dist/` |
-| `npm run typecheck` | только проверка типов (`tsc`) |
+| `npm run typecheck` | проверка типов приложения и тестов пакетов (`tsc`) |
 | `npm start` | раздача `dist/` через Express |
 | `npm run lint` | проверка кода ESLint |
 | `npm run lint:fix` | автоисправление ошибок ESLint |
@@ -166,14 +167,31 @@ Express раздаёт собранный фронт из `dist/` на `http://l
 
 Правила проверяет `npm run lint:css` — локально и в CI.
 
+## Пакеты
+
+Переиспользуемый код вынесен в npm-пакеты в `packages/*` (npm workspaces). Приложение подключает их как обычные зависимости из `node_modules`, то есть собранный `dist`. Поэтому перед запуском пакеты собираются через `npm run build:packages`, и скрипты делают это сами.
+
+| Пакет | Что внутри |
+|---|---|
+| `goget-vdom` | виртуальный DOM и JSX-рантайм |
+| `goget-router` | роутер на History API: параметры, гарды, восстановление прокрутки |
+| `goget-forms` | состояние валидации формы (`FormValidation`) |
+| `goget-validators` | валидаторы полей с текстами ошибок |
+| `goget-format` | форматирование цен, дат, рейтинга, склонения |
+| `goget-toast` | хранилище всплывающих уведомлений |
+| `goget-debounce` | `debounce` с отменой |
+| `goget-logger` | логгер, который можно выключить |
+
+Внутри `packages/` нельзя импортировать код приложения (`@/…`) — это проверяет ESLint. Публикация: `npm login`, затем `npm publish --workspaces --access public`.
+
 ## Как устроен VDOM
 
 Страницы и компоненты описываются на JSX в файлах `.tsx`. JSX компилируется в вызовы `jsx()`
-из `src/vdom/jsx-runtime.ts`, импорт подставляется в каждый `.tsx` автоматически
+из `goget-vdom/jsx-runtime`, импорт подставляется в каждый `.tsx` автоматически
 (`jsxImportSource` в `tsconfig.json` и `vite.config.js`).
 
 ```
-src/vdom/
+packages/vdom/src/
   h.ts               виртуальные узлы: h(), Fragment
   jsx-runtime.ts     во что компилируется JSX, типы для JSX
   props.ts           атрибуты, свойства (value, checked) и обработчики событий

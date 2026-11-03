@@ -44,7 +44,7 @@ export default tseslint.config(
         files: ['packages/**/*.{ts,tsx}'],
         rules: {
             'no-restricted-imports': ['error', {
-                patterns: [{ group: ['@/*'], message: 'Пакеты не импортируют код приложения' }],
+                patterns: [{ group: ['@/*', '**/src/**'], message: 'Пакеты не импортируют код приложения' }],
             }],
         },
     },

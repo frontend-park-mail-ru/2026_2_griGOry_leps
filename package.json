@@ -15,10 +15,11 @@
   ],
   "scripts": {
     "build:packages": "npm run build --workspaces",
+    "predev": "npm run build:packages",
     "dev": "vite",
-    "build": "npm run build:packages && tsc && vite build",
+    "build": "npm run build:packages && tsc && tsc -p packages/tsconfig.test.json && vite build",
     "preview": "vite preview",
-    "typecheck": "npm run build:packages && tsc",
+    "typecheck": "npm run build:packages && tsc && tsc -p packages/tsconfig.test.json",
     "lint": "npm run build:packages && eslint .",
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"src/**/*.scss\"",

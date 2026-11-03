@@ -1,4 +1,4 @@
-// Сюда компилируется JSX (jsxImportSource в tsconfig.json и vite.config.js), здесь же типы для JSX
+// Сюда компилируется JSX (jsxImportSource: 'goget-vdom'), здесь же типы для JSX
 
 import { h, Fragment, type Child, type ComponentClass, type FunctionComponent, type Key, type Props, type VNode } from './h.js';
 
