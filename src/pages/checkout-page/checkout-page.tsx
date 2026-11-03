@@ -9,17 +9,18 @@ import { FormField } from '@/components/form-field/form-field';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
-    ApiError, createOrder, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
+    ApiError, createOrder, isEmailNotVerified, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
 import {
-    DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount, COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel,
-    deliveryLabel, deliveryTotal, formatPhone, initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel,
-    validateCheckout, type CheckoutData, type CheckoutErrors, type CheckoutValues,
+    DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount, ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData,
+    checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone, initialCheckout, itemsCountText,
+    needsCourier, orderTotal, slotLabel, validateCheckout, type CheckoutData, type CheckoutErrors,
+    type CheckoutValues, VERIFY_EMAIL_TEXT,
 } from '@/lib/cart';
 import { formatPrice, logWarn, showToast } from '@/lib/core';
-import { sanitizePhone } from '@/lib/forms';
+import { LIMITS, sanitizePhone } from '@/lib/forms';
+import { resendVerificationEmail, clearUser } from '@/lib/user';
 import { goToLogin, navigate } from '@/router/router';
-import { clearUser } from '@/lib/user';
 
 export interface CheckoutPageProps {
     quote: CheckoutQuote;
@@ -159,6 +160,10 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             goToLogin();
             return;
         }
+        if (isEmailNotVerified(err)) {
+            this.setState({ formError: VERIFY_EMAIL_TEXT });
+            return;
+        }
         if (err.status === 409) {
             showToast('Часть товаров уже купили или сняли с продажи — проверьте корзину', 'error');
             navigate('/cart');
@@ -247,6 +252,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                 {values.address === 'new' && (
                     <FormField
                         id="checkout-new-address"
+                        maxLength={ADDRESS_TEXT_MAX}
                         name="newAddress"
                         label="Новый адрес"
                         placeholder="Город, улица, дом, квартира"
@@ -322,6 +328,7 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
             <div class="checkout-page__recipient-fields">
                 <FormField
                     id="checkout-name"
+                    maxLength={LIMITS.nameMax}
                     name="name"
                     label="Имя"
                     autocomplete="given-name"
@@ -401,6 +408,11 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
                             <p class="checkout-page__alert" role="alert">
                                 <span class="checkout-page__alert-icon" aria-hidden="true">!</span>
                                 {formError}
+                                {formError === VERIFY_EMAIL_TEXT && (
+                                    <button type="button" class="checkout-page__alert-link" onClick={() => void resendVerificationEmail()}>
+                                        Отправить письмо ещё раз
+                                    </button>
+                                )}
                             </p>
                         )}
                     </div>
@@ -424,6 +436,22 @@ export class CheckoutPage extends Component<CheckoutPageProps, CheckoutPageState
 
 export function checkoutView(data: CheckoutData) {
     if ('quote' in data) return <CheckoutPage quote={data.quote} />;
+    if (data.problem === 'unverified') {
+        return (
+            <div class="order-page">
+                <OrderStatus
+                    kind="error"
+                    title={VERIFY_EMAIL_TEXT}
+                    text="Мы отправили письмо со ссылкой на вашу почту. Не нашли его — проверьте «Спам» или отправьте письмо ещё раз."
+                >
+                    <button type="button" class="order-page__primary" onClick={() => void resendVerificationEmail()}>
+                        Отправить письмо ещё раз
+                    </button>
+                    <a class="order-page__secondary" href="/cart" data-link>Вернуться в корзину</a>
+                </OrderStatus>
+            </div>
+        );
+    }
     return (
         <div class="order-page">
             <OrderStatus

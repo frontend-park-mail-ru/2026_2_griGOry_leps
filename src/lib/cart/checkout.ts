@@ -3,9 +3,12 @@ import { fromKopecks, toKopecks } from './cart';
 import { plural } from '@/lib/core';
 import { validateName, validatePhone } from '@/lib/forms';
 
-export type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' };
+export type CheckoutData = { quote: CheckoutQuote } | { problem: 'empty' | 'unavailable' | 'unverified' };
+
+export const VERIFY_EMAIL_TEXT = 'Подтвердите почту, чтобы оформить заказ';
 
 export const COMMENT_MAX = 200;
+export const ADDRESS_TEXT_MAX = 300;
 
 const METHOD_ORDER: DeliveryMethod[] = ['courier', 'pickup_point', 'self_pickup'];
 

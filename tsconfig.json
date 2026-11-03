@@ -20,6 +20,5 @@
 			"goget-logger/*": ["./packages/logger/src/*"]
 		}
 	},
-	"include": ["src", "packages/*/src"],
-	"exclude": ["src/**/*.test.tsx"]
+	"include": ["src", "packages/*/src"]
 }

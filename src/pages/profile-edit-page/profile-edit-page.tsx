@@ -2,17 +2,15 @@ import { Component } from '@/vdom';
 import {
     cancelEmailChange,
     getAddresses,
-    getCities,
     getMe,
     resendVerification,
     updateProfile,
     type Address,
-    type City,
     type Profile,
 } from '@/lib/api';
 import {
-    FormValidation, describeApiError, LIMITS, sanitizePhone, validateAbout, validateEmail, validateName,
-    validatePhone, type FieldRule, type FormValues,
+    FormValidation, describeApiError, type FieldRule, type FormValues, LIMITS, sanitizePhone, validateAbout,
+    validateCity, validateEmail, validateName, validatePhone,
 } from '@/lib/forms';
 import { formatAddress, logError, logWarn, ToastTimer, type ToastState } from '@/lib/core';
 import { setUser } from '@/lib/user';
@@ -20,7 +18,6 @@ import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
-import { Select } from '@/components/select/select';
 import { Toast } from '@/components/toast/toast';
 import { ChangePasswordModal } from '@/components/change-password-modal/change-password-modal';
 import { AlertBanner } from '@/components/alert-banner/alert-banner';
@@ -30,27 +27,18 @@ const RULES: Record<string, FieldRule> = {
     first_name: { validate: validateName, required: 'Введите имя' },
     phone: { validate: validatePhone, sanitize: sanitizePhone, required: 'Введите телефон' },
     email: { validate: validateEmail, required: 'Введите email' },
+    city: { validate: validateCity },
     about: { validate: validateAbout },
 };
-
-const API_FIELDS = [...Object.keys(RULES), 'city_id'];
 
 function profileValues(profile: Profile): FormValues {
     return {
         first_name: profile.first_name ?? '',
         phone: profile.phone ?? '',
         email: profile.pending_email ?? profile.email ?? '',
+        city: profile.city?.name ?? '',
         about: profile.about ?? '',
     };
-}
-
-function profileCityId(profile: Profile): string {
-    return profile.city ? String(profile.city.id) : '';
-}
-
-function mergeCities(cities: City[], current: City | null): City[] {
-    if (!current || cities.some(({ id }) => id === current.id)) return cities;
-    return [current, ...cities];
 }
 
 export interface ProfileEditPageProps {
@@ -62,8 +50,6 @@ export interface ProfileEditPageState {
     profile: Profile;
     values: FormValues;
     errors: FormValues;
-    cityId: string;
-    cities: City[];
     addresses: Address[] | null;
     addressesError: boolean;
     saving: boolean;
@@ -87,8 +73,6 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             profile: props.profile,
             values: { ...this.validation.values },
             errors: {},
-            cityId: profileCityId(props.profile),
-            cities: mergeCities([], props.profile.city),
             addresses: null,
             addressesError: false,
             saving: false,
@@ -100,22 +84,12 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
     }
 
     componentDidMount() {
-        void this.loadCities();
         void this.loadAddresses();
     }
 
     componentWillUnmount() {
         this.validation.destroy();
         this.toasts.stop();
-    }
-
-    async loadCities() {
-        try {
-            const cities = await getCities();
-            this.setState(({ profile }) => ({ cities: mergeCities(cities, profile.city) }));
-        } catch (err) {
-            logWarn('Не удалось загрузить города:', err);
-        }
     }
 
     async loadAddresses() {
@@ -144,13 +118,12 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
             profile,
             values: { ...this.validation.values },
             errors: {},
-            cityId: profileCityId(profile),
         });
     }
 
     applyProfile(profile: Profile) {
         setUser(profile);
-        this.setState(({ cities }) => ({ profile, cities: mergeCities(cities, profile.city) }));
+        this.setState({ profile });
     }
 
     handleInput = (e: Event) => {
@@ -162,11 +135,6 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         this.validation.change((e.target as HTMLInputElement | HTMLTextAreaElement).name);
     };
 
-    handleCityChange = (cityId: string) => {
-        this.validation.errors.city_id = '';
-        this.setState(({ errors }) => ({ cityId, errors: { ...errors, city_id: '' } }));
-    };
-
     handleSubmit = async (e: SubmitEvent) => {
         e.preventDefault();
         if (this.state.saving) return;
@@ -174,15 +142,14 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         const values = this.validation.validateAll();
         if (!values) return;
 
-        const { cityId } = this.state;
         this.setState({ saving: true });
         try {
             const profile = await updateProfile({
                 first_name: values.first_name.trim().replace(/ {2,}/g, ' '),
                 phone: values.phone,
                 email: values.email.trim(),
+                city: values.city.trim().replace(/ {2,}/g, ' '),
                 about: values.about.trim(),
-                ...(cityId ? { city_id: Number(cityId) } : {}),
             });
             this.applyProfile(profile);
             this.fillForm(profile);
@@ -190,7 +157,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
         } catch (err) {
             logError('Не удалось сохранить профиль:', err);
             const { field, message } = describeApiError(err, {
-                fields: API_FIELDS,
+                fields: Object.keys(RULES),
                 fallback: 'Не удалось сохранить изменения. Попробуйте ещё раз',
                 conflictMessages: {
                     email: 'Этот email уже занят другим пользователем',
@@ -311,22 +278,15 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
     }
 
     renderCity() {
-        const { cities, cityId, errors } = this.state;
-        const error = errors.city_id ?? '';
-
         return (
-            <div class={error ? 'profile-edit__field profile-edit__field--error' : 'profile-edit__field'}>
-                <label class="profile-edit__label" for="profile-city">Город</label>
-                <Select
-                    id="profile-city"
-                    options={cities.map(({ id, name }) => ({ value: String(id), label: name }))}
-                    value={cityId}
-                    placeholder="Выберите город"
-                    invalid={Boolean(error)}
-                    onChange={this.handleCityChange}
-                />
-                {error && <p class="profile-edit__error">{error}</p>}
-            </div>
+            <FormField
+                {...this.fieldProps('city')}
+                id="profile-city"
+                maxLength={LIMITS.cityMax}
+                label="Город"
+                placeholder="Например, Москва"
+                autocomplete="address-level2"
+            />
         );
     }
 
@@ -407,6 +367,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                             <FormField
                                 {...this.fieldProps('first_name')}
                                 id="profile-first-name"
+                                maxLength={LIMITS.nameMax}
                                 label="Имя или никнейм"
                                 placeholder="Например, Иван"
                                 autocomplete="given-name"
@@ -425,6 +386,7 @@ export class ProfileEditPage extends Component<ProfileEditPageProps, ProfileEdit
                             <FormField
                                 {...this.fieldProps('email')}
                                 id="profile-email"
+                                maxLength={LIMITS.emailMax}
                                 label="Email"
                                 type="email"
                                 placeholder="name@mail.ru"

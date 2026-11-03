@@ -17,7 +17,7 @@ export const PAYMENT_LABELS: Record<PaymentMethod, { title: string; hint: string
 export const UNAVAILABLE_TEXT: Record<NonNullable<CartItem['unavailable_reason']>, string> = {
     sold: 'Товар уже продан, уберите его из корзины',
     closed: 'Продавец снял товар с продажи',
-    deleted: 'Объявление удалено',
+    deleted: 'Продавец удалил объявление, уберите его из корзины',
 };
 export function toKopecks(price: string | null | undefined): number {
     const value = Number(price ?? 0);

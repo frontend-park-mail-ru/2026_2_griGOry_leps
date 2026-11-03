@@ -4,7 +4,7 @@ import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 import { changePassword, requestPasswordReset } from '@/lib/api';
 import {
-    FormValidation, describeApiError, validatePassword, validatePasswordRepeat, type FormValues,
+    FormValidation, describeApiError, type FormValues, LIMITS, validatePassword, validatePasswordRepeat,
 } from '@/lib/forms';
 import { logWarn } from '@/lib/core';
 import './change-password-modal.scss';
@@ -144,6 +144,7 @@ export class ChangePasswordModal extends Component<ChangePasswordModalProps, Cha
                     <div class="change-password-modal__current">
                         <FormField
                             id="change-password-current"
+                            maxLength={LIMITS.passwordMax}
                             name="current_password"
                             label="Текущий пароль"
                             autocomplete="current-password"
@@ -159,6 +160,7 @@ export class ChangePasswordModal extends Component<ChangePasswordModalProps, Cha
                     </div>
                     <FormField
                         id="change-password-new"
+                        maxLength={LIMITS.passwordMax}
                         name="new_password"
                         label="Новый пароль"
                         autocomplete="new-password"
@@ -173,6 +175,7 @@ export class ChangePasswordModal extends Component<ChangePasswordModalProps, Cha
                     </FormField>
                     <FormField
                         id="change-password-repeat"
+                        maxLength={LIMITS.passwordMax}
                         name="password_repeat"
                         label="Повторите новый пароль"
                         autocomplete="new-password"

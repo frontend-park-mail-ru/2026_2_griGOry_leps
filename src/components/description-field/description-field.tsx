@@ -15,6 +15,7 @@ export const DescriptionField = ({ value, error = '', onChange }: DescriptionFie
                 name="description"
                 class="form-field__input description-field__input"
                 rows="4"
+                maxlength={DESCRIPTION_MAX}
                 aria-label="Описание"
                 placeholder="Расскажите о товаре: состояние, комплектация, причина продажи"
                 value={value}

@@ -267,7 +267,7 @@ export class MyListingsPage extends Component<MyListingsPageProps, MyListingsPag
                     emoji="📦"
                     title="У вас пока нет объявлений"
                     text="Отпустите лишнее: создайте объявление в несколько кликов"
-                    action={{ label: 'Разместить объявление', disabled: true }}
+                    action={{ label: 'Разместить объявление', href: '/listing/new' }}
                 />
             );
         }

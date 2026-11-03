@@ -69,6 +69,23 @@ async function removeAll() {
 }
 
 describe('CartPage', () => {
+    it('удалённое объявление показывает без ссылок и с заглушкой вместо фото', async () => {
+        const deleted = {
+            listing_id: 9, title: null, price: null, image_url: null, address: null, delivery_from: null,
+            availability: 'unavailable' as const, unavailable_reason: 'deleted' as const,
+        };
+        api.getCart.mockResolvedValue({ ...cart, items_count: 3, groups: [{ ...cart.groups[0], items: [item(1), item(2), deleted] }] });
+        render(root, <CartPage />);
+        await tick();
+
+        const card = root.querySelector('.cart-item--unavailable')!;
+        expect(card.querySelector('.cart-item__title')?.tagName).toBe('SPAN');
+        expect(card.querySelector('.cart-item__title')?.textContent).toBe('Объявление удалено');
+        expect(card.querySelector('.cart-item__photo--empty svg')).not.toBeNull();
+        expect(card.querySelector('a')).toBeNull();
+        expect(card.querySelector('.cart-item__warning')?.textContent).toBe('Продавец удалил объявление, уберите его из корзины');
+    });
+
     it('показывает товары и итог по выбранным', async () => {
         render(root, <CartPage />);
         await tick();

@@ -40,6 +40,7 @@ export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
     const dimmed = DIMMED.includes(ad.status);
     const canClose = ad.status === 'active' || ad.status === 'moderation';
     const imageUrl = assetUrl(ad.image_url);
+    const editHref = `/listing/${ad.id}/edit`;
 
     return (
         <article class="my-ad-card" data-ad-id={ad.id}>
@@ -59,14 +60,14 @@ export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
 
             <div class="my-ad-card__actions">
                 {ad.status === 'draft' && (
-                    <button type="button" class="my-ad-card__action my-ad-card__action--primary" disabled>Продолжить</button>
+                    <a href={editHref} data-link class="my-ad-card__action my-ad-card__action--primary">Продолжить</a>
                 )}
                 {ad.status === 'rejected' && (
-                    <button type="button" class="my-ad-card__action" disabled>Исправить объявление</button>
+                    <a href={editHref} data-link class="my-ad-card__action">Исправить объявление</a>
                 )}
                 {canClose && (
                     <>
-                        <button type="button" class="my-ad-card__action" disabled>Редактировать</button>
+                        <a href={editHref} data-link class="my-ad-card__action">Редактировать</a>
                         <button type="button" class="my-ad-card__action" onClick={() => onCloseListing(ad)}>Снять с продажи</button>
                     </>
                 )}

@@ -121,7 +121,7 @@ export const HomePage = ({ categories, promos, products, user }: HomeData & { us
                     <EmptyState
                         title="Пока нет рекомендаций для вас"
                         text="Разместите первое объявление или загляните позже — мы подберём то, что вам может понравиться"
-                        action={{ label: 'Разместить объявление', disabled: true }}
+                        action={{ label: 'Разместить объявление', href: '/listing/new' }}
                     />
                 </section>
             )}

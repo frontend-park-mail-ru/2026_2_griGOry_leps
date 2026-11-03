@@ -1,7 +1,8 @@
 export * from './types';
-export { ApiError, type ApiErrorOptions } from './errors';
+export { ApiError, isEmailNotVerified, type ApiErrorOptions } from './errors';
 export { resetCsrfToken } from './csrf';
 export { request } from './request';
+export { onSessionExpired } from './session';
 export { assetUrl } from './utils';
 export type { RequestOptions } from './utils';
 

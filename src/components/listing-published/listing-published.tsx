@@ -33,7 +33,6 @@ export const ListingPublished = ({ listing, onCreateAnother }: ListingPublishedP
                     has_delivery={listing.has_delivery}
                     created_at={listing.created_at}
                 />
-                <p class="listing-published__meta">{listing.city} · размещено сегодня</p>
             </div>
             <div class="listing-published__actions">
                 <a href={`/listing/${listing.id}`} data-link class="listing-published__primary">Перейти к объявлению</a>

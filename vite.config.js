@@ -11,7 +11,7 @@ export default defineConfig({
     resolve: {
         alias: [
             { find: '@', replacement: path.resolve(__dirname, './src/') },
-            { find: /^goget-(vdom|utils|logger)(\/.*)?$/, replacement: path.resolve(__dirname, 'packages') + '/$1/src$2' },
+            { find: /^goget-logger(\/.*)?$/, replacement: path.resolve(__dirname, 'packages/logger/src') + '$1' },
         ],
     },
     server: {
