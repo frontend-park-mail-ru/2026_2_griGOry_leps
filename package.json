@@ -14,7 +14,7 @@
     "packages/vdom"
   ],
   "scripts": {
-    "build:packages": "npm run build --workspaces",
+    "build:packages": "tsc -b packages/tsconfig.build.json",
     "predev": "npm run build:packages",
     "dev": "vite",
     "build": "npm run build:packages && tsc && tsc -p packages/tsconfig.test.json && vite build",

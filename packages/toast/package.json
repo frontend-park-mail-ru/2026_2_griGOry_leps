@@ -13,11 +13,12 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/.tsbuildinfo"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
-    "prepublishOnly": "npm run build"
+    "build": "tsc -b tsconfig.build.json",
+    "prepublishOnly": "rm -rf dist && npm run build"
   },
   "keywords": [
     "toast",

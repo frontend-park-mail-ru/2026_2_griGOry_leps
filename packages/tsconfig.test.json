@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"noEmit": true,
 		"declaration": false,
+		"composite": false,
 		"jsx": "react-jsx",
 		"jsxImportSource": "goget-vdom"
 	},

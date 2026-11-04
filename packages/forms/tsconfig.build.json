@@ -2,8 +2,10 @@
 	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
 		"rootDir": "src",
-		"outDir": "dist"
+		"outDir": "dist",
+		"tsBuildInfoFile": "dist/.tsbuildinfo"
 	},
 	"include": ["src"],
-	"exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+	"exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"],
+	"references": [{ "path": "../debounce/tsconfig.build.json" }]
 }
