@@ -1,0 +1,35 @@
+{
+  "name": "goget-router",
+  "version": "0.1.0",
+  "description": "History API router for SPAs: params, auth guards, data-link clicks, scroll restoration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "prepublishOnly": "rm -rf dist && npm run build"
+  },
+  "keywords": [
+    "router",
+    "spa",
+    "history",
+    "routing"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frontend-park-mail-ru/2026_2_griGOry_leps.git",
+    "directory": "packages/router"
+  }
+}

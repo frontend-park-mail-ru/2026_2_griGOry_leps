@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './listing-page.scss';
 
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
@@ -14,12 +14,10 @@ import {
     ApiError, addToCart, closeListing, deleteListing,
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
-import { formatDay } from '@/lib/format';
-import { CONDITION_LABELS, UNPAID_ORDER_TEXT, hasUnpaidOrder, pickupLocation, statusNotice } from '@/lib/listing';
-import { logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
+import { formatDay, logWarn, showToast } from '@/lib/core';
+import { CONDITION_LABELS, UNPAID_ORDER_TEXT, hasUnpaidOrder, pickupLocation, statusNotice } from '@/lib/listings';
 import { setCartCount } from '@/lib/cart';
-import { goToLogin, navigate } from '@/router/router';
+import { goToLogin, navigate } from 'goget-router';
 
 export interface ListingPageProps {
     listing: Listing;

@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './verify-email-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';
@@ -6,11 +6,10 @@ import { AuthCard, type AuthCardIcon } from '@/components/auth-card/auth-card';
 import { Button } from '@/components/button/button';
 
 import { ApiError, getMe, resendVerification, resendVerificationByLink, verifyEmail } from '@/lib/api';
-import { describeApiError } from '@/lib/form';
-import { formatCountdown } from '@/lib/format';
-import { logWarn } from '@/lib/logger';
-import { navigate, redirect } from '@/router/router';
-import { getUser, setUser } from '@/store';
+import { describeApiError } from '@/lib/forms';
+import { formatCountdown, logWarn } from '@/lib/core';
+import { navigate, redirect } from 'goget-router';
+import { getUser, setUser } from '@/lib/user';
 
 const RESEND_DELAY_S = 60;
 

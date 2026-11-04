@@ -1,5 +1,5 @@
 import { assetUrl, type Review } from '@/lib/api';
-import { formatDay, formatStars } from '@/lib/format';
+import { formatDay, formatStars } from '@/lib/core';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './review-card.scss';
 

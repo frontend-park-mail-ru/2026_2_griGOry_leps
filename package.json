@@ -3,16 +3,28 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "workspaces": [
+    "packages/logger",
+    "packages/debounce",
+    "packages/format",
+    "packages/validators",
+    "packages/toast",
+    "packages/forms",
+    "packages/router",
+    "packages/vdom"
+  ],
   "scripts": {
+    "build:packages": "tsc -b packages/tsconfig.build.json",
+    "predev": "npm run build:packages",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run build:packages && tsc && tsc -p packages/tsconfig.test.json && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc",
-    "lint": "eslint .",
+    "typecheck": "npm run build:packages && tsc && tsc -p packages/tsconfig.test.json",
+    "lint": "npm run build:packages && eslint .",
     "lint:fix": "eslint . --fix",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "lint:css:fix": "stylelint \"src/**/*.scss\" --fix",
-    "test": "vitest run",
+    "test": "npm run build:packages && vitest run",
     "start": "node server.js",
     "docs": "typedoc"
   },
@@ -40,6 +52,14 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "goget-logger": "0.1.0",
+    "goget-debounce": "0.1.0",
+    "goget-format": "0.1.0",
+    "goget-validators": "0.1.0",
+    "goget-toast": "0.1.0",
+    "goget-forms": "0.1.0",
+    "goget-router": "0.1.0",
+    "goget-vdom": "0.1.0"
   }
 }

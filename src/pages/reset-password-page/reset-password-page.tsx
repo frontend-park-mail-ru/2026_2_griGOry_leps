@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './reset-password-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';
@@ -9,10 +9,11 @@ import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 
 import { ApiError, resetPassword } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { LIMITS, validatePassword, validatePasswordRepeat } from '@/lib/validators';
-import { navigate } from '@/router/router';
-import { clearUser } from '@/store';
+import {
+    FormValidation, describeApiError, type FormValues, LIMITS, validatePassword, validatePasswordRepeat,
+} from '@/lib/forms';
+import { navigate } from 'goget-router';
+import { clearUser } from '@/lib/user';
 
 export interface ResetPasswordProps {
     token: string;

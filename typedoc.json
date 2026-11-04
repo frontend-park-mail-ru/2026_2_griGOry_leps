@@ -1,6 +1,6 @@
 {
-    "entryPoints": ["src"],
+    "entryPoints": ["src", "packages/*/src"],
     "entryPointStrategy": "expand",
-    "exclude": ["src/env.d.ts", "src/**/*.test.tsx"],
+    "exclude": ["src/env.d.ts", "src/**/*.test.tsx", "packages/*/src/**/*.test.ts", "packages/*/src/**/*.test.tsx"],
     "out": "docs"
 }

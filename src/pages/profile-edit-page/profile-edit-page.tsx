@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import {
     cancelEmailChange,
     getAddresses,
@@ -8,25 +8,17 @@ import {
     type Address,
     type Profile,
 } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
-    LIMITS,
-    sanitizePhone,
-    validateAbout,
-    validateCity,
-    validateEmail,
-    validateName,
-    validatePhone,
-} from '@/lib/validators';
-import { formatAddress } from '@/lib/format';
-import { logError, logWarn } from '@/lib/logger';
-import { setUser } from '@/store';
+    FormValidation, describeApiError, type FieldRule, type FormValues, LIMITS, sanitizePhone, validateAbout,
+    validateCity, validateEmail, validateName, validatePhone,
+} from '@/lib/forms';
+import { formatAddress, logError, logWarn, ToastTimer, type ToastState } from '@/lib/core';
+import { setUser } from '@/lib/user';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { AvatarUploader } from '@/components/avatar-uploader/avatar-uploader';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { Toast } from '@/components/toast/toast';
-import { ToastTimer, type ToastState } from '@/lib/toast';
 import { ChangePasswordModal } from '@/components/change-password-modal/change-password-modal';
 import { AlertBanner } from '@/components/alert-banner/alert-banner';
 import './profile-edit-page.scss';

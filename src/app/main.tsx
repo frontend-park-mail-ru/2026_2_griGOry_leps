@@ -1,4 +1,4 @@
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import './styles/style.scss';
 
 import { Header } from '@/components/header/header';
@@ -9,15 +9,15 @@ import {
     registerRoute,
     registerNotFound,
     setAuthCheck,
+    setErrorHandler,
     initRouter,
     recheckGuards,
     type RouteParams,
     type RouteOptions,
-} from '@/router/router';
+} from 'goget-router';
 import { ApiError, getMe, onSessionExpired } from '@/lib/api';
-import { clearUser, getUser, subscribe } from '@/store';
-import { logError, logWarn } from '@/lib/logger';
-import { getToast, subscribeToast } from '@/lib/toast';
+import { clearUser, getUser, subscribe } from '@/lib/user';
+import { logError, logWarn, getToast, subscribeToast } from '@/lib/core';
 import { loadCurrentUser } from '@/app/loaders/user';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
 import type { PageView, Page } from '@/app/page';
@@ -86,6 +86,7 @@ async function start() {
     render(app, <div class="app-loader" aria-label="Загрузка" />);
 
     setAuthCheck(() => getUser() !== null);
+    setErrorHandler(logError);
     await loadCurrentUser();
     subscribe(renderApp);
     subscribe((user) => void refreshCartCount(Boolean(user)));

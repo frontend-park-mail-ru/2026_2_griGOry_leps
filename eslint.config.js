@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
     {
-        ignores: ['dist/**', 'node_modules/**', 'docs/**'],
+        ignores: ['dist/**', 'packages/*/dist/**', 'node_modules/**', 'docs/**'],
     },
     js.configs.recommended,
     {
@@ -14,7 +14,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ['src/**/*.{ts,tsx}'],
+        files: ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}'],
         extends: [tseslint.configs.recommended],
         languageOptions: {
             ecmaVersion: 2022,
@@ -27,6 +27,9 @@ export default tseslint.config(
             'prefer-const': 'error',
             'no-console': 'warn',
             'eol-last': ['error', 'always'],
+            'no-restricted-imports': ['error', {
+                patterns: [{ group: ['@/lib/*/*'], message: 'Импортируйте пакет через @/lib/<пакет>' }],
+            }],
         },
     },
     {
@@ -38,13 +41,21 @@ export default tseslint.config(
         },
     },
     {
-        files: ['src/**/*.test.tsx'],
+        files: ['packages/**/*.{ts,tsx}'],
+        rules: {
+            'no-restricted-imports': ['error', {
+                patterns: [{ group: ['@/*', '**/src/**'], message: 'Пакеты не импортируют код приложения' }],
+            }],
+        },
+    },
+    {
+        files: ['src/**/*.test.tsx', 'packages/*/src/**/*.test.tsx'],
         rules: {
             '@typescript-eslint/no-this-alias': 'off',
         },
     },
     {
-        files: ['src/lib/logger.ts'],
+        files: ['packages/logger/src/index.ts'],
         rules: {
             'no-console': 'off',
         },

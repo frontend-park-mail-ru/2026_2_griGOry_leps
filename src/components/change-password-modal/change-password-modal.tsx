@@ -1,11 +1,12 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { Modal } from '@/components/modal/modal';
 import { FormField } from '@/components/form-field/form-field';
 import { PasswordRules, getPasswordRuleStates } from '@/components/password-rules/password-rules';
 import { changePassword, requestPasswordReset } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { LIMITS, validatePassword, validatePasswordRepeat } from '@/lib/validators';
-import { logWarn } from '@/lib/logger';
+import {
+    FormValidation, describeApiError, type FormValues, LIMITS, validatePassword, validatePasswordRepeat,
+} from '@/lib/forms';
+import { logWarn } from '@/lib/core';
 import './change-password-modal.scss';
 
 export interface ChangePasswordModalProps {

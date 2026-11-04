@@ -2,9 +2,9 @@ import {
     ApiError, getCategories, getCategoryTree, getListing, getListings, getPromos, getProducts,
     type AdCard, type CategoryNode, type Listing,
 } from '@/lib/api';
-import type { Category } from '@/lib/data';
-import { logWarn } from '@/lib/logger';
-import type { RouteParams } from '@/router/router';
+import type { Category } from '@/lib/catalog';
+import { logWarn } from '@/lib/core';
+import type { RouteParams } from 'goget-router';
 import type { HomeData } from '@/pages/home-page/home-page';
 
 export async function loadHome(): Promise<HomeData> {

@@ -1,5 +1,5 @@
 import type { Address } from '@/lib/api';
-import { formatAddress } from '@/lib/format';
+import { formatAddress } from '@/lib/core';
 import { ConfirmModal } from '@/components/confirm-modal/confirm-modal';
 
 export interface DeleteAddressModalProps {

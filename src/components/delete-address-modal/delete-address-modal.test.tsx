@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { DeleteAddressModal } from './delete-address-modal';
 
 let root: HTMLElement;

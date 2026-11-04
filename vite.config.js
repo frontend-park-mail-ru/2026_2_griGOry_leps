@@ -3,10 +3,10 @@ import { babel } from '@rollup/plugin-babel';
 import * as path from 'path';
 
 export default defineConfig({
-    // JSX → jsx() из src/vdom/jsx-runtime.ts, импорт подставляется сам
+    // JSX → jsx() из goget-vdom/jsx-runtime, импорт подставляется сам
     esbuild: {
         jsx: 'automatic',
-        jsxImportSource: '@/vdom',
+        jsxImportSource: 'goget-vdom',
     },
     resolve: {
         alias: {
@@ -18,7 +18,7 @@ export default defineConfig({
     },
     test: {
         environment: 'jsdom',
-        include: ['src/**/*.test.{ts,tsx}'],
+        include: ['src/**/*.test.{ts,tsx}', 'packages/*/src/**/*.test.{ts,tsx}'],
     },
     plugins: [
         {
@@ -39,7 +39,7 @@ export default defineConfig({
                         '@babel/preset-react',
                         {
                             runtime: 'automatic',
-                            importSource: '@/vdom',
+                            importSource: 'goget-vdom',
                             development: false,
                         }
                     ],

@@ -1,5 +1,5 @@
 import { assetUrl, type OrderItem } from '@/lib/api';
-import { formatPrice } from '@/lib/format';
+import { formatPrice } from '@/lib/core';
 import './checkout-summary.scss';
 
 export interface CheckoutSummaryProps {

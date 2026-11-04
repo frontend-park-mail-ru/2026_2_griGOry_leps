@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import {
     ApiError,
     getSeller,
@@ -14,10 +14,9 @@ import {
     type SellerProfile,
     type Sort,
 } from '@/lib/api';
-import { describeApiError } from '@/lib/form';
-import { logError, logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
-import { getUser } from '@/store';
+import { describeApiError } from '@/lib/forms';
+import { logError, logWarn, showToast } from '@/lib/core';
+import { getUser } from '@/lib/user';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { SellerHeader } from '@/components/seller-header/seller-header';
 import { ProductCard } from '@/components/product-card/product-card';

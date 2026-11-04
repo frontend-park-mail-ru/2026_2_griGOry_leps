@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import {
     createAddress,
     deleteAddress,
@@ -8,9 +8,10 @@ import {
     type AddressData,
     type Profile,
 } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
-import { LIMITS, validateMaxLength } from '@/lib/validators';
-import { logError } from '@/lib/logger';
+import {
+    FormValidation, describeApiError, LIMITS, validateMaxLength, type FieldRule, type FormValues,
+} from '@/lib/forms';
+import { logError, ToastTimer, type ToastState } from '@/lib/core';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { FormField } from '@/components/form-field/form-field';
 import { PageError } from '@/components/page-error/page-error';
@@ -18,7 +19,6 @@ import { Skeleton } from '@/components/skeleton/skeleton';
 import { TextareaField } from '@/components/textarea-field/textarea-field';
 import { DeleteAddressModal } from '@/components/delete-address-modal/delete-address-modal';
 import { Toast } from '@/components/toast/toast';
-import { ToastTimer, type ToastState } from '@/lib/toast';
 import './addresses-page.scss';
 
 const trim = (value: string) => value.trim();

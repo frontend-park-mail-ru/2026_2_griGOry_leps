@@ -1,4 +1,4 @@
-import type { Child } from '@/vdom';
+import type { Child } from 'goget-vdom';
 import './order-status.scss';
 
 export type OrderStatusKind = 'success' | 'error' | 'pending' | 'waiting';

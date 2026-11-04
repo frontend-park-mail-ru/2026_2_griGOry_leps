@@ -1,6 +1,6 @@
 import { ApiError, checkResetToken, getMe, type Profile, type User } from '@/lib/api';
-import { setUser } from '@/store';
-import { logWarn } from '@/lib/logger';
+import { setUser } from '@/lib/user';
+import { logWarn } from '@/lib/core';
 import type { ResetPasswordProps } from '@/pages/reset-password-page/reset-password-page';
 
 export async function loadCurrentUser(): Promise<User | null> {

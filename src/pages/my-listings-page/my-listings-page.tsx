@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import {
     closeListing,
     deleteListing,
@@ -9,8 +9,8 @@ import {
     type MyListingPage,
     type Profile,
 } from '@/lib/api';
-import { UNPAID_ORDER_TEXT, hasUnpaidOrder } from '@/lib/listing';
-import { logError } from '@/lib/logger';
+import { UNPAID_ORDER_TEXT, hasUnpaidOrder } from '@/lib/listings';
+import { logError } from '@/lib/core';
 import { ProfileLayout } from '@/components/profile-layout/profile-layout';
 import { MyAdCard } from '@/components/my-ad-card/my-ad-card';
 import { PageError } from '@/components/page-error/page-error';

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { Select } from './select';
 
 const options = [{ value: '1', label: 'Москва' }, { value: '2', label: 'Казань' }];

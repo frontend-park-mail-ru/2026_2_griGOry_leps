@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './listing-form-page.scss';
 
 import { AlertBanner } from '@/components/alert-banner/alert-banner';
@@ -16,16 +16,15 @@ import { SellingTips } from '@/components/selling-tips/selling-tips';
 import {
     ApiError, assetUrl, createListing, resendVerification, updateListing, uploadListingPhoto, type CategoryNode, type Listing,
 } from '@/lib/api';
-import { describeApiError } from '@/lib/form';
+import { describeApiError } from '@/lib/forms';
 import {
     ADDRESS_MAX, PHOTOS_MAX, PHOTO_MAX_BYTES, PHOTO_TYPES, SERVER_FIELDS, SERVER_MESSAGES, TITLE_MAX,
-    buildCreateData, buildUpdateData, deliveryAllowed, initialValues, normalizePrice, photoError, sanitizePrice, saveErrorText, summaryText, validateListing,
-    type ListingFormErrors, type ListingFormValues,
-} from '@/lib/listing-form';
-import { logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
-import { goToLogin, navigate } from '@/router/router';
-import { clearUser, getUser } from '@/store';
+    buildCreateData, buildUpdateData, deliveryAllowed, initialValues, normalizePrice, photoError, sanitizePrice,
+    saveErrorText, summaryText, validateListing, type ListingFormErrors, type ListingFormValues,
+} from '@/lib/listings';
+import { logWarn, showToast } from '@/lib/core';
+import { goToLogin, navigate } from 'goget-router';
+import { clearUser, getUser } from '@/lib/user';
 
 export interface ListingFormPageProps {
     categories: CategoryNode[];

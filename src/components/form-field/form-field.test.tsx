@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { FormField } from './form-field';
 
 describe('FormField', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { ApiError } from '@/lib/api';
 import { AvatarUploader } from './avatar-uploader';
 

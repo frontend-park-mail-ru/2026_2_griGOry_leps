@@ -1,4 +1,4 @@
-import { checkPasswordRules } from '@/lib/validators';
+import { checkPasswordRules } from '@/lib/forms';
 import './password-rules.scss';
 
 const RULE_TEXTS = [

@@ -1,5 +1,5 @@
 import { assetUrl, type AdCard } from '@/lib/api';
-import { formatPosted, formatPrice, formatRating } from '@/lib/format';
+import { formatPosted, formatPrice, formatRating } from '@/lib/core';
 import './product-card.scss';
 
 const HeartIcon = () => (

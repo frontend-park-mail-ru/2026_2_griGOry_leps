@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './login-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';
@@ -10,10 +10,11 @@ import { FormNote } from '@/components/form-note/form-note';
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { ApiError, login } from '@/lib/api';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { LIMITS, normalizeLogin, validateLogin, validateLoginPassword } from '@/lib/validators';
-import { nextPath, redirect } from '@/router/router';
-import { setUser } from '@/store';
+import {
+    FormValidation, describeApiError, type FormValues, LIMITS, normalizeLogin, validateLogin, validateLoginPassword,
+} from '@/lib/forms';
+import { nextPath, redirect } from 'goget-router';
+import { setUser } from '@/lib/user';
 
 export interface LoginState {
     values: FormValues;

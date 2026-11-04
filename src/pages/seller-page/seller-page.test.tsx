@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import { ApiError, type AdCard, type Review, type ReviewPage, type SellerAdPage, type SellerProfile } from '@/lib/api';
-import { formatPosted } from '@/lib/format';
-import { clearUser, setUser } from '@/store';
+import { formatPosted } from '@/lib/core';
+import { clearUser, setUser } from '@/lib/user';
 import { SellerPage, type SellerTab } from './seller-page';
 
 const api = vi.hoisted(() => ({
@@ -14,7 +14,10 @@ const api = vi.hoisted(() => ({
 
 const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
 
-vi.mock('@/lib/toast', () => toast);
+vi.mock('@/lib/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/core')>()),
+    ...toast,
+}));
 
 vi.mock('@/lib/api', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api')>()),

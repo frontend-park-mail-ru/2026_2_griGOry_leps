@@ -1,4 +1,4 @@
-import type { Child } from '@/vdom';
+import type { Child } from 'goget-vdom';
 import './listing-card.scss';
 
 export interface ListingCardProps {

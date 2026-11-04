@@ -1,4 +1,4 @@
-import { DESCRIPTION_MAX } from '@/lib/listing-form';
+import { DESCRIPTION_MAX } from '@/lib/listings';
 import './description-field.scss';
 
 export interface DescriptionFieldProps {

@@ -1,5 +1,5 @@
-import type { Child } from '@/vdom';
-import type { RouteParams } from '@/router/router';
+import type { Child } from 'goget-vdom';
+import type { RouteParams } from 'goget-router';
 
 export type Layout = 'main' | 'auth';
 

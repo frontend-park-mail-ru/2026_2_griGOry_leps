@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './cart-page.scss';
 
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
@@ -8,14 +8,12 @@ import { CartSummary } from '@/components/cart-summary/cart-summary';
 import { EmptyState } from '@/components/empty-state/empty-state';
 import { ApiError, addToCart, getCart, removeFromCart, removeFromCartBulk, type Cart } from '@/lib/api';
 import {
-    cartItems, getCachedCart, getCartCount, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems, setCartCount,
-    setSelected,
+    cartItems, getCachedCart, getCartCount, getUnselected, isAvailable, itemsTotal, saveCart, selectedItems,
+    setCartCount, setSelected, itemsCountText,
 } from '@/lib/cart';
-import { itemsCountText } from '@/lib/checkout';
-import { logWarn } from '@/lib/logger';
-import { showToast, type ToastType } from '@/lib/toast';
-import { goToLogin, navigate } from '@/router/router';
-import { clearUser } from '@/store';
+import { logWarn, showToast, type ToastType } from '@/lib/core';
+import { goToLogin, navigate } from 'goget-router';
+import { clearUser } from '@/lib/user';
 
 type Status = 'loading' | 'ready' | 'cached' | 'offline' | 'error';
 

@@ -1,13 +1,12 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './order-page.scss';
 
 import { ChoiceCard } from '@/components/choice-card/choice-card';
 import { OrderStatus } from '@/components/order-status/order-status';
 import { ApiError, getOrder, isEmailNotVerified, payOrder, type Order, type PaymentMethod } from '@/lib/api';
-import { PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
-import { VERIFY_EMAIL_TEXT, orderPlacedText, payTimeLeft } from '@/lib/checkout';
-import { logWarn } from '@/lib/logger';
-import { resendVerificationEmail } from '@/lib/verify-email';
+import { PAYMENT_LABELS, refreshCartCount, VERIFY_EMAIL_TEXT, orderPlacedText, payTimeLeft } from '@/lib/cart';
+import { logWarn } from '@/lib/core';
+import { resendVerificationEmail } from '@/lib/user';
 
 const POLL_MS = 2000;
 const POLL_TRIES = 30;

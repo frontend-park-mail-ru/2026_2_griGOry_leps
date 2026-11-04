@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render } from '@/vdom';
+import { render } from 'goget-vdom';
 import type { CheckoutQuote, Order } from '@/lib/api';
 import { CheckoutPage } from './checkout-page';
 

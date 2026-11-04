@@ -1,0 +1,75 @@
+import { describe, it, expect } from 'vitest';
+import { ApiError, type Listing } from '@/lib/api';
+import { hasUnpaidOrder, pickupLocation, priceText, statusNotice } from './listing';
+import { formatDay, formatPrice, formatSince, plural } from '@/lib/core';
+
+const listing = (patch: Partial<Listing>) => ({
+    is_owner: false, status: 'active', close_reason: null, is_free: false, price: '15000.00', ...patch,
+}) as Listing;
+
+describe('statusNotice', () => {
+    it('у активного объявления плашки нет', () => {
+        expect(statusNotice(listing({}))).toBe('');
+        expect(statusNotice(listing({ is_owner: true }))).toBe('');
+    });
+
+    it('автор видит причину снятия, покупатель — нет', () => {
+        expect(statusNotice(listing({ is_owner: true, status: 'closed', close_reason: 'changed_mind' })))
+            .toContain('Передумал продавать');
+        expect(statusNotice(listing({ status: 'closed' }))).toBe('Продавец снял объявление с продажи');
+    });
+
+    it('черновик и проверка — только для автора', () => {
+        expect(statusNotice(listing({ is_owner: true, status: 'draft' }))).toContain('Черновик');
+        expect(statusNotice(listing({ is_owner: true, status: 'moderation' }))).toContain('на проверке');
+    });
+});
+
+describe('priceText', () => {
+    it('цена, «Даром» и не указанная цена', () => {
+        expect(priceText(listing({})).replace(/\s/g, ' ')).toBe('15 000 ₽');
+        expect(priceText(listing({ is_free: true, price: '0.00' }))).toBe('Даром');
+        expect(priceText(listing({ price: null }))).toBe('Цена не указана');
+    });
+});
+
+describe('format', () => {
+    it('цена без лишних нулей', () => {
+        expect(formatPrice('15000.00').replace(/\s/g, ' ')).toBe('15 000');
+        expect(formatPrice('13500.5').replace(/\s/g, ' ')).toBe('13 500,50');
+    });
+
+    it('склоняет слова', () => {
+        expect([1, 2, 5, 11, 21, 23].map((n) => plural(n, ['отзыв', 'отзыва', 'отзывов'])))
+            .toEqual(['отзыв', 'отзыва', 'отзывов', 'отзывов', 'отзыв', 'отзыва']);
+    });
+
+    it('даты для объявления и продавца', () => {
+        expect(formatDay('2026-10-21T10:00:00Z')).toBe('21 октября');
+        expect(formatSince('2025-03-14T10:00:00Z')).toBe('марта 2025');
+    });
+});
+
+describe('pickupLocation', () => {
+    it('добавляет город, если его нет в адресе', () => {
+        expect(pickupLocation({ city: 'Москва', address: 'м. Сокол' })).toBe('Москва, м. Сокол');
+    });
+
+    it('не дублирует город, где бы он ни стоял в адресе', () => {
+        expect(pickupLocation({ city: 'Москва', address: 'Москва, м. Сокол' })).toBe('Москва, м. Сокол');
+        expect(pickupLocation({ city: 'Москва', address: 'г. москва, м. Сокол' })).toBe('г. москва, м. Сокол');
+    });
+
+    it('без адреса пусто, без города — только адрес', () => {
+        expect(pickupLocation({ city: 'Москва', address: null })).toBe('');
+        expect(pickupLocation({ city: '', address: 'м. Сокол' })).toBe('м. Сокол');
+    });
+});
+
+describe('hasUnpaidOrder', () => {
+    it('узнаёт 409 с номером заказа', () => {
+        expect(hasUnpaidOrder(new ApiError(409, { orderNumber: 10245 }))).toBe(true);
+        expect(hasUnpaidOrder(new ApiError(409, { reason: 'listing is not active' }))).toBe(false);
+        expect(hasUnpaidOrder(new Error('409'))).toBe(false);
+    });
+});

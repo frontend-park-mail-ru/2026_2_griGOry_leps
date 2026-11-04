@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './register-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';
@@ -11,18 +11,12 @@ import { PasswordRules, getPasswordRuleStates } from '@/components/password-rule
 import { Tabs, getAuthTabs } from '@/components/tabs/tabs';
 
 import { register } from '@/lib/api';
-import { FormValidation, describeApiError, type FieldRule, type FormValues } from '@/lib/form';
 import {
-    LIMITS,
-    sanitizePhone,
-    validateEmail,
-    validateName,
-    validatePassword,
-    validatePasswordRepeat,
-    validatePhone,
-} from '@/lib/validators';
-import { redirect } from '@/router/router';
-import { setUser } from '@/store';
+    FormValidation, describeApiError, type FieldRule, type FormValues, LIMITS, sanitizePhone, validateEmail,
+    validateName, validatePassword, validatePasswordRepeat, validatePhone,
+} from '@/lib/forms';
+import { redirect } from 'goget-router';
+import { setUser } from '@/lib/user';
 
 const RULES: Record<string, FieldRule> = {
     first_name: { validate: validateName, required: 'Введите имя' },

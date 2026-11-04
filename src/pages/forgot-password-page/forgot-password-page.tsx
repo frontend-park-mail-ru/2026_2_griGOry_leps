@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import './forgot-password-page.scss';
 
 import { AuthHeader } from '@/components/auth-header/auth-header';
@@ -8,10 +8,9 @@ import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
 
 import { requestPasswordReset } from '@/lib/api';
-import { formatCountdown } from '@/lib/format';
-import { FormValidation, describeApiError, type FormValues } from '@/lib/form';
-import { LIMITS, normalizeLogin, validateLogin } from '@/lib/validators';
-import { navigate } from '@/router/router';
+import { formatCountdown } from '@/lib/core';
+import { FormValidation, describeApiError, type FormValues, LIMITS, normalizeLogin, validateLogin } from '@/lib/forms';
+import { navigate } from 'goget-router';
 
 const RESEND_DELAY_S = 60;
 const LOGIN_ERROR = 'Введите email в формате name@example.ru или номер телефона';

@@ -1,4 +1,4 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { assetUrl, type ListingPhoto } from '@/lib/api';
 import './listing-gallery.scss';
 

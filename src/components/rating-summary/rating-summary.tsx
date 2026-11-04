@@ -1,4 +1,4 @@
-import { formatRating, formatStars, plural } from '@/lib/format';
+import { formatRating, formatStars, plural } from '@/lib/core';
 import './rating-summary.scss';
 
 export interface RatingSummaryProps {

@@ -1,4 +1,4 @@
-import type { Category } from '@/lib/data';
+import type { Category } from '@/lib/catalog';
 import './category-card-full.scss';
 
 export const CategoryCardFull = ({ slug, name, image, subcategories = [] }: Category) => (

@@ -1,5 +1,5 @@
 import { ApiError, getCheckoutQuote, getOrder, isEmailNotVerified, type Order } from '@/lib/api';
-import type { CheckoutData } from '@/lib/checkout';
+import type { CheckoutData } from '@/lib/cart';
 
 export async function loadCheckout(): Promise<CheckoutData> {
     const ids = (new URLSearchParams(location.search).get('ids') ?? '')

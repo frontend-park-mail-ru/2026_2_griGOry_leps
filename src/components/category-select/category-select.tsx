@@ -1,6 +1,6 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import type { CategoryNode } from '@/lib/api';
-import { categoryPath } from '@/lib/listing-form';
+import { categoryPath } from '@/lib/listings';
 import './category-select.scss';
 
 export interface CategorySelectProps {

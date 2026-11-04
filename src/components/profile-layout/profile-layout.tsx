@@ -1,4 +1,4 @@
-import type { Child } from '@/vdom';
+import type { Child } from 'goget-vdom';
 import type { Profile } from '@/lib/api';
 import { ProfileSidebar, type ProfileSection } from '@/components/profile-sidebar/profile-sidebar';
 import './profile-layout.scss';

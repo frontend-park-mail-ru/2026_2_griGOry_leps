@@ -1,4 +1,4 @@
-import { formatPrice, plural } from '@/lib/format';
+import { formatPrice, plural } from '@/lib/core';
 import './cart-summary.scss';
 
 export interface CartSummaryProps {

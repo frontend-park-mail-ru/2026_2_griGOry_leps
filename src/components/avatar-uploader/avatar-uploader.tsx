@@ -1,7 +1,7 @@
-import { Component } from '@/vdom';
+import { Component } from 'goget-vdom';
 import { uploadAvatar } from '@/lib/api';
-import { describeApiError } from '@/lib/form';
-import { logError } from '@/lib/logger';
+import { describeApiError } from '@/lib/forms';
+import { logError } from '@/lib/core';
 import { UserAvatar, type AvatarUser } from '@/components/user-avatar/user-avatar';
 import './avatar-uploader.scss';
 

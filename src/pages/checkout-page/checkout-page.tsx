@@ -1,4 +1,4 @@
-import { Component, type Child } from '@/vdom';
+import { Component, type Child } from 'goget-vdom';
 import './checkout-page.scss';
 
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
@@ -11,20 +11,16 @@ import { TextareaField } from '@/components/textarea-field/textarea-field';
 import {
     ApiError, createOrder, isEmailNotVerified, newIdempotencyKey, type CheckoutQuote, type DeliveryMethod, type PaymentMethod,
 } from '@/lib/api';
-import { DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount } from '@/lib/cart';
 import {
-    ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData, checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone,
-    initialCheckout, itemsCountText, needsCourier, orderTotal, slotLabel, validateCheckout,
-    type CheckoutData, type CheckoutErrors, type CheckoutValues,
-    VERIFY_EMAIL_TEXT,
-} from '@/lib/checkout';
-import { formatPrice } from '@/lib/format';
-import { logWarn } from '@/lib/logger';
-import { showToast } from '@/lib/toast';
-import { LIMITS, sanitizePhone } from '@/lib/validators';
-import { resendVerificationEmail } from '@/lib/verify-email';
-import { goToLogin, navigate, redirect } from '@/router/router';
-import { clearUser } from '@/store';
+    DELIVERY_LABELS, PAYMENT_LABELS, refreshCartCount, ADDRESS_TEXT_MAX, COMMENT_MAX, buildOrderData,
+    checkoutSummary, dateChipLabel, deliveryLabel, deliveryTotal, formatPhone, initialCheckout, itemsCountText,
+    needsCourier, orderTotal, slotLabel, validateCheckout, VERIFY_EMAIL_TEXT, type CheckoutData,
+    type CheckoutErrors, type CheckoutValues,
+} from '@/lib/cart';
+import { formatPrice, logWarn, showToast } from '@/lib/core';
+import { LIMITS, sanitizePhone } from '@/lib/forms';
+import { resendVerificationEmail, clearUser } from '@/lib/user';
+import { goToLogin, navigate, redirect } from 'goget-router';
 
 export interface CheckoutPageProps {
     quote: CheckoutQuote;

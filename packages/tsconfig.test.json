@@ -1,0 +1,11 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"declaration": false,
+		"composite": false,
+		"jsx": "react-jsx",
+		"jsxImportSource": "goget-vdom"
+	},
+	"include": ["*/src/**/*.test.ts", "*/src/**/*.test.tsx"]
+}

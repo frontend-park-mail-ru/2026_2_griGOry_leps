@@ -1,0 +1,13 @@
+{
+	"files": [],
+	"references": [
+		{ "path": "./logger/tsconfig.build.json" },
+		{ "path": "./debounce/tsconfig.build.json" },
+		{ "path": "./format/tsconfig.build.json" },
+		{ "path": "./validators/tsconfig.build.json" },
+		{ "path": "./toast/tsconfig.build.json" },
+		{ "path": "./forms/tsconfig.build.json" },
+		{ "path": "./router/tsconfig.build.json" },
+		{ "path": "./vdom/tsconfig.build.json" }
+	]
+}
