@@ -1,6 +1,7 @@
 import { Component, type Child, type VNode } from 'goget-vdom';
-import type { AdCard, User } from '@/lib/api';
+import { getListings, type AdCard, type User } from '@/lib/api';
 import type { Category, Promo } from '@/lib/catalog';
+import { logWarn } from '@/lib/core';
 import './home-page.scss';
 
 import { CategoryCard } from '@/components/category-card/category-card';
@@ -13,6 +14,10 @@ export interface ScrollSectionProps {
     scrollerClass: string;
     scrollKey: string;
     children?: Child;
+    loop?: boolean;
+    itemsCount?: number;
+    hasMore?: boolean;
+    onLoadMore?: () => Promise<boolean>;
 }
 
 class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; canNext: boolean }> {
@@ -49,15 +54,44 @@ class ScrollSection extends Component<ScrollSectionProps, { canPrev: boolean; ca
         const scroller = this.scroller;
         if (!scroller) return;
 
-        const canPrev = scroller.scrollLeft > 0;
-        const canNext = scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
+        const loop = this.props.loop && (this.props.itemsCount ?? 0) > 1
+            && scroller.scrollWidth > scroller.clientWidth + 1;
+        const canPrev = loop || scroller.scrollLeft > 0;
+        const canNext = loop || Boolean(this.props.hasMore)
+            || scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
         if (canPrev !== this.state.canPrev || canNext !== this.state.canNext) {
             this.setState({ canPrev, canNext });
         }
     };
 
-    scrollPage(direction: 1 | -1) {
-        this.scroller?.scrollBy({ left: direction * this.scroller.clientWidth, behavior: 'smooth' });
+    async scrollPage(direction: 1 | -1) {
+        const scroller = this.scroller;
+        if (!scroller) return;
+
+        if (direction === -1 && this.props.loop && scroller.scrollLeft <= 1) {
+            scroller.scrollTo({ left: scroller.scrollWidth - scroller.clientWidth, behavior: 'smooth' });
+            return;
+        }
+
+        if (direction === 1 && this.props.loop
+            && scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1) {
+            if (this.props.hasMore && this.props.onLoadMore) {
+                try {
+                    const added = await this.props.onLoadMore();
+                    if (added) {
+                        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+                        scroller.scrollBy({ left: scroller.clientWidth, behavior: 'smooth' });
+                        return;
+                    }
+                } catch {
+                    return;
+                }
+            }
+            scroller.scrollTo({ left: 0, behavior: 'smooth' });
+            return;
+        }
+
+        scroller.scrollBy({ left: direction * scroller.clientWidth, behavior: 'smooth' });
     }
 
     render() {
@@ -99,44 +133,96 @@ export interface HomeData {
     categories: Category[];
     promos: Promo[];
     products: AdCard[];
+    productsTotal?: number;
 }
 
-export const HomePage = ({ categories, promos, products, user }: HomeData & { user: User | null }) => {
-    const isGuest = user === null;
+interface HomePageState {
+    products: AdCard[];
+    total: number;
+    nextOffset: number;
+    loadError: string;
+}
 
-    return (
-        <div class="home">
-            <ScrollSection title="Выберите категорию" scrollerClass="home-categories" scrollKey="categories">
-                {categories.length
-                    ? categories.map((category) => <CategoryCard key={category.slug} {...category} />)
-                    : <EmptyState title="Категории временно недоступны" text="Попробуйте обновить страницу позже" />}
-            </ScrollSection>
+export class HomePage extends Component<HomeData & { user: User | null }, HomePageState> {
+    state: HomePageState = {
+        products: this.props.products,
+        total: this.props.productsTotal ?? this.props.products.length,
+        nextOffset: this.props.products.length,
+        loadError: '',
+    };
 
-            <section class="home-promo">
-                {promos.map((promo) => <PromoCard key={promo.title} {...promo} />)}
-            </section>
+    private loadingMore: Promise<boolean> | null = null;
 
-            {isGuest && (
-                <section class="home-empty">
-                    <EmptyState
-                        title="Пока нет рекомендаций для вас"
-                        text="Разместите первое объявление или загляните позже — мы подберём то, что вам может понравиться"
-                        action={{ label: 'Разместить объявление', href: '/listing/new' }}
-                    />
+    loadMore = (): Promise<boolean> => {
+        if (this.loadingMore) return this.loadingMore;
+        this.loadingMore = this.fetchMore().finally(() => { this.loadingMore = null; });
+        return this.loadingMore;
+    };
+
+    async fetchMore(): Promise<boolean> {
+        if (this.state.nextOffset >= this.state.total) return false;
+        try {
+            const page = await getListings({ limit: 24, offset: this.state.nextOffset });
+            const ids = new Set(this.state.products.map(({ id }) => id));
+            const fresh = page.items.filter(({ id }) => !ids.has(id));
+            this.setState(({ products }) => ({
+                products: [...products, ...fresh],
+                total: page.total,
+                nextOffset: page.offset + page.items.length,
+                loadError: '',
+            }));
+            return fresh.length > 0;
+        } catch (err) {
+            logWarn('Не удалось загрузить следующую страницу объявлений:', err);
+            this.setState({ loadError: 'Не удалось загрузить объявления. Нажмите стрелку ещё раз' });
+            throw err;
+        }
+    }
+
+    render() {
+        const { categories, promos, user } = this.props;
+        const { products, total, nextOffset, loadError } = this.state;
+        const isGuest = user === null;
+
+        return (
+            <div class="home">
+                <ScrollSection title="Выберите категорию" scrollerClass="home-categories" scrollKey="categories">
+                    {categories.length
+                        ? categories.map((category) => <CategoryCard key={category.slug} {...category} />)
+                        : <EmptyState title="Категории временно недоступны" text="Попробуйте обновить страницу позже" />}
+                </ScrollSection>
+
+                <section class="home-promo">
+                    {promos.map((promo) => <PromoCard key={promo.title} {...promo} />)}
                 </section>
-            )}
 
-            <ScrollSection
-                title={isGuest ? 'Популярное сейчас' : 'Рекомендуем для вас'}
-                scrollerClass={products.length ? 'home-products' : 'home-products home-products--empty'}
-                scrollKey="products"
-            >
-                {products.length
-                    ? products.map((product) => (
-                        <ProductCard key={product.id} {...product} href={`/listing/${product.id}`} />
-                    ))
-                    : <EmptyState title="Товаров пока нет" text="Загляните позже — мы уже готовим новую подборку" />}
-            </ScrollSection>
-        </div>
-    );
-};
+                {isGuest && (
+                    <section class="home-empty">
+                        <EmptyState
+                            title="Пока нет рекомендаций для вас"
+                            text="Разместите первое объявление или загляните позже — мы подберём то, что вам может понравиться"
+                            action={{ label: 'Разместить объявление', href: '/listing/new' }}
+                        />
+                    </section>
+                )}
+
+                <ScrollSection
+                    title={isGuest ? 'Популярное сейчас' : 'Рекомендуем для вас'}
+                    scrollerClass={products.length ? 'home-products' : 'home-products home-products--empty'}
+                    scrollKey="products"
+                    loop={products.length > 0}
+                    itemsCount={products.length}
+                    hasMore={nextOffset < total}
+                    onLoadMore={this.loadMore}
+                >
+                    {products.length
+                        ? products.map((product) => (
+                            <ProductCard key={product.id} {...product} href={`/listing/${product.id}`} />
+                        ))
+                        : <EmptyState title="Товаров пока нет" text="Загляните позже — мы уже готовим новую подборку" />}
+                </ScrollSection>
+                {loadError && <p class="home__load-error" role="alert">{loadError}</p>}
+            </div>
+        );
+    }
+}

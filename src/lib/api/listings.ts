@@ -2,7 +2,7 @@ import { logWarn } from '@/lib/core';
 import { ensureOk, json } from './errors';
 import { request } from './request';
 import { fileBody, jsonBody, query } from './utils';
-import type { AdCard, AdPage, CloseReason, Condition, ListingStatus, Price, SellerShort, Sort } from './types';
+import type { AdPage, CloseReason, Condition, ListingStatus, Price, SellerShort, Sort } from './types';
 
 export interface UploadedPhoto {
     id: number;
@@ -81,12 +81,12 @@ export async function getListings(params: ListingsQuery = {}): Promise<AdPage> {
 }
 
 /** Лента для главной. При ошибке пустой список, чтобы главная не падала */
-export async function getProducts(): Promise<AdCard[]> {
+export async function getProducts(): Promise<AdPage> {
     try {
-        return (await getListings()).items ?? [];
+        return await getListings();
     } catch (err) {
         logWarn('API недоступен:', err);
-        return [];
+        return { items: [], total: 0, limit: 24, offset: 0 };
     }
 }
 
