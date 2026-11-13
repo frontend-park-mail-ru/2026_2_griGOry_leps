@@ -31,6 +31,7 @@ export interface Listing {
     attributes: { key: string; name: string; value: string }[];
     status: ListingStatus;
     close_reason: CloseReason | null;
+    rejection_reason: string | null;
     seller: SellerShort;
     is_owner: boolean;
     in_cart: boolean;

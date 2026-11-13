@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-    ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
+    ApiError, addToCart, approveModerationListing, assetUrl, checkResetToken, createOrder, deleteListing,
+    getListing, getMe, getModerationListing, getModerationQueue, login, logout, rejectModerationListing,
     newIdempotencyKey, onSessionExpired, requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
@@ -45,6 +46,44 @@ afterEach(() => {
 const csrf = (token: string) => () => ({ body: { csrf_token: token } });
 const ok = (body: unknown = { status: 'ok' }) => () => ({ body });
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+describe('модерация', () => {
+    it('загружает очередь и карточку объявления', async () => {
+        replies.push(ok({ items: [{ id: 31, title: 'Велосипед', revision: 2 }], limit: 20 }));
+        replies.push(ok({ listing: { id: 31, title: 'Велосипед', photos: [] }, revision: 2 }));
+
+        const queue = await getModerationQueue();
+        const detail = await getModerationListing(queue.items[0].id);
+
+        expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
+            'GET /admin/moderation/listings?after_id=0&limit=20',
+            'GET /admin/moderation/listings/31',
+        ]);
+        expect(detail.revision).toBe(2);
+    });
+
+    it('передаёт текущую ревизию и причину отклонения', async () => {
+        replies.push(csrf('moderator'), () => ({ status: 204 }), () => ({ status: 204 }));
+
+        await approveModerationListing(31, 2);
+        await rejectModerationListing(32, 4, 'Исправьте описание');
+
+        expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
+            'GET /csrf',
+            'POST /admin/moderation/listings/31/approve',
+            'POST /admin/moderation/listings/32/reject',
+        ]);
+        expect(JSON.parse(calls[1].body as string)).toEqual({ revision: 2 });
+        expect(JSON.parse(calls[2].body as string)).toEqual({ revision: 4, reason: 'Исправьте описание' });
+        expect(calls[2].headers.get('X-CSRF-Token')).toBe('moderator');
+    });
+
+    it('передаёт конфликт ревизий вызывающему коду', async () => {
+        replies.push(csrf('moderator'), () => ({ status: 409, body: { error: 'listing changed' } }));
+
+        await expect(approveModerationListing(31, 1)).rejects.toMatchObject({ status: 409 });
+    });
+});
 
 describe('CSRF', () => {
     it('GET уходит без токена и без запроса /csrf', async () => {
