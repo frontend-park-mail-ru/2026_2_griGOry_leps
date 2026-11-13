@@ -1,10 +1,10 @@
 import { Component } from 'goget-vdom';
-import { getMyListingsCount, type Profile } from '@/lib/api';
+import { getModerationQueue, getMyListingsCount, type Profile } from '@/lib/api';
 import { logWarn, formatRating, formatSince, plural } from '@/lib/core';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './profile-sidebar.scss';
 
-export type ProfileSection = 'listings' | 'addresses' | 'settings';
+export type ProfileSection = 'listings' | 'addresses' | 'settings' | 'moderation';
 
 export interface ProfileSidebarProps {
     profile: Profile;
@@ -17,6 +17,7 @@ export interface ProfileSidebarState {
     loggingOut: boolean;
     logoutError: string;
     loadedCount: number | null;
+    canModerate: boolean;
 }
 
 interface MenuItem {
@@ -36,10 +37,20 @@ const MENU: MenuItem[] = [
 ];
 
 export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSidebarState> {
-    state: ProfileSidebarState = { loggingOut: false, logoutError: '', loadedCount: null };
+    state: ProfileSidebarState = { loggingOut: false, logoutError: '', loadedCount: null, canModerate: false };
 
     componentDidMount() {
         if (this.props.listingsCount === undefined) void this.loadListingsCount();
+        void this.checkModerationAccess();
+    }
+
+    async checkModerationAccess() {
+        try {
+            await getModerationQueue(0, 1);
+            this.setState({ canModerate: true });
+        } catch {
+            this.setState({ canModerate: false });
+        }
     }
 
     async loadListingsCount() {
@@ -135,6 +146,9 @@ export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSideba
                 <nav aria-label="Профиль">
                     <ul class="profile-sidebar__menu">
                         {MENU.map((item) => this.renderMenuItem(item))}
+                        {this.state.canModerate && this.renderMenuItem({
+                            label: 'Модерация', href: '/profile/moderation', section: 'moderation',
+                        })}
                         <li>
                             <button
                                 type="button"

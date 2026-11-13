@@ -8,12 +8,12 @@ import type { RouteParams } from 'goget-router';
 import type { HomeData } from '@/pages/home-page/home-page';
 
 export async function loadHome(): Promise<HomeData> {
-    const [categories, promos, products] = await Promise.all([
+    const [categories, promos, productsPage] = await Promise.all([
         getCategories(),
         getPromos(),
         getProducts(),
     ]);
-    return { categories, promos, products };
+    return { categories, promos, products: productsPage.items, productsTotal: productsPage.total };
 }
 
 export async function loadCategories(): Promise<{ categories: Category[] }> {

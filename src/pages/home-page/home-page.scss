@@ -7,6 +7,12 @@
     gap: 48px;
     width: 100%;
     padding: 48px 64px 64px;
+
+    &__load-error {
+        margin-top: -32px;
+        font-size: 14px;
+        color: $color-status-error;
+    }
 }
 
 .home-section {

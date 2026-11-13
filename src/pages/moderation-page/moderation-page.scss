@@ -1,0 +1,207 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.moderation {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+
+    @media (max-width: 960px) {
+        width: 100%;
+    }
+
+    &__heading {
+        font-size: 40px;
+        font-weight: 800;
+        line-height: 44px;
+
+        @media (max-width: 640px) {
+            font-size: 28px;
+            line-height: 32px;
+        }
+    }
+
+    &__columns {
+        display: grid;
+        grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
+        align-items: start;
+        gap: 20px;
+
+        @media (max-width: 1200px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    &__queue,
+    &__detail {
+        min-width: 0;
+        padding: 20px;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-xl;
+    }
+
+    &__queue-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        .moderation__queue-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+    }
+
+    &__refresh,
+    &__more {
+        padding: 8px 0;
+        font: inherit;
+        font-weight: 600;
+        color: $goget-primary;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+        padding: 12px;
+        font: inherit;
+        text-align: left;
+        background: $surface-1;
+        border: 1px solid transparent;
+        border-radius: $radius-md;
+        cursor: pointer;
+
+        &:hover,
+        &--active {
+            border-color: $goget-primary;
+        }
+    }
+
+    &__item-title {
+        overflow-wrap: anywhere;
+        font-weight: 600;
+    }
+
+    &__item-meta,
+    &__eyebrow,
+    &__hint {
+        font-size: 13px;
+        color: $color-text-secondary;
+    }
+
+    &__empty {
+        color: $color-text-secondary;
+    }
+
+    &__detail {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__title {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 30px;
+        overflow-wrap: anywhere;
+    }
+
+    &__price {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    &__facts {
+        display: grid;
+        gap: 10px;
+
+    }
+
+    &__fact {
+        display: grid;
+        grid-template-columns: minmax(110px, 1fr) minmax(0, 2fr);
+        gap: 10px;
+    }
+
+    &__term {
+        color: $color-text-secondary;
+    }
+
+    &__value {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__subtitle {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    &__description {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    &__decision {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 16px;
+        border-top: 1px solid $color-border;
+
+    }
+
+    &__reason-label {
+        font-weight: 600;
+    }
+
+    &__reason {
+        min-height: 100px;
+        padding: 12px;
+        font: inherit;
+        resize: vertical;
+        border: 1px solid $color-border;
+        border-radius: $radius-md;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    &__approve {
+        @include button-blue;
+    }
+
+    &__reject {
+        @include button-gray;
+        color: $color-status-error;
+    }
+
+    &__error {
+        color: $color-status-error;
+    }
+
+    &__notice {
+        color: $color-status-success;
+    }
+}

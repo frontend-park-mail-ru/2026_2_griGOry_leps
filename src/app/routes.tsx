@@ -24,6 +24,7 @@ import { OrderPage } from '@/pages/order-page/order-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
+import { ModerationPage } from '@/pages/moderation-page/moderation-page';
 import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
 
 export type RouteRegistrar = <T = undefined>(path: string | null, page: Page<T>, options?: RouteOptions) => void;
@@ -122,6 +123,11 @@ export function registerRoutes(route: RouteRegistrar): void {
         name: 'profile-addresses',
         load: loadProfile,
         view: (profile) => <AddressesPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
+    route('/profile/moderation', {
+        name: 'profile-moderation',
+        load: loadProfile,
+        view: (profile) => <ModerationPage profile={profile} onLogout={handleLogout} />,
     }, { requireAuth: true });
     sellerRoute('/seller/:id', 'listings');
     sellerRoute('/seller/:id/reviews', 'reviews');

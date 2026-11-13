@@ -28,7 +28,9 @@ export function statusNotice(listing: Listing): string {
         switch (listing.status) {
             case 'draft': return 'Черновик. Объявление видно только вам';
             case 'moderation': return 'Объявление на проверке. Обычно это занимает до 30 минут, потом оно появится в поиске';
-            case 'rejected': return 'Объявление не прошло проверку. Исправьте его и сохраните снова';
+            case 'rejected': return listing.rejection_reason
+                ? `Объявление не прошло проверку: ${listing.rejection_reason}. Исправьте его и сохраните снова`
+                : 'Объявление не прошло проверку. Исправьте его и сохраните снова';
             case 'closed': {
                 const reason = listing.close_reason ? ` · ${CLOSE_REASON_LABELS[listing.close_reason]}` : '';
                 return `Снято с продажи${reason}. Покупатели его не видят в поиске`;
