@@ -1,5 +1,5 @@
 import {
-    ApiError, getCategories, getCategoryTree, getListing, getListings, getPromos, getProducts,
+    ApiError, getCategories, getCategoryTree, getListing, getListings, getPromos,
     type AdCard, type CategoryNode, type Listing,
 } from '@/lib/api';
 import type { Category } from '@/lib/catalog';
@@ -8,12 +8,21 @@ import type { RouteParams } from 'goget-router';
 import type { HomeData } from '@/pages/home-page/home-page';
 
 export async function loadHome(): Promise<HomeData> {
-    const [categories, promos, products] = await Promise.all([
+    const [categories, promos, productPage] = await Promise.all([
         getCategories(),
         getPromos(),
-        getProducts(),
+        getListings().catch((err: unknown) => {
+            logWarn('Не удалось загрузить ленту:', err);
+            return null;
+        }),
     ]);
-    return { categories, promos, products };
+    return {
+        categories, promos,
+        products: productPage?.items ?? [],
+        productsTotal: productPage?.total ?? 0,
+        nextCursor: productPage?.next_cursor ?? null,
+        productsError: productPage === null,
+    };
 }
 
 export async function loadCategories(): Promise<{ categories: Category[] }> {
