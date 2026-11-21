@@ -23,6 +23,7 @@ import { checkoutView } from '@/pages/checkout-page/checkout-page';
 import { OrderPage } from '@/pages/order-page/order-page';
 import { MyListingsPage, type MyListingsTab } from '@/pages/my-listings-page/my-listings-page';
 import { ProfileEditPage } from '@/pages/profile-edit-page/profile-edit-page';
+import { ModerationPage } from '@/pages/moderation-page/moderation-page';
 import { AddressesPage } from '@/pages/addresses-page/addresses-page';
 import { SellerPage, type SellerTab } from '@/pages/seller-page/seller-page';
 
@@ -113,6 +114,11 @@ export function registerRoutes(route: RouteRegistrar): void {
     myListingsRoute('/profile/listings', 'active');
     myListingsRoute('/profile/listings/closed', 'closed');
     myListingsRoute('/profile/listings/drafts', 'drafts');
+    route('/profile/moderation', {
+        name: 'moderation',
+        load: loadProfile,
+        view: (profile) => <ModerationPage profile={profile} onLogout={handleLogout} />,
+    }, { requireAuth: true });
     route('/profile/edit', {
         name: 'profile-edit',
         load: loadProfile,

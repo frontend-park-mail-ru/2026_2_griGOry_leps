@@ -8,12 +8,12 @@ export interface MyAdCardProps {
     onDelete: (ad: MyAd) => void;
 }
 
-type StatusTone = 'success' | 'warning' | 'error' | 'muted';
+type StatusTone = 'success' | 'warning' | 'muted';
 
 const STATUS: Record<ListingStatus, { label: string; tone: StatusTone }> = {
     active: { label: 'Активно', tone: 'success' },
     moderation: { label: 'На проверке', tone: 'warning' },
-    rejected: { label: 'Не прошло проверку', tone: 'error' },
+    rejected: { label: 'Не прошло проверку', tone: 'warning' },
     draft: { label: 'Черновик', tone: 'muted' },
     closed: { label: 'Снято', tone: 'muted' },
     sold: { label: 'Продано', tone: 'muted' },
@@ -55,7 +55,9 @@ export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
                 </span>
                 <h3 class="my-ad-card__title">{ad.title}</h3>
                 <span class="my-ad-card__price">{getPrice(ad)}</span>
-                <span class="my-ad-card__meta">{getMeta(ad)}</span>
+                {ad.status === 'rejected' && ad.rejection_reason
+                    ? <span class="my-ad-card__meta">Причина: {ad.rejection_reason}</span>
+                    : <span class="my-ad-card__meta">{getMeta(ad)}</span>}
             </div>
 
             <div class="my-ad-card__actions">
@@ -63,7 +65,7 @@ export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
                     <a href={editHref} data-link class="my-ad-card__action my-ad-card__action--primary">Продолжить</a>
                 )}
                 {ad.status === 'rejected' && (
-                    <a href={editHref} data-link class="my-ad-card__action">Исправить объявление</a>
+                    <a href={editHref} data-link class="my-ad-card__action">Исправить и отправить</a>
                 )}
                 {canClose && (
                     <>

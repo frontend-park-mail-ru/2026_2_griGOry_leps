@@ -5,6 +5,7 @@ import type { AdCard, AdPage, City, CloseReason, ListingStatus, PageQuery, User 
 
 /** Полный профиль текущего пользователя (GET /me) */
 export interface Profile extends User {
+    is_moderator?: boolean;
     pending_email: string | null;
     phone_verified: boolean;
     city: City | null;
@@ -44,6 +45,7 @@ export interface AddressData {
 
 export interface MyAdCard extends AdCard {
     status: ListingStatus;
+    rejection_reason?: string | null;
     close_reason: CloseReason | null;
     updated_at: string;
 }

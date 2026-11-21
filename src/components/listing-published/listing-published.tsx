@@ -19,7 +19,7 @@ export const ListingPublished = ({ listing, onCreateAnother }: ListingPublishedP
             </h1>
             <p class="listing-published__text">
                 {onModeration
-                    ? 'Обычно проверка занимает до 30 минут. Как только она пройдёт, объявление появится в поиске.'
+                    ? 'После одобрения модератором объявление появится в каталоге. Статус можно посмотреть в разделе «Мои объявления».'
                     : 'Объявление уже в поиске — покупатели могут его найти.'}
             </p>
             <div class="listing-published__card">

@@ -1,0 +1,203 @@
+@use '@/shared/styles/variables' as *;
+
+.moderation {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    color: $color-text-strong;
+
+    &__heading {
+        margin: 0 0 16px;
+        font-size: clamp(1.5rem, 2.4vw, 2.5rem);
+        line-height: 1.15;
+    }
+
+    &__bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid $color-border;
+    }
+
+    &__tab {
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        border-bottom: 3px solid $goget-blue;
+        font-size: 1rem;
+    }
+
+    &__columns,
+    &__preview {
+        display: grid;
+        align-items: start;
+        gap: 16px;
+    }
+
+    &__columns {
+        grid-template-columns: minmax(185px, 3fr) minmax(0, 7fr);
+    }
+
+    &__preview {
+        grid-template-columns: minmax(0, 3fr) minmax(100px, 2fr);
+        margin: 20px 0;
+    }
+
+    &__list {
+        display: grid;
+        gap: 12px;
+        margin: 12px 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: grid;
+        gap: 4px;
+        width: 100%;
+        padding: 14px 16px;
+        color: inherit;
+        background-color: $surface-0;
+        border: 1px solid transparent;
+        border-radius: $radius-lg;
+        font: inherit;
+        text-align: left;
+        overflow-wrap: anywhere;
+        cursor: pointer;
+
+        &:hover,
+        &--selected {
+            border-color: $goget-blue;
+        }
+
+        &--selected {
+            background-color: rgba($goget-blue, 0.06);
+        }
+    }
+
+    &__detail {
+        min-width: 0;
+        margin: 0;
+        padding: 24px;
+        background-color: $surface-0;
+        border-radius: $radius-xl;
+    }
+
+    &__badge {
+        display: inline-block;
+        margin: 0 0 8px;
+        padding: 3px 9px;
+        color: #754a00;
+        background-color: rgba($goget-accent, 0.2);
+        border-radius: $radius-pill;
+        font-size: 0.875rem;
+    }
+
+    &__title {
+        margin: 0 0 6px;
+        font-size: 1.5rem;
+        overflow-wrap: anywhere;
+    }
+
+    &__subtitle {
+        margin: 0 0 6px;
+        font-size: 1.125rem;
+    }
+
+    &__muted {
+        margin: 0;
+        color: $color-text-secondary;
+        font-size: 0.875rem;
+    }
+
+    &__facts {
+        min-width: 0;
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__term {
+        color: $color-text-secondary;
+        font-size: 0.875rem;
+    }
+
+    &__value {
+        margin: 4px 0 12px;
+        font-weight: 600;
+    }
+
+    &__description {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid $color-border;
+    }
+
+    &__reason-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+
+        &::after {
+            margin-left: 4px;
+            color: $color-status-error;
+            content: '*';
+        }
+    }
+
+    &__reason {
+        width: 100%;
+        min-height: 112px;
+        margin-bottom: 8px;
+        padding: 12px;
+        color: inherit;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        font: inherit;
+        resize: vertical;
+
+        &:focus-visible {
+            outline: 2px solid $goget-blue;
+        }
+    }
+
+    &__notice {
+        color: $color-text-secondary;
+    }
+
+    &__error {
+        color: $color-status-error;
+    }
+
+    @media (max-width: 720px) {
+        &__columns {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        &__list {
+            max-height: 16rem;
+            overflow-y: auto;
+        }
+
+        &__detail {
+            padding: 16px;
+        }
+    }
+
+    @media (max-width: 460px) {
+        &__preview {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}

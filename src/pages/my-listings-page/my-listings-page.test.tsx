@@ -82,7 +82,8 @@ describe('MyListingsPage', () => {
 
     it('во вкладке «Активные» показывает активные, на проверке и отклонённые', async () => {
         api.getMyListings.mockResolvedValue(listingsPage([
-            ad(1, 'active'), ad(2, 'moderation'), ad(3, 'rejected'), ad(4, 'draft'), ad(5, 'sold'),
+            ad(1, 'active'), ad(2, 'moderation'), { ...ad(3, 'rejected'), rejection_reason: 'Добавьте общий план' },
+            ad(4, 'draft'), ad(5, 'sold'),
         ]));
         renderPage('active');
         await tick();
@@ -91,7 +92,10 @@ describe('MyListingsPage', () => {
         expect(ids).toEqual(['1', '2', '3']);
         expect(root.querySelector('.my-listings__tab--active')?.textContent).toBe('Активные · 3');
         expect(root.querySelector('.profile-sidebar__menu-count')?.textContent).toBe('5');
-        expect(root.querySelector('[data-ad-id="3"] .my-ad-card__status--error')?.textContent).toBe('Не прошло проверку');
+        const rejected = root.querySelector('[data-ad-id="3"]');
+        expect(rejected?.querySelector('.my-ad-card__status--warning')?.textContent).toBe('Не прошло проверку');
+        expect(rejected?.textContent).toContain('Причина: Добавьте общий план');
+        expect(rejected?.querySelector('a[href="/listing/3/edit"]')?.textContent).toBe('Исправить и отправить');
     });
 
     it('новому пользователю показывает пустое состояние', async () => {

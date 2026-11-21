@@ -27,8 +27,10 @@ export function statusNotice(listing: Listing): string {
     if (listing.is_owner) {
         switch (listing.status) {
             case 'draft': return 'Черновик. Объявление видно только вам';
-            case 'moderation': return 'Объявление на проверке. Обычно это занимает до 30 минут, потом оно появится в поиске';
-            case 'rejected': return 'Объявление не прошло проверку. Исправьте его и сохраните снова';
+            case 'moderation': return 'Объявление на проверке. После одобрения оно появится в каталоге';
+            case 'rejected': return listing.rejection_reason
+                ? `Объявление не прошло проверку. Причина: ${listing.rejection_reason}`
+                : 'Объявление не прошло проверку. Исправьте его и отправьте повторно';
             case 'closed': {
                 const reason = listing.close_reason ? ` · ${CLOSE_REASON_LABELS[listing.close_reason]}` : '';
                 return `Снято с продажи${reason}. Покупатели его не видят в поиске`;

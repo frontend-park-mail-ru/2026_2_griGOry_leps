@@ -64,11 +64,6 @@ $status-warning: #bf8000;
             background-color: #fff5d9;
         }
 
-        &--error {
-            color: $color-status-error;
-            background-color: #fdecec;
-        }
-
         &--muted {
             color: $color-text-placeholder;
             background-color: #f2f2f5;
@@ -101,6 +96,7 @@ $status-warning: #bf8000;
     }
 
     &__meta {
+        overflow-wrap: anywhere;
         font-size: 13px;
         line-height: 17px;
         color: $color-text-placeholder;

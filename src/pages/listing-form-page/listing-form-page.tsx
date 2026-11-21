@@ -234,23 +234,15 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         const { listing } = this.props;
         const photoIds = this.readyPhotos();
 
-        if (listing && (asDraft || !this.isDraft)) {
-            await updateListing(listing.id, buildUpdateData(values, photoIds));
-            showToast(asDraft ? 'Черновик сохранён' : 'Изменения сохранены');
-            navigate(`/listing/${listing.id}`);
-            return;
-        }
-
-        if (!listing && asDraft) {
-            const saved = await createListing(buildCreateData(values, photoIds, true));
-            showToast('Черновик сохранён');
+        const saved = listing
+            ? await updateListing(listing.id, buildUpdateData(values, photoIds, !asDraft && (this.isDraft || listing.status === 'rejected')))
+            : await createListing(buildCreateData(values, photoIds, asDraft));
+        if (asDraft || (listing && !this.isDraft && listing.status !== 'rejected')) {
+            const sentToModeration = listing?.status === 'active' && saved.status === 'moderation';
+            showToast(asDraft ? 'Черновик сохранён' : sentToModeration ? 'Изменения отправлены на проверку' : 'Изменения сохранены');
             navigate(`/listing/${saved.id}`);
             return;
         }
-
-        const saved = listing
-            ? await updateListing(listing.id, buildUpdateData(values, photoIds, true))
-            : await createListing(buildCreateData(values, photoIds, false));
         this.setState({ published: saved, submitting: false });
         window.scrollTo(0, 0);
     }
@@ -318,11 +310,12 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
 
     renderVerifyNotice() {
         const user = getUser();
-        if (!user || user.email_verified || (this.props.listing && !this.isDraft)) return null;
+        const { listing } = this.props;
+        if (!user || user.email_verified || (listing && !this.isDraft && listing.status !== 'rejected')) return null;
 
         return (
             <AlertBanner>
-                {`Подтвердите почту ${user.email}, чтобы публиковать объявления. Черновик можно сохранить уже сейчас. `}
+                {`Подтвердите почту ${user.email}, чтобы отправить объявление на проверку. `}
                 <button type="button" class="listing-form__verify-link" onClick={this.handleResendVerification}>
                     Отправить письмо ещё раз
                 </button>
@@ -335,6 +328,13 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
         const { listing } = this.props;
         const disabled = submitting || photos.some((p) => p.uploading);
         const canPublish = getUser()?.email_verified ?? false;
+
+        if (listing?.status === 'rejected') {
+            return [
+                <Button type="submit" text={submitting ? 'Отправляем…' : 'Отправить повторно'} disabled={disabled || !canPublish} />,
+                <a href="/profile/listings" data-link class="listing-form__cancel">Отмена</a>,
+            ];
+        }
 
         if (listing && !this.isDraft) {
             return [
@@ -385,6 +385,12 @@ export class ListingFormPage extends Component<ListingFormPageProps, ListingForm
                         <h1 class="listing-form-page__title">{title}</h1>
 
                         {this.renderVerifyNotice()}
+                        {listing?.status === 'rejected' && listing.rejection_reason && (
+                            <AlertBanner>Причина отклонения: {listing.rejection_reason}</AlertBanner>
+                        )}
+                        {listing?.status === 'active' && (
+                            <AlertBanner>После изменения объявление снова отправится на проверку.</AlertBanner>
+                        )}
                         {summary && <p class="listing-form__summary" role="alert">{summary}</p>}
 
                         <section class="listing-form__section">

@@ -5,6 +5,7 @@ import './listing-gallery.scss';
 export interface ListingGalleryProps {
     photos: ListingPhoto[];
     title: string;
+    openOriginal?: boolean;
 }
 
 export class ListingGallery extends Component<ListingGalleryProps, { index: number }> {
@@ -16,7 +17,7 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
     };
 
     render() {
-        const { photos, title } = this.props;
+        const { photos, title, openOriginal } = this.props;
         const index = Math.min(this.state.index, Math.max(photos.length - 1, 0));
         const current = photos[index];
         const many = photos.length > 1;
@@ -42,6 +43,9 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
                         />,
                         <span class="listing-gallery__counter">{index + 1} / {photos.length}</span>,
                     ]}
+                    {openOriginal && current && (
+                        <a class="listing-gallery__original" href={assetUrl(current.url) ?? ''} target="_blank" rel="noopener">Открыть фото</a>
+                    )}
                 </div>
                 {many && (
                     <div class="listing-gallery__thumbs">
