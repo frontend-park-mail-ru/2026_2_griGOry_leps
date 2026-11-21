@@ -75,6 +75,24 @@
     }
 }
 
+.home-feed-tail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    margin-top: -24px;
+    color: $color-text-main;
+
+    &__button {
+        padding: 10px 20px;
+        border: 1px solid $gray-200;
+        border-radius: 8px;
+        background: $surface-0;
+        color: inherit;
+        cursor: pointer;
+    }
+}
+
 .home-categories {
     grid-auto-columns: max(140px, calc((100% - 9 * 16px) / 10));
     gap: 16px;

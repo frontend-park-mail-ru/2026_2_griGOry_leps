@@ -73,6 +73,7 @@ export interface ListingsQuery {
     sort?: Sort;
     limit?: number;
     offset?: number;
+    cursor?: string;
 }
 
 export async function getListings(params: ListingsQuery = {}): Promise<AdPage> {
