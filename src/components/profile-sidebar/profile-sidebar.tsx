@@ -4,7 +4,7 @@ import { logWarn, formatRating, formatSince, plural } from '@/lib/core';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './profile-sidebar.scss';
 
-export type ProfileSection = 'listings' | 'addresses' | 'settings';
+export type ProfileSection = 'listings' | 'addresses' | 'settings' | 'moderation';
 
 export interface ProfileSidebarProps {
     profile: Profile;
@@ -135,6 +135,9 @@ export class ProfileSidebar extends Component<ProfileSidebarProps, ProfileSideba
                 <nav aria-label="Профиль">
                     <ul class="profile-sidebar__menu">
                         {MENU.map((item) => this.renderMenuItem(item))}
+                        {profile.is_moderator && this.renderMenuItem({
+                            label: 'Модерация', href: '/profile/moderation', section: 'moderation',
+                        })}
                         <li>
                             <button
                                 type="button"

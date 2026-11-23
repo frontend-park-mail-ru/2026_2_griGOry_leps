@@ -30,6 +30,7 @@ export interface Listing {
     has_delivery: boolean;
     attributes: { key: string; name: string; value: string }[];
     status: ListingStatus;
+    rejection_reason?: string | null;
     close_reason: CloseReason | null;
     seller: SellerShort;
     is_owner: boolean;
