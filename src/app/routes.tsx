@@ -53,17 +53,9 @@ export function registerRoutes(route: RouteRegistrar): void {
     
     route('/search', {
         name: 'search',
-        view: () => {
-            const params = new URLSearchParams(location.search);
-            const query = (params.get('q') ?? '').trim();
-            const requestedPage = Number(params.get('page') ?? '1');
-            const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
-                ? requestedPage
-                : 1;
-
-            return <SearchPage key={`${query}:${page}`} query={query} page={page} />;
-        },
+        view: () => <SearchPage />,
     });
+    
     route('/categories', {
         name: 'categories',
         tone: 'gray',

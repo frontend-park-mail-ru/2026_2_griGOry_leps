@@ -14,8 +14,24 @@ type SearchPageState =
     | { status: 'ready'; items: AdCard[]; total: number };
 
 const pageSize = 24;
+function getEmptyMessage(query: string, page: number): string {
+    if (page > 1) return 'На этой странице объявлений нет.';
+    if (query) return 'Ничего не найдено. Попробуйте другой запрос.';
+    return 'Опубликованных объявлений пока нет.';
+}
 
-export class SearchPage extends Component<SearchPageProps, SearchPageState> {
+export function SearchPage() {
+    const params = new URLSearchParams(location.search);
+    const query = (params.get('q') ?? '').trim();
+    const requestedPage = Number(params.get('page') ?? '1');
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+        ? requestedPage
+        : 1;
+
+    return <SearchResults key={`${query}:${page}`} query={query} page={page} />;
+}
+
+class SearchResults extends Component<SearchPageProps, SearchPageState> {
     state: SearchPageState = { status: 'loading' };
 
     private requestId = 0;
@@ -59,7 +75,9 @@ export class SearchPage extends Component<SearchPageProps, SearchPageState> {
 
         return (
             <section class="search-page">
-                <h1 class="search-page__title"></h1>
+                <h1 class="search-page__title">
+                    {query ? `Результаты поиска по запросу «${query}»` : 'Все объявления'}
+                </h1>
 
                 {state.status === 'loading' && (
                     <p role="status">Ищем объявления…</p>
@@ -85,11 +103,7 @@ export class SearchPage extends Component<SearchPageProps, SearchPageState> {
                                 ))}
                             </div>
                         ) : (
-                            <p>{page > 1
-                                ? 'На этой странице объявлений нет.'
-                                : query
-                                    ? 'Ничего не найдено. Попробуйте другой запрос.'
-                                    : 'Опубликованных объявлений пока нет.'}</p>
+                            <p>{getEmptyMessage(query, page)}</p>
                         )}
 
                         {(page > 1 || page * pageSize < state.total) && (

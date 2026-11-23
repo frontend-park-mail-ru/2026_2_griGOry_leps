@@ -32,7 +32,10 @@ it('показывает загрузку, затем карточку со сс
         offset: 0,
     });
 
-    render(root, <SearchPage query="горный велосипед" page={1} />);
+    history.replaceState(null, '', '/search?q=горный+велосипед');
+    render(root, <SearchPage />);
+    expect(root.querySelector('h1')?.textContent)
+        .toBe('Результаты поиска по запросу «горный велосипед»');
 
     expect(root.querySelector('[role="status"]')?.textContent)
         .toContain('Ищем объявления');
@@ -48,7 +51,8 @@ it('показывает загрузку, затем карточку со сс
 it('показывает сообщение, когда совпадений нет', async () => {
     search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
 
-    render(root, <SearchPage query="несуществующий товар" page={1} />);
+    history.replaceState(null, '', '/search?q=несуществующий+товар');
+    render(root, <SearchPage />);
 
     await vi.waitFor(() => {
         expect(root.textContent).toContain('Ничего не найдено');
@@ -60,7 +64,8 @@ it('после ошибки позволяет повторить запрос',
     search.mockRejectedValueOnce(new Error('Ошибка сети'));
     search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
 
-    render(root, <SearchPage query="велосипед" page={1} />);
+    history.replaceState(null, '', '/search?q=велосипед');
+    render(root, <SearchPage />);
 
     await vi.waitFor(() => {
         expect(root.querySelector('[role="alert"]')?.textContent)
