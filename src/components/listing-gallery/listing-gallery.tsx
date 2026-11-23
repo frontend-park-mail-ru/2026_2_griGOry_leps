@@ -20,13 +20,14 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
         const { photos, title, openOriginal } = this.props;
         const index = Math.min(this.state.index, Math.max(photos.length - 1, 0));
         const current = photos[index];
+        const currentUrl = assetUrl(current?.url?.trim());
         const many = photos.length > 1;
 
         return (
             <div class="listing-gallery">
                 <div class="listing-gallery__main">
-                    {current
-                        ? <img class="listing-gallery__image" src={assetUrl(current.url) ?? ''} alt={title} />
+                    {currentUrl
+                        ? <img class="listing-gallery__image" src={currentUrl} alt={title} />
                         : <span class="listing-gallery__empty">Нет фото</span>}
                     {many && [
                         <button
@@ -43,8 +44,8 @@ export class ListingGallery extends Component<ListingGalleryProps, { index: numb
                         />,
                         <span class="listing-gallery__counter">{index + 1} / {photos.length}</span>,
                     ]}
-                    {openOriginal && current && (
-                        <a class="listing-gallery__original" href={assetUrl(current.url) ?? ''} target="_blank" rel="noopener">Открыть фото</a>
+                    {openOriginal && currentUrl && (
+                        <a class="listing-gallery__original" href={currentUrl} target="_blank" rel="noopener">Открыть фото</a>
                     )}
                 </div>
                 {many && (

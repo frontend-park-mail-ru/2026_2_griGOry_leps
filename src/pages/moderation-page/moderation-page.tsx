@@ -102,10 +102,12 @@ export class ModerationPage extends Component<Props, State> {
             const page = await getModerationQueue(cursor);
             if (version !== this.queueVersion) return;
             const seen = new Set(this.state.items.map(({ id }) => id));
+            const added = page.items.filter(({ id }) => !seen.has(id));
             this.setState({
-                items: [...this.state.items, ...page.items.filter(({ id }) => !seen.has(id))],
+                items: [...this.state.items, ...added],
                 cursor: page.next_cursor,
             });
+            if (this.state.selected === null && added.length > 0) void this.select(added[0].id);
         } catch (err) {
             if (version !== this.queueVersion) return;
             if (err instanceof ApiError && err.status === 403) this.deny();
@@ -140,10 +142,7 @@ export class ModerationPage extends Component<Props, State> {
         try {
             await decideModeration(detail.listing.id, detail.revision, reason);
             if (!this.mounted) return;
-            this.setState({
-                busy: false, rejectOpen: false, reason: '', notice: reason === undefined ? 'Объявление одобрено' : 'Объявление отклонено',
-            });
-            await this.loadQueue();
+            this.removeReviewed(detail.listing.id, reason === undefined ? 'Объявление одобрено' : 'Объявление отклонено');
         } catch (err) {
             if (!this.mounted) return;
             this.setState({ busy: false });
@@ -160,6 +159,21 @@ export class ModerationPage extends Component<Props, State> {
             }
         }
     };
+
+    removeReviewed(id: number, notice: string) {
+        const { items, status } = this.state;
+        if (status !== 'ready') return;
+
+        const index = items.findIndex((item) => item.id === id);
+        const remaining = items.filter((item) => item.id !== id);
+        const next = remaining[index] ?? remaining[remaining.length - 1];
+        this.setState({
+            items: remaining, selected: null, detail: null, detailError: '', detailLoading: false,
+            busy: false, rejectOpen: false, reason: '', notice,
+        });
+        if (next) void this.select(next.id);
+        else void this.loadMore();
+    }
 
     closeReject = () => {
         if (!this.state.busy) this.setState({ rejectOpen: false, reason: '', error: '' });
@@ -222,7 +236,7 @@ export class ModerationPage extends Component<Props, State> {
 
     renderQueue() {
         const { items, selected, cursor, more, busy, detail, detailLoading, detailError } = this.state;
-        if (!items.length) return <p class="moderation__detail">Новых объявлений пока нет.</p>;
+        if (!items.length && !cursor) return <p class="moderation__detail">Новых объявлений пока нет.</p>;
         return (
             <div class="moderation__columns">
                 <section aria-label="Очередь объявлений">

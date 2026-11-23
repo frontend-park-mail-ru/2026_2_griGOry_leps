@@ -61,8 +61,6 @@ describe('ModerationPage', () => {
     });
 
     it('требует причину и передаёт версию объявления при отклонении', async () => {
-        api.getModerationQueue.mockResolvedValueOnce({ items: [item], next_cursor: null })
-            .mockResolvedValueOnce({ items: [], next_cursor: null });
         api.decideModeration.mockResolvedValue(undefined);
         show();
         await vi.waitFor(() => expect(root.textContent).toContain('В хорошем состоянии'));
@@ -80,7 +78,56 @@ describe('ModerationPage', () => {
 
         await vi.waitFor(() => expect(root.textContent).toContain('Новых объявлений пока нет'));
         expect(api.decideModeration).toHaveBeenCalledWith(7, 3, 'Добавьте общий план');
+        expect(api.getModerationQueue).toHaveBeenCalledTimes(1);
         expect(root.querySelector('[role="dialog"]')).toBeNull();
+    });
+
+    it('после одобрения удаляет заявку из видимой очереди и открывает соседнюю', async () => {
+        const next = { ...item, id: 8, title: 'Палатка' };
+        api.getModerationQueue.mockResolvedValue({ items: [item, next], next_cursor: null });
+        api.getModerationListing.mockResolvedValueOnce(snapshot).mockResolvedValueOnce({
+            ...snapshot, listing: { ...snapshot.listing, ...next, description: 'Палатка на троих' },
+        });
+        api.decideModeration.mockResolvedValue(undefined);
+        show();
+        await vi.waitFor(() => expect(root.textContent).toContain('В хорошем состоянии'));
+        const queue = root.querySelector('[aria-label="Очередь объявлений"]');
+        expect(queue).not.toBeNull();
+        button('Одобрить').click();
+
+        await vi.waitFor(() => expect(root.textContent).toContain('Палатка на троих'));
+        expect(root.querySelector('[aria-label="Очередь объявлений"]')).toBe(queue);
+        expect(queue?.textContent).not.toContain('Гитара');
+        expect(api.getModerationQueue).toHaveBeenCalledTimes(1);
+    });
+
+    it('после последней видимой заявки догружает очередь с текущего курсора', async () => {
+        const next = { ...item, id: 8, title: 'Палатка' };
+        api.getModerationQueue.mockResolvedValueOnce({ items: [item], next_cursor: 'next-page' })
+            .mockResolvedValueOnce({ items: [next], next_cursor: null });
+        api.getModerationListing.mockResolvedValueOnce(snapshot).mockResolvedValueOnce({
+            ...snapshot, listing: { ...snapshot.listing, ...next, description: 'Палатка на троих' },
+        });
+        api.decideModeration.mockResolvedValue(undefined);
+        show();
+        await vi.waitFor(() => expect(root.textContent).toContain('В хорошем состоянии'));
+        button('Одобрить').click();
+
+        await vi.waitFor(() => expect(root.textContent).toContain('Палатка на троих'));
+        expect(api.getModerationQueue).toHaveBeenNthCalledWith(2, 'next-page');
+    });
+
+    it('убирает ссылку на оригинал, когда у выбранного фото нет адреса', async () => {
+        api.getModerationListing.mockResolvedValueOnce({
+            ...snapshot,
+            listing: { ...snapshot.listing, photos: [...snapshot.listing.photos, { id: 2, url: '' }] },
+        });
+        show();
+        await vi.waitFor(() => expect(root.querySelector('.listing-gallery__original')?.getAttribute('href')).toMatch(/\/guitar\.jpg$/));
+        root.querySelector<HTMLButtonElement>('[aria-label="Следующее фото"]')!.click();
+
+        await vi.waitFor(() => expect(root.querySelector('.listing-gallery__original')).toBeNull());
+        expect(root.querySelector('.listing-gallery__empty')?.textContent).toBe('Нет фото');
     });
 
     it('после конфликта открывает новую версию и не повторяет решение автоматически', async () => {
