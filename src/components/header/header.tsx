@@ -1,5 +1,6 @@
 import { CartLink } from '@/components/cart-link/cart-link';
 import { Component } from 'goget-vdom';
+import { navigate } from 'goget-router';
 import type { User } from '@/lib/api';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './header.scss';
@@ -34,6 +35,16 @@ export class Header extends Component<HeaderProps, HeaderState> {
         if (this.state.menuOpen && !this.userMenu?.contains(e.target as Node)) {
             this.setState({ menuOpen: false });
         }
+    };
+    
+    handleSearch = (event: Event) => {
+        event.preventDefault();
+
+        const form = event.currentTarget as HTMLFormElement;
+        const q = String(new FormData(form).get('q') ?? '').trim();
+        const params = new URLSearchParams({ q });
+
+        navigate(q ? `/search?${params}` : '/search');
     };
 
     toggleMenu = () => {
@@ -120,10 +131,31 @@ export class Header extends Component<HeaderProps, HeaderState> {
                         <img src="/img/chevron-down.svg" alt="" class="header__chevron" aria-hidden="true" />
                     </button>
 
-                    <form class="header__search search search--disabled" role="search" aria-disabled="true">
-                        <input type="text" name="q" placeholder="Поиск по объявлениям" autocomplete="off" class="search__input" disabled />
-                        <button type="submit" class="search__btn" aria-label="Найти" disabled>
-                            <img src="/img/search_icon.svg" alt="" class="search__icon" aria-hidden="true" />
+                    <form
+                        class="header__search search"
+                        role="search"
+                        action="/search"
+                        method="get"
+                        onSubmit={this.handleSearch}
+                    >
+                        <input
+                            type="search"
+                            name="q"
+                            placeholder="Поиск по объявлениям"
+                            aria-label="Поиск по объявлениям"
+                            autocomplete="off"
+                            class="search__input"
+                            value={location.pathname === '/search'
+                                ? new URLSearchParams(location.search).get('q') ?? ''
+                                : ''}
+                        />
+                        <button type="submit" class="search__btn" aria-label="Найти">
+                            <img
+                                src="/img/search_icon.svg"
+                                alt=""
+                                class="search__icon"
+                                aria-hidden="true"
+                            />
                         </button>
                     </form>
 

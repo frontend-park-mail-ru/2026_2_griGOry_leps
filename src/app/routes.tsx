@@ -7,6 +7,7 @@ import type { Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
 
 import { HomePage } from '@/pages/home-page/home-page';
+import { SearchPage } from '@/pages/search-page/search-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
 import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
@@ -48,6 +49,20 @@ export function registerRoutes(route: RouteRegistrar): void {
         name: 'home',
         load: loadHome,
         view: (data) => <HomePage {...data} user={getUser()} />,
+    });
+    
+    route('/search', {
+        name: 'search',
+        view: () => {
+            const params = new URLSearchParams(location.search);
+            const query = (params.get('q') ?? '').trim();
+            const requestedPage = Number(params.get('page') ?? '1');
+            const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+                ? requestedPage
+                : 1;
+
+            return <SearchPage key={`${query}:${page}`} query={query} page={page} />;
+        },
     });
     route('/categories', {
         name: 'categories',
