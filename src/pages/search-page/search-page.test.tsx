@@ -1,0 +1,76 @@
+import { beforeEach, expect, it, vi } from 'vitest';
+import { render } from 'goget-vdom';
+import { searchListings } from '@/lib/api';
+import { SearchPage } from './search-page';
+
+vi.mock('@/lib/api', async (importOriginal) => {
+    const api = await importOriginal<typeof import('@/lib/api')>();
+    return { ...api, searchListings: vi.fn() };
+});
+
+const search = vi.mocked(searchListings);
+let root: HTMLElement;
+
+beforeEach(() => {
+    search.mockReset();
+    root = document.createElement('div');
+});
+
+it('показывает загрузку, затем карточку со ссылкой на объявление', async () => {
+    search.mockResolvedValueOnce({
+        items: [{
+            id: 7,
+            title: 'Горный велосипед',
+            price: '15000.00',
+            image_url: null,
+            city: 'Москва',
+            has_delivery: false,
+            created_at: '2026-11-01T10:00:00Z',
+        }],
+        total: 1,
+        limit: 24,
+        offset: 0,
+    });
+
+    render(root, <SearchPage query="горный велосипед" page={1} />);
+
+    expect(root.querySelector('[role="status"]')?.textContent)
+        .toContain('Ищем объявления');
+
+    await vi.waitFor(() => {
+        expect(root.querySelector('a[href="/listing/7"]')).not.toBeNull();
+    });
+
+    expect(root.textContent).toContain('Горный велосипед');
+    expect(search).toHaveBeenCalledWith('горный велосипед', 24, 0);
+});
+
+it('показывает сообщение, когда совпадений нет', async () => {
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+
+    render(root, <SearchPage query="несуществующий товар" page={1} />);
+
+    await vi.waitFor(() => {
+        expect(root.textContent).toContain('Ничего не найдено');
+    });
+    expect(root.querySelector('[role="alert"]')).toBeNull();
+});
+
+it('после ошибки позволяет повторить запрос', async () => {
+    search.mockRejectedValueOnce(new Error('Ошибка сети'));
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+
+    render(root, <SearchPage query="велосипед" page={1} />);
+
+    await vi.waitFor(() => {
+        expect(root.querySelector('[role="alert"]')?.textContent)
+            .toContain('Не удалось загрузить объявления');
+    });
+
+    root.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+
+    await vi.waitFor(() => {
+        expect(root.textContent).toContain('Ничего не найдено');
+    });
+    expect(search).toHaveBeenCalledTimes(2);
+});
