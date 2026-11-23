@@ -59,7 +59,7 @@ export class SearchPage extends Component<SearchPageProps, SearchPageState> {
 
         return (
             <section class="search-page">
-                <h1>{query ? `Результаты поиска по запросу «${query}»` : 'Все объявления'}</h1>
+                <h1 class="search-page__title"></h1>
 
                 {state.status === 'loading' && (
                     <p role="status">Ищем объявления…</p>
