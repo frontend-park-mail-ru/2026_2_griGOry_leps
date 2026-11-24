@@ -5,18 +5,22 @@ export const CategoryCardFull = ({ slug, name, image, subcategories = [] }: Cate
     <article class="category-card-full">
         <header class="category-card-full__head">
             <div class="category-card-full__icon">
-                <img class="category-card-full__icon-image" src={image} alt="" loading="lazy" />
+                {image && <img class="category-card-full__icon-image" src={image} alt="" loading="lazy" />}
             </div>
             <h3 class="category-card-full__title">{name}</h3>
         </header>
 
         <ul class="category-card-full__list">
             {subcategories.map((sub) => (
-                <li key={sub}><a class="category-card-full__link" href={`/category/${slug}`} data-link>{sub}</a></li>
+                <li key={sub.slug}>
+                    <a class="category-card-full__link" href={`/category/${encodeURIComponent(sub.slug)}`} data-link>
+                        {sub.name}
+                    </a>
+                </li>
             ))}
         </ul>
 
-        <a class="category-card-full__all" href={`/category/${slug}`} data-link>
+        <a class="category-card-full__all" href={`/category/${encodeURIComponent(slug)}`} data-link>
             Все объявления →
         </a>
     </article>

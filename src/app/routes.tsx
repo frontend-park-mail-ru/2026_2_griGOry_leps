@@ -65,6 +65,7 @@ export function registerRoutes(route: RouteRegistrar): void {
     });
     route('/category/:slug', {
         name: 'category',
+        tone: 'gray',
         view: (_, { slug }) => <CategoryPage slug={slug} />,
     });
     route('/listing/new', {

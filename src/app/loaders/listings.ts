@@ -9,7 +9,10 @@ import type { HomeData } from '@/pages/home-page/home-page';
 
 export async function loadHome(): Promise<HomeData> {
     const [categories, promos, productPage] = await Promise.all([
-        getCategories(),
+        getCategories().catch((err: unknown) => {
+            logWarn('Не удалось загрузить категории:', err);
+            return [];
+        }),
         getPromos(),
         getListings().catch((err: unknown) => {
             logWarn('Не удалось загрузить ленту:', err);

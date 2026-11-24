@@ -1,8 +1,92 @@
+@use '@/shared/styles/variables' as *;
+
 .category-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
     width: 100%;
-    padding: 0 32px;
+    padding: 32px clamp(16px, 3.33vw, 64px) 64px;
 
     &__section {
-        padding: 2rem 0 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    &__head {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    &__title {
+        font-weight: 800;
+        font-size: 40px;
+        line-height: 1.1;
+        color: $color-text-main;
+        overflow-wrap: anywhere;
+    }
+
+    &__count {
+        color: $color-text-muted;
+    }
+
+    &__toolbar,
+    &__subcategories {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__toolbar {
+        justify-content: space-between;
+    }
+
+    &__subcategory {
+        padding: 8px 16px;
+        color: $color-text-main;
+        text-decoration: none;
+        background-color: $surface-0;
+        border-radius: $radius-xl;
+
+        &[aria-current='page'] {
+            color: $surface-0;
+            background-color: $color-text-main;
+        }
+    }
+
+    &__sort {
+        padding: 8px;
+        font: inherit;
+        color: $color-text-main;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    &__grid--leaf {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    &__tail {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    @media (width <= 1440px) {
+        &__grid,
+        &__grid--leaf {
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 212px), 1fr));
+        }
     }
 }

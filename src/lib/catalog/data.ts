@@ -1,8 +1,11 @@
-export interface Category {
+export interface CategoryLink {
     slug: string;
     name: string;
-    image: string;
-    subcategories: string[];
+}
+
+export interface Category extends CategoryLink {
+    image?: string;
+    subcategories: CategoryLink[];
 }
 
 export interface Promo {
@@ -11,79 +14,28 @@ export interface Promo {
     image: string;
 }
 
-export const mockCategories: Category[] = [
-    {
-        slug: 'auto', name: 'Авто', image: '/img/categories/auto.jpg',
-        subcategories: ['Легковые автомобили', 'Мотоциклы и мототехника', 'Грузовики и спецтехника', 'Водный транспорт', 'Шины и диски'],
-    },
-    {
-        slug: 'realty', name: 'Недвижимость', image: '/img/categories/realty.jpg',
-        subcategories: ['Квартиры', 'Комнаты', 'Дома и дачи', 'Земельные участки', 'Коммерческая недвижимость'],
-    },
-    {
-        slug: 'rent', name: 'Жильё для путешествий', image: '/img/categories/rent.jpg',
-        subcategories: ['Квартиры посуточно', 'Дома и коттеджи', 'Гостиницы', 'Хостелы', 'Глэмпинги'],
-    },
-    {
-        slug: 'home', name: 'Для дома и дачи', image: '/img/categories/home.jpg',
-        subcategories: ['Мебель', 'Бытовая техника', 'Посуда и кухня', 'Ремонт и строительство', 'Растения'],
-    },
-    {
-        slug: 'parts', name: 'Запчасти', image: '/img/categories/parts.jpg',
-        subcategories: ['Для автомобилей', 'Для мототехники', 'Масла и автохимия', 'Аккумуляторы', 'Инструменты'],
-    },
-    {
-        slug: 'services', name: 'Услуги', image: '/img/categories/services.jpg',
-        subcategories: ['Ремонт и отделка', 'Перевозки и грузчики', 'Обучение и курсы', 'Красота', 'Уборка'],
-    },
-    {
-        slug: 'electronics', name: 'Электроника', image: '/img/categories/electronics.jpg',
-        subcategories: ['Телефоны', 'Ноутбуки', 'Аудио и видео', 'Игры и приставки', 'Фототехника'],
-    },
-    {
-        slug: 'jobs', name: 'Работа и подработка', image: '/img/categories/jobs.jpg',
-        subcategories: ['Вакансии', 'Резюме', 'Подработка', 'Удалённая работа', 'Стажировки'],
-    },
-    {
-        slug: 'biznes', name: 'Бизнес 360', image: '/img/categories/biznes.jpg',
-        subcategories: ['Готовый бизнес', 'Оборудование', 'Франшизы', 'Помещения', 'Инвестиции'],
-    },
-    {
-        slug: 'clothes', name: 'Одежда, обувь, аксессуары', image: '/img/categories/clothes.jpg',
-        subcategories: ['Женская одежда', 'Мужская одежда', 'Обувь', 'Сумки и рюкзаки', 'Украшения'],
-    },
-    {
-        slug: 'pets', name: 'Животные', image: '/img/categories/pets.jpg',
-        subcategories: ['Собаки', 'Кошки', 'Птицы', 'Аквариум', 'Товары для питомцев'],
-    },
-    {
-        slug: 'kids', name: 'Детские товары', image: '/img/categories/kids.jpg',
-        subcategories: ['Детская одежда', 'Игрушки', 'Коляски', 'Автокресла', 'Питание'],
-    },
-    {
-        slug: 'beauty', name: 'Красота и здоровье', image: '/img/categories/beauty.jpg',
-        subcategories: ['Косметика', 'Парфюмерия', 'Уход за собой', 'Приборы и аксессуары', 'Здоровье'],
-    },
-    {
-        slug: 'sport', name: 'Спорт и отдых', image: '/img/categories/sport.jpg',
-        subcategories: ['Велосипеды', 'Тренажёры', 'Туризм', 'Зимние виды спорта', 'Самокаты'],
-    },
-    {
-        slug: 'books', name: 'Книги и журналы', image: '/img/categories/books.jpg',
-        subcategories: ['Художественная литература', 'Учебники', 'Детские книги', 'Журналы', 'Комиксы'],
-    },
-    {
-        slug: 'hobby', name: 'Хобби и фото', image: '/img/categories/hobby.jpg',
-        subcategories: ['Музыкальные инструменты', 'Фототехника', 'Коллекционирование', 'Рукоделие', 'Настольные игры'],
-    },
-];
+// Иллюстрации для известных корневых категорий.
+export const categoryCovers: Readonly<Record<string, string>> = {
+    auto: '/img/categories/auto.jpg',
+    realty: '/img/categories/realty.jpg',
+    rent: '/img/categories/rent.jpg',
+    home: '/img/categories/home.jpg',
+    parts: '/img/categories/parts.jpg',
+    services: '/img/categories/services.jpg',
+    electronics: '/img/categories/electronics.jpg',
+    jobs: '/img/categories/jobs.jpg',
+    biznes: '/img/categories/biznes.jpg',
+    clothes: '/img/categories/clothes.jpg',
+    pets: '/img/categories/pets.jpg',
+    kids: '/img/categories/kids.jpg',
+    beauty: '/img/categories/beauty.jpg',
+    sport: '/img/categories/sport.jpg',
+    books: '/img/categories/books.jpg',
+    hobby: '/img/categories/hobby.jpg',
+};
 
 export const mockPromos: Promo[] = [
     { title: 'Идём в школу',      subtitle: 'рюкзаки, канцтовары',        image: '/img/promo/school.jpg' },
     { title: 'Подарок за визит',  subtitle: 'заберите в течение суток',   image: '/img/promo/gift.jpg' },
     { title: 'Сезон велосипедов', subtitle: 'подборка для города и гор', image: '/img/promo/bike.jpg' },
 ];
-
-export const CategoryNames: Record<string, string> = Object.fromEntries(
-    mockCategories.map(({ slug, name }) => [slug, name])
-);
