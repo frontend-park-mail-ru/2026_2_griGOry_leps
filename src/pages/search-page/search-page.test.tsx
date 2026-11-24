@@ -5,7 +5,11 @@ import { SearchPage } from './search-page';
 
 vi.mock('@/lib/api', async (importOriginal) => {
     const api = await importOriginal<typeof import('@/lib/api')>();
-    return { ...api, searchListings: vi.fn() };
+    return {
+        ...api,
+        searchListings: vi.fn(),
+        getCategoryTree: vi.fn().mockResolvedValue([]),
+    };
 });
 
 const search = vi.mocked(searchListings);
@@ -45,7 +49,7 @@ it('показывает загрузку, затем карточку со сс
     });
 
     expect(root.textContent).toContain('Горный велосипед');
-    expect(search).toHaveBeenCalledWith('горный велосипед', 24, 0);
+    expect(search).toHaveBeenCalledWith('горный велосипед', 24, 0, {});
 });
 
 it('показывает сообщение, когда совпадений нет', async () => {
@@ -78,4 +82,39 @@ it('после ошибки позволяет повторить запрос',
         expect(root.textContent).toContain('Ничего не найдено');
     });
     expect(search).toHaveBeenCalledTimes(2);
+});
+
+it('передаёт фильтры в API и сохраняет их в ссылках между страницами', async () => {
+    const params = new URLSearchParams({
+        q: 'велосипед',
+        category_id: '14',
+        city: 'Москва',
+        price_min: '5000',
+        price_max: '20000',
+        has_delivery: 'true',
+        page: '2',
+    });
+
+    history.replaceState(null, '', `/search?${params}`);
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 24 });
+
+    render(root, <SearchPage />);
+
+    await vi.waitFor(() => {
+        expect(root.querySelector('nav a')).not.toBeNull();
+    });
+
+    expect(search).toHaveBeenCalledWith('велосипед', 24, 24, {
+        category_id: 14,
+        city: 'Москва',
+        price_min: '5000',
+        price_max: '20000',
+        has_delivery: true,
+    });
+
+    const previous = root.querySelector<HTMLAnchorElement>('nav a')!;
+    expect(previous.textContent).toBe('Назад');
+
+    params.delete('page');
+    expect(new URL(previous.href).searchParams.toString()).toBe(params.toString());
 });
