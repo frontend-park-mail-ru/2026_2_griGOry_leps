@@ -15,16 +15,41 @@ export interface HeaderState {
     menuOpen: boolean;
     loggingOut: boolean;
     logoutError: string;
+    searchText: string;
+}
+
+function readSearchQuery(): string | null {
+    if (location.pathname !== '/search') return null;
+    return new URLSearchParams(location.search).get('q') ?? '';
 }
 
 export class Header extends Component<HeaderProps, HeaderState> {
-    state: HeaderState = { menuOpen: false, loggingOut: false, logoutError: '' };
+    private lastUrlQuery = readSearchQuery();
 
+    state: HeaderState = {
+        menuOpen: false,
+        loggingOut: false,
+        logoutError: '',
+        searchText: this.lastUrlQuery ?? '',
+    };
     userMenu: HTMLElement | null = null;
 
     componentDidMount() {
         document.addEventListener('click', this.handleDocumentClick);
     }
+
+    componentDidUpdate() {
+        const urlQuery = readSearchQuery();
+        if (urlQuery === this.lastUrlQuery) return;
+
+        this.lastUrlQuery = urlQuery;
+        this.setState({ searchText: urlQuery ?? '' });
+    }
+
+    handleSearchInput = (event: Event) => {
+        const input = event.currentTarget as HTMLInputElement;
+        this.setState({ searchText: input.value });
+    };
 
     componentWillUnmount() {
         document.removeEventListener('click', this.handleDocumentClick);
@@ -145,9 +170,8 @@ export class Header extends Component<HeaderProps, HeaderState> {
                             aria-label="Поиск по объявлениям"
                             autocomplete="off"
                             class="search__input"
-                            value={location.pathname === '/search'
-                                ? new URLSearchParams(location.search).get('q') ?? ''
-                                : ''}
+                            value={this.state.searchText}
+                            onInput={this.handleSearchInput}
                         />
                         <button type="submit" class="search__btn" aria-label="Найти">
                             <img
