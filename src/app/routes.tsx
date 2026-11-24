@@ -7,6 +7,7 @@ import type { Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
 
 import { HomePage } from '@/pages/home-page/home-page';
+import { SearchPage } from '@/pages/search-page/search-page';
 import { CategoriesPage } from '@/pages/categories-page/categories-page';
 import { CategoryPage } from '@/pages/category-page/category-page';
 import { LoginPage } from '@/pages/login-page/login-page';
@@ -50,6 +51,12 @@ export function registerRoutes(route: RouteRegistrar): void {
         load: loadHome,
         view: (data) => <HomePage {...data} user={getUser()} />,
     });
+    
+    route('/search', {
+        name: 'search',
+        view: () => <SearchPage />,
+    });
+    
     route('/categories', {
         name: 'categories',
         tone: 'gray',

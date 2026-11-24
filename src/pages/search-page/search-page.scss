@@ -1,0 +1,25 @@
+.search-page {
+    width: min(100%, 1200px);
+    box-sizing: border-box;
+    margin: 32px auto;
+    padding: 0 16px;
+
+    &__title {
+        overflow-wrap: anywhere;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    &__pages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        margin-top: 24px;
+    }
+}

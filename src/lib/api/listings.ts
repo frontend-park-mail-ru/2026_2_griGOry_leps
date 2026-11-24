@@ -95,6 +95,10 @@ export async function getListing(id: number): Promise<Listing> {
     return json(await request(`/listings/${id}`));
 }
 
+export async function searchListings(q: string, limit = 24, offset = 0): Promise<AdPage> {
+    return json(await request(`/search${query({ q, limit, offset })}`));
+}
+
 export async function createListing(data: CreateListingData): Promise<Listing> {
     return json(await request('/listings', { method: 'POST', ...jsonBody(data) }));
 }
