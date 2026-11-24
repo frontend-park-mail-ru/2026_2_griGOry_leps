@@ -1,11 +1,13 @@
 import { Component } from 'goget-vdom';
 import { ProductCard } from '@/components/product-card/product-card';
-import { searchListings, type AdCard } from '@/lib/api';
+import { searchListings, type AdCard, type SearchFilters } from '@/lib/api';
 import './search-page.scss';
+import { SearchFilterForm } from './search-filter-form';
 
 interface SearchPageProps {
     query: string;
     page: number;
+    filters: SearchFilters;
 }
 
 type SearchPageState =
@@ -14,10 +16,34 @@ type SearchPageState =
     | { status: 'ready'; items: AdCard[]; total: number };
 
 const pageSize = 24;
-function getEmptyMessage(query: string, page: number): string {
+function getEmptyMessage(query: string, page: number, filters: SearchFilters): string {
     if (page > 1) return 'На этой странице объявлений нет.';
+    if (Object.keys(filters).length > 0) {
+        return 'По выбранным фильтрам ничего не найдено. Попробуйте изменить условия.';
+    }
     if (query) return 'Ничего не найдено. Попробуйте другой запрос.';
     return 'Опубликованных объявлений пока нет.';
+}
+
+function readSearchFilters(params: URLSearchParams): SearchFilters {
+    const filters: SearchFilters = {};
+
+    const category = Number(params.get('category_id'));
+    if (Number.isSafeInteger(category) && category > 0) {
+        filters.category_id = category;
+    }
+
+    for (const name of ['city', 'price_min', 'price_max'] as const) {
+        const value = params.get(name)?.trim();
+        if (value) filters[name] = value;
+    }
+
+    const delivery = params.get('has_delivery');
+    if (delivery === 'true' || delivery === 'false') {
+        filters.has_delivery = delivery === 'true';
+    }
+
+    return filters;
 }
 
 export function SearchPage() {
@@ -28,7 +54,14 @@ export function SearchPage() {
         ? requestedPage
         : 1;
 
-    return <SearchResults key={`${query}:${page}`} query={query} page={page} />;
+    return (
+        <SearchResults
+            key={params.toString()}
+            query={query}
+            page={page}
+            filters={readSearchFilters(params)}
+        />
+    );
 }
 
 class SearchResults extends Component<SearchPageProps, SearchPageState> {
@@ -50,7 +83,12 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
         this.setState({ status: 'loading' });
 
         try {
-            const result = await searchListings(query, pageSize, (page - 1) * pageSize);
+            const result = await searchListings(
+                query,
+                pageSize,
+                (page - 1) * pageSize,
+                this.props.filters,
+            );
             if (id === this.requestId) {
                 this.setState({ status: 'ready', items: result.items, total: result.total });
             }
@@ -62,9 +100,14 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
     };
 
     pageUrl(page: number) {
-        const params = new URLSearchParams();
-        if (this.props.query) params.set('q', this.props.query);
-        if (page > 1) params.set('page', String(page));
+        const params = new URLSearchParams(location.search);
+
+        if (page > 1) {
+            params.set('page', String(page));
+        } else {
+            params.delete('page');
+        }
+
         const search = params.toString();
         return search ? `/search?${search}` : '/search';
     }
@@ -78,7 +121,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                 <h1 class="search-page__title">
                     {query ? `Результаты поиска по запросу «${query}»` : 'Все объявления'}
                 </h1>
-
+                <SearchFilterForm query={query} filters={this.props.filters} />
                 {state.status === 'loading' && (
                     <p role="status">Ищем объявления…</p>
                 )}
@@ -103,7 +146,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                                 ))}
                             </div>
                         ) : (
-                            <p>{getEmptyMessage(query, page)}</p>
+                            <p>{getEmptyMessage(query, page, this.props.filters)}</p>
                         )}
 
                         {(page > 1 || page * pageSize < state.total) && (
