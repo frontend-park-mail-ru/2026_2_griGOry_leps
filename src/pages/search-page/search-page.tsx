@@ -3,6 +3,9 @@ import { ProductCard } from '@/components/product-card/product-card';
 import { searchListings, type AdCard, type SearchFilters } from '@/lib/api';
 import './search-page.scss';
 import { SearchFilterForm } from './search-filter-form';
+import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
+import { Button } from '@/components/button/button';
+import { plural } from '@/lib/core';
 
 interface SearchPageProps {
     query: string;
@@ -18,7 +21,7 @@ type SearchPageState =
 const pageSize = 24;
 function getEmptyMessage(query: string, page: number, filters: SearchFilters): string {
     if (page > 1) return 'На этой странице объявлений нет.';
-    if (Object.keys(filters).length > 0) {
+    if (Object.keys(filters).some(key => key !== 'sort')) {
         return 'По выбранным фильтрам ничего не найдено. Попробуйте изменить условия.';
     }
     if (query) return 'Ничего не найдено. Попробуйте другой запрос.';
@@ -42,6 +45,11 @@ function readSearchFilters(params: URLSearchParams): SearchFilters {
     if (delivery === 'true' || delivery === 'false') {
         filters.has_delivery = delivery === 'true';
     }
+    const sort = params.get('sort');
+    if (sort === 'newest' || sort === 'price_asc' || sort === 'price_desc') {
+        filters.sort = sort;
+    }
+
 
     return filters;
 }
@@ -118,9 +126,21 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
         return (
             <section class="search-page">
+                <Breadcrumbs flush strong items={[
+                    { label: 'Главная', href: '/' },
+                    { label: 'Поиск' },
+                ]} />
+
                 <h1 class="search-page__title">
-                    {query ? `Результаты поиска по запросу «${query}»` : 'Все объявления'}
+                    {query ? `«${query}»` : 'Все объявления'}
                 </h1>
+
+                {state.status === 'ready' && (
+                    <p class="search-page__count">
+                        {`Найдено ${state.total} ${plural(state.total, ['объявление', 'объявления', 'объявлений'])}`}
+                        {this.props.filters.city && ` · ${this.props.filters.city}`}
+                    </p>
+                )}
                 <SearchFilterForm query={query} filters={this.props.filters} />
                 {state.status === 'loading' && (
                     <p role="status">Ищем объявления…</p>
@@ -129,7 +149,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                 {state.status === 'error' && (
                     <div role="alert">
                         <p>Не удалось загрузить объявления.</p>
-                        <button type="button" onClick={this.load}>Попробовать ещё раз</button>
+                        <Button variant="secondary" text="Попробовать ещё раз" onClick={this.load} />
                     </div>
                 )}
 

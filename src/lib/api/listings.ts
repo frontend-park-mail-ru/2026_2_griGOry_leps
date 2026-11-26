@@ -97,7 +97,7 @@ export async function getListing(id: number): Promise<Listing> {
 
 export type SearchFilters = Pick<
     ListingsQuery,
-    'category_id' | 'city' | 'price_min' | 'price_max' | 'has_delivery'
+    'category_id' | 'city' | 'price_min' | 'price_max' | 'has_delivery' | 'sort'
 >;
 
 export async function searchListings(

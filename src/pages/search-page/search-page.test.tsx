@@ -38,9 +38,8 @@ it('показывает загрузку, затем карточку со сс
 
     history.replaceState(null, '', '/search?q=горный+велосипед');
     render(root, <SearchPage />);
-    expect(root.querySelector('h1')?.textContent)
-        .toBe('Результаты поиска по запросу «горный велосипед»');
 
+    expect(root.querySelector('h1')?.textContent).toBe('«горный велосипед»');
     expect(root.querySelector('[role="status"]')?.textContent)
         .toContain('Ищем объявления');
 
@@ -61,6 +60,7 @@ it('показывает сообщение, когда совпадений н�
     await vi.waitFor(() => {
         expect(root.textContent).toContain('Ничего не найдено');
     });
+
     expect(root.querySelector('[role="alert"]')).toBeNull();
 });
 
@@ -81,6 +81,7 @@ it('после ошибки позволяет повторить запрос',
     await vi.waitFor(() => {
         expect(root.textContent).toContain('Ничего не найдено');
     });
+
     expect(search).toHaveBeenCalledTimes(2);
 });
 
@@ -101,7 +102,7 @@ it('передаёт фильтры в API и сохраняет их в ссы�
     render(root, <SearchPage />);
 
     await vi.waitFor(() => {
-        expect(root.querySelector('nav a')).not.toBeNull();
+        expect(root.querySelector('.search-page__pages a')).not.toBeNull();
     });
 
     expect(search).toHaveBeenCalledWith('велосипед', 24, 24, {
@@ -112,9 +113,37 @@ it('передаёт фильтры в API и сохраняет их в ссы�
         has_delivery: true,
     });
 
-    const previous = root.querySelector<HTMLAnchorElement>('nav a')!;
+    const previous = root.querySelector<HTMLAnchorElement>('.search-page__pages a')!;
     expect(previous.textContent).toBe('Назад');
 
     params.delete('page');
     expect(new URL(previous.href).searchParams.toString()).toBe(params.toString());
+});
+
+it('снимает диапазон цены целиком и возвращается на первую страницу с остальными условиями', async () => {
+    history.replaceState(
+        null,
+        '',
+        '/search?q=велосипед&city=Москва&price_min=5000&price_max=20000&sort=price_asc&page=2',
+    );
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 24 });
+
+    const scroll = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    try {
+        render(root, <SearchPage />);
+
+        await vi.waitFor(() => {
+            expect(root.textContent).toContain('На этой странице объявлений нет.');
+        });
+
+        root.querySelector<HTMLButtonElement>('button[aria-label^="Убрать: Цена"]')!.click();
+
+        expect(Object.fromEntries(new URLSearchParams(location.search))).toEqual({
+            q: 'велосипед',
+            city: 'Москва',
+            sort: 'price_asc',
+        });
+    } finally {
+        scroll.mockRestore();
+    }
 });

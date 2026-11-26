@@ -1,144 +1,178 @@
 import { Component } from 'goget-vdom';
 import { navigate } from 'goget-router';
-import { CategorySelect } from '@/components/category-select/category-select';
-import { getCategoryTree, type CategoryNode, type SearchFilters } from '@/lib/api';
+import { ChipGroup } from '@/components/chip-group/chip-group';
+import { Select } from '@/components/select/select';
+import { getCategoryTree, type CategoryNode, type SearchFilters, type Sort } from '@/lib/api';
+import { formatPrice } from '@/lib/core';
+import { categoryPath } from '@/lib/listings';
+import { FilterDrawer } from './filter-drawer';
 
 interface FilterFormProps {
     query: string;
     filters: SearchFilters;
 }
 
-interface FilterFormState {
+interface ToolbarState {
     categories: CategoryNode[];
-    categoryError: boolean;
-    category: string;
-    city: string;
-    minPrice: string;
-    maxPrice: string;
-    delivery: string;
+    status: 'loading' | 'ready' | 'error';
+    open: boolean;
 }
 
-export class SearchFilterForm extends Component<FilterFormProps, FilterFormState> {
-    state: FilterFormState = {
-        categories: [],
-        categoryError: false,
-        category: String(this.props.filters.category_id ?? ''),
-        city: this.props.filters.city ?? '',
-        minPrice: this.props.filters.price_min ?? '',
-        maxPrice: this.props.filters.price_max ?? '',
-        delivery: String(this.props.filters.has_delivery ?? ''),
-    };
+interface ActiveFilter {
+    label: string;
+    keys: (keyof SearchFilters)[];
+}
 
-    async componentDidMount() {
-        try {
-            const categories = await getCategoryTree();
-            this.setState({ categories });
-        } catch {
-            this.setState({ categoryError: true });
-        }
+function activeFilters(filters: SearchFilters, categories: CategoryNode[]): ActiveFilter[] {
+    const chips: ActiveFilter[] = [];
+    const { category_id: id, city, price_min: min, price_max: max, has_delivery: delivery } = filters;
+
+    if (id) {
+        const path = categoryPath(categories, id);
+        chips.push({
+            label: path.at(-1)?.name ?? 'Выбрана категория',
+            keys: ['category_id'],
+        });
     }
 
-    apply = (event: Event) => {
-        event.preventDefault();
+    if (city) chips.push({ label: city, keys: ['city'] });
 
-        const { category, city, minPrice, maxPrice, delivery } = this.state;
+    if (min || max) {
+        const range = [min && `от ${formatPrice(min)}`, max && `до ${formatPrice(max)}`]
+            .filter(Boolean)
+            .join(' ');
+        chips.push({ label: `Цена: ${range} ₽`, keys: ['price_min', 'price_max'] });
+    }
+
+    if (delivery !== undefined) {
+        chips.push({
+            label: delivery ? 'С доставкой' : 'Без доставки',
+            keys: ['has_delivery'],
+        });
+    }
+
+    return chips;
+}
+
+const sortOptions = [
+    { value: 'newest', label: 'Сначала новые' },
+    { value: 'price_asc', label: 'Сначала дешевле' },
+    { value: 'price_desc', label: 'Сначала дороже' },
+];
+
+export class SearchFilterForm extends Component<FilterFormProps, ToolbarState> {
+    state: ToolbarState = { categories: [], status: 'loading', open: false };
+
+    componentDidMount() {
+        void this.loadCategories();
+    }
+
+    loadCategories = async () => {
+        this.setState({ status: 'loading' });
+        try {
+            this.setState({ categories: await getCategoryTree(), status: 'ready' });
+        } catch {
+            this.setState({ status: 'error' });
+        }
+    };
+
+    apply = (filters: SearchFilters) => {
         const params = new URLSearchParams();
 
         if (this.props.query) params.set('q', this.props.query);
-        if (category) params.set('category_id', category);
-        if (city.trim()) params.set('city', city.trim());
-        if (minPrice) params.set('price_min', minPrice);
-        if (maxPrice) params.set('price_max', maxPrice);
-        if (delivery) params.set('has_delivery', delivery);
+        for (const [name, value] of Object.entries(filters)) {
+            if (value !== undefined && value !== '') params.set(name, String(value));
+        }
 
-        const search = params.toString();
-        navigate(search ? `/search?${search}` : '/search');
+        const url = params.size ? `/search?${params}` : '/search';
+        this.setState({ open: false });
+        if (url !== location.pathname + location.search) navigate(url);
     };
 
     render() {
-        const { categories, categoryError, category, city, minPrice, maxPrice, delivery } = this.state;
+        const { categories, open, status } = this.state;
+        const { filters } = this.props;
+        const chips = activeFilters(filters, categories);
+        const selected = categoryPath(categories, filters.category_id ?? 0)[0];
+        const quick = categories.slice(0, 3);
+        if (selected && !quick.includes(selected)) quick.push(selected);
 
         return (
-            <form class="search-filters" aria-label="Фильтры поиска" onSubmit={this.apply}>
-                <fieldset class="search-filters__category">
-                    <legend>Категория</legend>
-
-                    {categoryError && <p>Не удалось загрузить категории.</p>}
-
-                    {categories.length > 0 && (
-                        <CategorySelect
-                            categories={categories}
-                            value={category}
-                            onChange={(value) => this.setState({ category: value })}
-                        />
-                    )}
-
-                    {category && (
-                        <button type="button" onClick={() => this.setState({ category: '' })}>
-                            Сбросить категорию
-                        </button>
-                    )}
-                </fieldset>
-
-                <label class="search-filters__field">
-                    Город
-                    <input
-                        class="search-filters__control"
-                        type="text"
-                        name="city"
-                        value={city}
-                        onInput={(event: Event) =>
-                            this.setState({ city: (event.currentTarget as HTMLInputElement).value })}
+            <div class="search-filters">
+                <div class="search-filters__row">
+                    <ChipGroup
+                        name="category"
+                        label="Категории"
+                        value={String(selected?.id ?? filters.category_id ?? '')}
+                        options={[
+                            { value: '', label: 'Все категории' },
+                            ...quick.map(category => ({
+                                value: String(category.id),
+                                label: category.name,
+                            })),
+                        ]}
+                        onChange={value => this.apply({
+                            ...filters,
+                            category_id: value ? Number(value) : undefined,
+                        })}
                     />
-                </label>
-
-                <label class="search-filters__field">
-                    Цена от, ₽
-                    <input
-                        class="search-filters__control"
-                        type="number"
-                        name="price_min"
-                        min="0"
-                        max={maxPrice || undefined}
-                        step="0.01"
-                        value={minPrice}
-                        onInput={(event: Event) =>
-                            this.setState({ minPrice: (event.currentTarget as HTMLInputElement).value })}
+                    <Select
+                        inline
+                        id="search-sort"
+                        label="Сортировка"
+                        options={sortOptions}
+                        value={filters.sort ?? 'newest'}
+                        onChange={sort => this.apply({ ...filters, sort: sort as Sort })}
                     />
-                </label>
+                </div>
 
-                <label class="search-filters__field">
-                    Цена до, ₽
-                    <input
-                        class="search-filters__control"
-                        type="number"
-                        name="price_max"
-                        min={minPrice || '0'}
-                        step="0.01"
-                        value={maxPrice}
-                        onInput={(event: Event) =>
-                            this.setState({ maxPrice: (event.currentTarget as HTMLInputElement).value })}
-                    />
-                </label>
-
-                <label class="search-filters__field">
-                    Доставка
-                    <select
-                        class="search-filters__control"
-                        name="has_delivery"
-                        onChange={(event: Event) =>
-                            this.setState({ delivery: (event.currentTarget as HTMLSelectElement).value })}
+                <div class="search-filters__active">
+                    <span>Фильтры:</span>
+                    <button
+                        class="chip-group__chip"
+                        type="button"
+                        aria-haspopup="dialog"
+                        onClick={() => this.setState({ open: true })}
                     >
-                        <option value="" selected={delivery === ''}>Любая</option>
-                        <option value="true" selected={delivery === 'true'}>С доставкой</option>
-                        <option value="false" selected={delivery === 'false'}>Без доставки</option>
-                    </select>
-                </label>
+                        {chips.length ? `Все фильтры · ${chips.length}` : 'Все фильтры'}
+                    </button>
 
-                <button type="submit" class="search-filters__apply">
-                    Применить фильтры
-                </button>
-            </form>
+                    {chips.map(chip => (
+                        <button
+                            key={chip.keys[0]}
+                            type="button"
+                            class="chip-group__chip"
+                            aria-label={`Убрать: ${chip.label}`}
+                            onClick={() => {
+                                const next = { ...filters };
+                                for (const key of chip.keys) delete next[key];
+                                this.apply(next);
+                            }}
+                        >
+                            {chip.label} <span aria-hidden="true">×</span>
+                        </button>
+                    ))}
+
+                    {chips.length > 0 && (
+                        <button
+                            class="search-filters__reset"
+                            type="button"
+                            onClick={() => this.apply({ sort: filters.sort })}
+                        >Сбросить всё</button>
+                    )}
+                </div>
+
+                {open && (
+                    <FilterDrawer
+                        filters={filters}
+                        categories={categories}
+                        status={status}
+                        onRetry={this.loadCategories}
+                        onApply={this.apply}
+                        onClose={() => this.setState({ open: false })}
+                    />
+                )}
+            </div>
         );
     }
 }
