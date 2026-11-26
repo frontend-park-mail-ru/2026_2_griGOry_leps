@@ -1,0 +1,53 @@
+@use '@/shared/styles/variables' as *;
+@use '@/shared/styles/mixins' as *;
+
+.listing-views {
+    &__summary {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        strong {
+            @include typo-h2;
+            line-height: 1.2;
+        }
+
+        span {
+            @include typo-small;
+            color: $color-status-success;
+        }
+    }
+
+    &__chart {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        align-items: end;
+        gap: 6px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    &__day {
+        @include typo-small;
+        display: grid;
+        gap: 4px;
+        color: $color-text-secondary;
+        text-align: center;
+        overflow-wrap: anywhere;
+
+        &--today {
+            color: $goget-primary;
+        }
+    }
+
+    &__bar {
+        border-radius: 5px;
+        background: $gray-150;
+    }
+
+    &__day--today &__bar {
+        background: $goget-primary;
+    }
+}

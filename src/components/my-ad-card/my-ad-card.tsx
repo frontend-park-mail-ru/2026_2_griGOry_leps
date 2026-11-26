@@ -1,5 +1,6 @@
 import { assetUrl, type ListingStatus, type MyAdCard as MyAd } from '@/lib/api';
 import { formatDay, formatPrice } from '@/lib/core';
+import { formatViews, readViews } from '@/lib/listings';
 import './my-ad-card.scss';
 
 export interface MyAdCardProps {
@@ -55,6 +56,7 @@ export const MyAdCard = ({ ad, onCloseListing, onDelete }: MyAdCardProps) => {
                 </span>
                 <h3 class="my-ad-card__title">{ad.title}</h3>
                 <span class="my-ad-card__price">{getPrice(ad)}</span>
+                <span class="my-ad-card__meta">{formatViews(readViews(ad.id).total)}</span>
                 {ad.status === 'rejected' && ad.rejection_reason
                     ? <span class="my-ad-card__meta">Причина: {ad.rejection_reason}</span>
                     : <span class="my-ad-card__meta">{getMeta(ad)}</span>}
