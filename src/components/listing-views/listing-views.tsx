@@ -12,8 +12,8 @@ export const ListingViewsCard = ({ total, days }: ListingViews) => {
     return (
         <ListingCard title="Просмотры">
             <div class="listing-views__summary">
-                <strong>{total.toLocaleString('ru-RU')}</strong>
-                {todayCount > 0 && <span>+{todayCount.toLocaleString('ru-RU')} сегодня</span>}
+                <strong class="listing-views__total">{total.toLocaleString('ru-RU')}</strong>
+                {todayCount > 0 && <span class="listing-views__today-count">+{todayCount.toLocaleString('ru-RU')} сегодня</span>}
             </div>
             {days.length > 0 && (
                 <ol class="listing-views__chart" aria-label="Просмотры по дням">

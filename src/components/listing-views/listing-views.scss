@@ -7,16 +7,16 @@
         align-items: baseline;
         flex-wrap: wrap;
         gap: 8px;
+    }
 
-        strong {
-            @include typo-h2;
-            line-height: 1.2;
-        }
+    &__total {
+        @include typo-h2;
+        line-height: 1.2;
+    }
 
-        span {
-            @include typo-small;
-            color: $color-status-success;
-        }
+    &__today-count {
+        @include typo-small;
+        color: $color-status-success;
     }
 
     &__chart {
