@@ -40,7 +40,7 @@ function renderApp() {
 
     const page = currentPage?.view() ?? null;
     if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
-        page.key = currentPage.name;
+        page.key ??= currentPage.name;
 
     render(app, [
         <Header user={getUser()} cartCount={getCartCount()} onLogout={handleLogout} />,

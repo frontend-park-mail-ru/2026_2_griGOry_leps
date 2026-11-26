@@ -100,12 +100,19 @@ export type SearchFilters = Pick<
     'category_id' | 'city' | 'price_min' | 'price_max' | 'has_delivery' | 'sort'
 >;
 
-export async function searchListings(
-    q: string,
+interface SearchParams {
+    q: string;
+    limit?: number;
+    offset?: number;
+    filters?: SearchFilters;
+}
+
+export async function searchListings({
+    q,
     limit = 24,
     offset = 0,
-    filters: SearchFilters = {},
-): Promise<AdPage> {
+    filters = {},
+}: SearchParams): Promise<AdPage> {
     return json(await request(`/search${query({ q, limit, offset, ...filters })}`));
 }
 

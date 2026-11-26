@@ -3,6 +3,12 @@ import { Button } from '@/components/button/button';
 import { type CategoryNode, type SearchFilters } from '@/lib/api';
 import { categoryPath } from '@/lib/listings';
 
+const deliveryOptions = [
+    { label: 'Любая', value: undefined },
+    { label: 'С доставкой', value: true },
+    { label: 'Без доставки', value: false },
+];
+
 interface DrawerProps {
     filters: SearchFilters;
     categories: CategoryNode[];
@@ -33,6 +39,11 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
 
     update = (patch: Partial<SearchFilters>) => {
         this.setState(({ draft }) => ({ draft: { ...draft, ...patch } }));
+    };
+
+    handleInput = (field: 'city' | 'price_min' | 'price_max') => (event: Event) => {
+        const input = event.currentTarget as HTMLInputElement;
+        this.update({ [field]: input.value });
     };
 
     render() {
@@ -131,8 +142,7 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
                                     step="0.01"
                                     max={draft.price_max || undefined}
                                     value={draft.price_min ?? ''}
-                                    onInput={(e: Event) =>
-                                        this.update({ price_min: (e.currentTarget as HTMLInputElement).value })}
+                                    onInput={this.handleInput('price_min')}
                                 />
                                 <input
                                     class="filter-drawer__input"
@@ -143,8 +153,7 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
                                     min={draft.price_min || '0'}
                                     step="0.01"
                                     value={draft.price_max ?? ''}
-                                    onInput={(e: Event) =>
-                                        this.update({ price_max: (e.currentTarget as HTMLInputElement).value })}
+                                    onInput={this.handleInput('price_max')}
                                 />
                             </div>
                         </fieldset>
@@ -156,26 +165,22 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
                                 name="city"
                                 placeholder="Любой город"
                                 value={draft.city ?? ''}
-                                onInput={(e: Event) =>
-                                    this.update({ city: (e.currentTarget as HTMLInputElement).value })}
+                                onInput={this.handleInput('city')}
                             />
                         </label>
 
                         <fieldset class="filter-drawer__group">
                             <legend class="filter-drawer__legend">Доставка</legend>
-                            {[true, false].map(value => (
-                                <label key={String(value)} class="filter-drawer__choice">
+                            {deliveryOptions.map(option => (
+                                <label key={option.label} class="filter-drawer__choice">
                                     <input
                                         class="filter-drawer__check"
-                                        type="checkbox"
-                                        checked={draft.has_delivery === value}
-                                        onChange={(e: Event) => this.update({
-                                            has_delivery: (e.currentTarget as HTMLInputElement).checked
-                                                ? value
-                                                : undefined,
-                                        })}
+                                        type="radio"
+                                        name="has_delivery"
+                                        checked={draft.has_delivery === option.value}
+                                        onChange={() => this.update({ has_delivery: option.value })}
                                     />
-                                    {value ? 'С доставкой' : 'Без доставки'}
+                                    {option.label}
                                 </label>
                             ))}
                         </fieldset>

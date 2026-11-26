@@ -48,7 +48,12 @@ it('показывает загрузку, затем карточку со сс
     });
 
     expect(root.textContent).toContain('Горный велосипед');
-    expect(search).toHaveBeenCalledWith('горный велосипед', 24, 0, {});
+    expect(search).toHaveBeenCalledWith({
+        q: 'горный велосипед',
+        limit: 24,
+        offset: 0,
+        filters: {},
+    });
 });
 
 it('показывает сообщение, когда совпадений нет', async () => {
@@ -105,12 +110,17 @@ it('передаёт фильтры в API и сохраняет их в ссы�
         expect(root.querySelector('.search-page__pages a')).not.toBeNull();
     });
 
-    expect(search).toHaveBeenCalledWith('велосипед', 24, 24, {
-        category_id: 14,
-        city: 'Москва',
-        price_min: '5000',
-        price_max: '20000',
-        has_delivery: true,
+    expect(search).toHaveBeenCalledWith({
+        q: 'велосипед',
+        limit: 24,
+        offset: 24,
+        filters: {
+            category_id: 14,
+            city: 'Москва',
+            price_min: '5000',
+            price_max: '20000',
+            has_delivery: true,
+        },
     });
 
     const previous = root.querySelector<HTMLAnchorElement>('.search-page__pages a')!;

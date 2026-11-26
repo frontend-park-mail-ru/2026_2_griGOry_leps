@@ -64,7 +64,7 @@ export function SearchPage() {
 
     return (
         <SearchResults
-            key={params.toString()}
+            key={`${query}:${page}`}
             query={query}
             page={page}
             filters={readSearchFilters(params)}
@@ -76,9 +76,16 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
     state: SearchPageState = { status: 'loading' };
 
     private requestId = 0;
+    private requestedFilters = '';
 
     componentDidMount() {
         void this.load();
+    }
+
+    componentDidUpdate() {
+        if (JSON.stringify(this.props.filters) !== this.requestedFilters) {
+            void this.load();
+        }
     }
 
     componentWillUnmount() {
@@ -87,18 +94,28 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
     load = async () => {
         const id = ++this.requestId;
-        const { query, page } = this.props;
-        this.setState({ status: 'loading' });
+        const { query, page, filters } = this.props;
+
+        this.requestedFilters = JSON.stringify(filters);
+
+        if (this.state.status === 'error') {
+            this.setState({ status: 'loading' });
+        }
 
         try {
-            const result = await searchListings(
-                query,
-                pageSize,
-                (page - 1) * pageSize,
-                this.props.filters,
-            );
+            const result = await searchListings({
+                q: query,
+                limit: pageSize,
+                offset: (page - 1) * pageSize,
+                filters,
+            });
+
             if (id === this.requestId) {
-                this.setState({ status: 'ready', items: result.items, total: result.total });
+                this.setState({
+                    status: 'ready',
+                    items: result.items,
+                    total: result.total,
+                });
             }
         } catch {
             if (id === this.requestId) {
