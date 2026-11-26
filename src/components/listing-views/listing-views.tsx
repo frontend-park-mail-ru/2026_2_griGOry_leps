@@ -1,11 +1,18 @@
 import { ListingCard } from '@/components/listing-card/listing-card';
-import { localDay, type ListingViews } from '@/lib/listings';
+import type { Listing } from '@/lib/api';
 import './listing-views.scss';
 
 const label = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' });
 
-export const ListingViewsCard = ({ total, days }: ListingViews) => {
-    const today = localDay(new Date());
+const moscowDay = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Moscow' });
+
+interface ListingViewsProps {
+    total: number;
+    days: Listing['views_by_day'];
+}
+
+export const ListingViewsCard = ({ total, days }: ListingViewsProps) => {
+    const today = moscowDay.format(new Date());
     const todayCount = days.find((day) => day.date === today)?.count ?? 0;
     const peak = Math.max(1, ...days.map((day) => day.count));
 

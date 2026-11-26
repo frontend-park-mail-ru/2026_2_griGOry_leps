@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, type AdCard, type Listing } from '@/lib/api';
-import { loadListing, loadSimilar } from '@/app/loaders/listings';
+import { loadListing, loadListingPage, loadSimilar } from '@/app/loaders/listings';
 
 const api = vi.hoisted(() => ({
     getListing: vi.fn(),
@@ -33,13 +33,20 @@ describe('loadListing', () => {
     it('на 404 отдаёт null', async () => {
         api.getListing.mockRejectedValue(new ApiError(404));
         await expect(loadListing('3')).resolves.toBeNull();
-        expect(api.getListing).toHaveBeenCalledWith(3);
+        expect(api.getListing).toHaveBeenCalledWith(3, false);
     });
 
     it('остальные ошибки пробрасывает', async () => {
         api.getListing.mockRejectedValue(new ApiError(500));
         await expect(loadListing('3')).rejects.toBeInstanceOf(ApiError);
     });
+});
+
+it('учитывает открытие только для выбранного объявления', async () => {
+    api.getListing.mockResolvedValue(listing());
+    api.getListings.mockResolvedValue({ items: [card(4), card(5)] });
+    await loadListingPage({ id: '3' });
+    expect(api.getListing.mock.calls).toEqual([[3, true]]);
 });
 
 describe('loadSimilar', () => {

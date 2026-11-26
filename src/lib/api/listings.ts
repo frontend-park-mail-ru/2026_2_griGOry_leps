@@ -16,6 +16,8 @@ export interface ListingPhoto extends UploadedPhoto {
 
 /** Объявление целиком (страница объявления) */
 export interface Listing {
+    views_count: number;
+    views_by_day: { date: string; count: number }[];
     id: number;
     title: string;
     category: { id: number; name: string; path: string } | null;
@@ -91,8 +93,8 @@ export async function getProducts(): Promise<AdCard[]> {
     }
 }
 
-export async function getListing(id: number): Promise<Listing> {
-    return json(await request(`/listings/${id}`));
+export async function getListing(id: number, recordView = false): Promise<Listing> {
+    return json(await request(`/listings/${id}${recordView ? '?view=true' : ''}`));
 }
 
 export async function searchListings(q: string, limit = 24, offset = 0): Promise<AdPage> {

@@ -29,10 +29,10 @@ export async function loadCategories(): Promise<{ categories: Category[] }> {
     return { categories: await getCategories() };
 }
 
-export async function loadListing(id: string): Promise<Listing | null> {
+export async function loadListing(id: string, recordView = false): Promise<Listing | null> {
     if (!/^\d+$/.test(id)) return null;
     try {
-        return await getListing(Number(id));
+        return await getListing(Number(id), recordView);
     } catch (err) {
         if (err instanceof ApiError && err.status === 404) return null;
         throw err;
@@ -51,7 +51,7 @@ export async function loadSimilar(listing: Listing): Promise<AdCard[]> {
 }
 
 export async function loadListingPage({ id }: RouteParams): Promise<{ listing: Listing | null; similar: AdCard[] }> {
-    const listing = await loadListing(id);
+    const listing = await loadListing(id, true);
     return { listing, similar: listing ? await loadSimilar(listing) : [] };
 }
 

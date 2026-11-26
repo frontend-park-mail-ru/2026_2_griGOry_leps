@@ -44,6 +44,7 @@ export interface AddressData {
 }
 
 export interface MyAdCard extends AdCard {
+    views_count: number;
     status: ListingStatus;
     rejection_reason?: string | null;
     close_reason: CloseReason | null;
