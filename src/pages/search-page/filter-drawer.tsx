@@ -2,6 +2,7 @@ import { Component } from 'goget-vdom';
 import { Button } from '@/components/button/button';
 import { type CategoryNode, type SearchFilters } from '@/lib/api';
 import { categoryPath } from '@/lib/listings';
+import { validatePrices } from './search-price';
 
 const deliveryOptions = [
     { label: 'Любая', value: undefined },
@@ -43,12 +44,14 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
 
     handleInput = (field: 'city' | 'price_min' | 'price_max') => (event: Event) => {
         const input = event.currentTarget as HTMLInputElement;
-        this.update({ [field]: input.value });
+        const value = field === 'city' ? input.value : input.value.replace(',', '.');
+        this.update({ [field]: value });
     };
 
     render() {
         const { categories, status, onClose, onApply, onRetry } = this.props;
         const { draft } = this.state;
+        const { priceMinError, priceMaxError } = validatePrices(draft.price_min, draft.price_max);
         const path = categoryPath(categories, draft.category_id ?? 0);
         const levels = [categories, ...path.map(node => node.children)]
             .filter(nodes => nodes.length);
@@ -70,6 +73,7 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
                     class="filter-drawer__form"
                     onSubmit={(event: Event) => {
                         event.preventDefault();
+                        if (priceMinError || priceMaxError) return;
                         onApply({ ...draft, city: draft.city?.trim() });
                     }}
                 >
@@ -131,31 +135,44 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
 
                         <fieldset class="filter-drawer__group">
                             <legend class="filter-drawer__legend">Цена, ₽</legend>
+
                             <div class="filter-drawer__prices">
                                 <input
                                     class="filter-drawer__input"
-                                    type="number"
+                                    type="text"
+                                    inputmode="decimal"
                                     name="price_min"
                                     aria-label="Цена от"
+                                    aria-invalid={priceMinError ? 'true' : undefined}
+                                    aria-describedby={priceMinError ? 'price-min-error' : undefined}
                                     placeholder="от"
-                                    min="0"
-                                    step="0.01"
-                                    max={draft.price_max || undefined}
                                     value={draft.price_min ?? ''}
                                     onInput={this.handleInput('price_min')}
                                 />
                                 <input
                                     class="filter-drawer__input"
-                                    type="number"
+                                    type="text"
+                                    inputmode="decimal"
                                     name="price_max"
                                     aria-label="Цена до"
+                                    aria-invalid={priceMaxError ? 'true' : undefined}
+                                    aria-describedby={priceMaxError ? 'price-max-error' : undefined}
                                     placeholder="до"
-                                    min={draft.price_min || '0'}
-                                    step="0.01"
                                     value={draft.price_max ?? ''}
                                     onInput={this.handleInput('price_max')}
                                 />
                             </div>
+
+                            {priceMinError && (
+                                <p id="price-min-error" class="filter-drawer__error" role="alert">
+                                    {priceMinError}
+                                </p>
+                            )}
+                            {priceMaxError && (
+                                <p id="price-max-error" class="filter-drawer__error" role="alert">
+                                    {priceMaxError}
+                                </p>
+                            )}
                         </fieldset>
 
                         <label class="filter-drawer__group">

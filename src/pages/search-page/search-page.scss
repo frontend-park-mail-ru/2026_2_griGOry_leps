@@ -210,3 +210,14 @@
         border-top: 1px solid $color-border;
     }
 }
+
+.filter-drawer__input[aria-invalid='true'] {
+    border-color: $color-status-error;
+    outline: 1px solid $color-status-error;
+}
+
+.filter-drawer__error {
+    margin: 0;
+    color: $color-status-error;
+    font-size: 14px;
+}

@@ -6,6 +6,7 @@ import { SearchFilterForm } from './search-filter-form';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { Button } from '@/components/button/button';
 import { plural } from '@/lib/core';
+import { validatePrices } from './search-price';
 
 interface SearchPageProps {
     query: string;
@@ -36,9 +37,16 @@ function readSearchFilters(params: URLSearchParams): SearchFilters {
         filters.category_id = category;
     }
 
-    for (const name of ['city', 'price_min', 'price_max'] as const) {
-        const value = params.get(name)?.trim();
-        if (value) filters[name] = value;
+    const city = params.get('city')?.trim();
+    if (city) filters.city = city;
+
+    const min = params.get('price_min')?.trim().replace(',', '.') ?? '';
+    const max = params.get('price_max')?.trim().replace(',', '.') ?? '';
+    const { priceMinError, priceMaxError } = validatePrices(min, max);
+
+    if (!priceMinError && !priceMaxError) {
+        if (min) filters.price_min = min;
+        if (max) filters.price_max = max;
     }
 
     const delivery = params.get('has_delivery');

@@ -157,3 +157,30 @@ it('снимает диапазон цены целиком и возвраща�
         scroll.mockRestore();
     }
 });
+
+it.each([
+    ['100', '0', {}],
+    ['-1', '20', {}],
+    ['abc', '', {}],
+    ['1.234', '', {}],
+    ['', '10000000000', {}],
+    ['0', '0', { price_min: '0', price_max: '0' }],
+    ['', '10,50', { price_max: '10.50' }],
+])('проверяет границы цены из URL: %s / %s', (min, max, prices) => {
+    const params = new URLSearchParams({
+        city: 'Москва',
+        price_min: min,
+        price_max: max,
+    });
+    history.replaceState(null, '', `/search?${params}`);
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+
+    render(root, <SearchPage />);
+
+    expect(search).toHaveBeenCalledWith({
+        q: '',
+        limit: 24,
+        offset: 0,
+        filters: { city: 'Москва', ...prices },
+    });
+});
