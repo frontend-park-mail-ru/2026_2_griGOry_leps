@@ -3,6 +3,7 @@ import type { AdCard, User } from '@/lib/api';
 import { getListings } from '@/lib/api';
 import type { Category, Promo } from '@/lib/catalog';
 import { logWarn } from '@/lib/core';
+import { appendListingPage } from '@/lib/listings';
 import './home-page.scss';
 
 import { CategoryCard } from '@/components/category-card/category-card';
@@ -146,13 +147,7 @@ class ProductsSection extends Component<HomeData & { isGuest: boolean }, FeedSta
         this.setState({ loading: true, error: false });
         try {
             const page = await getListings(cursor ? { cursor } : { offset: items.length });
-            const seen = new Set(this.state.items.map((item) => item.id));
-            const added = (page.items ?? []).filter((item) => !seen.has(item.id) && seen.add(item.id));
-            const next = [...this.state.items, ...added];
-            const nextCursor = page.next_cursor ?? null;
-            const complete = next.length >= page.total || (page.items ?? []).length === 0
-                || (added.length === 0 && nextCursor === cursor);
-            const state = { items: next, total: page.total, cursor: nextCursor, loading: false, error: false, complete };
+            const state = { ...appendListingPage(this.state.items, cursor, page), loading: false, error: false };
             feedCache = state;
             this.setState(state);
         } catch (err) {
