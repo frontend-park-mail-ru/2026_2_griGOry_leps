@@ -95,8 +95,25 @@ export async function getListing(id: number): Promise<Listing> {
     return json(await request(`/listings/${id}`));
 }
 
-export async function searchListings(q: string, limit = 24, offset = 0): Promise<AdPage> {
-    return json(await request(`/search${query({ q, limit, offset })}`));
+export type SearchFilters = Pick<
+    ListingsQuery,
+    'category_id' | 'city' | 'price_min' | 'price_max' | 'has_delivery' | 'sort'
+>;
+
+interface SearchParams {
+    q: string;
+    limit?: number;
+    offset?: number;
+    filters?: SearchFilters;
+}
+
+export async function searchListings({
+    q,
+    limit = 24,
+    offset = 0,
+    filters = {},
+}: SearchParams): Promise<AdPage> {
+    return json(await request(`/search${query({ q, limit, offset, ...filters })}`));
 }
 
 export async function createListing(data: CreateListingData): Promise<Listing> {

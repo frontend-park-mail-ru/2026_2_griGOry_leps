@@ -1,18 +1,28 @@
+@use '@/shared/styles/variables' as *;
+
 .search-page {
-    width: min(100%, 1200px);
     box-sizing: border-box;
+    width: 100%;
+    max-width: 1920px;
     margin: 32px auto;
-    padding: 0 16px;
+    padding-inline: clamp(16px, 3.33vw, 64px);
 
     &__title {
+        margin: 24px 0 0;
+        font-size: clamp(28px, 3vw, 40px);
+        line-height: 1.1;
         overflow-wrap: anywhere;
+    }
+
+    &__count {
+        margin: 8px 0 0;
+        color: $color-text-secondary;
     }
 
     &__grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
         gap: 24px;
-        margin-top: 24px;
     }
 
     &__pages {
@@ -22,4 +32,192 @@
         gap: 16px;
         margin-top: 24px;
     }
+}
+
+.search-filters {
+    display: grid;
+    gap: 24px;
+    margin: 24px 0;
+
+    &__row,
+    &__active {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__row {
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    &__active {
+        color: $color-text-secondary;
+    }
+
+    &__active .chip-group__chip {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    &__reset {
+        padding: 4px 0;
+        color: $goget-blue;
+        font: inherit;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+}
+
+.filter-drawer {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(480px, 100%);
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    color: $color-text-main;
+    background: $surface-0;
+
+    &::backdrop {
+        background: rgb(20 20 23 / 48%);
+    }
+
+    &__form {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 100%;
+    }
+
+    &__head,
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 20px clamp(16px, 5vw, 32px);
+    }
+
+    &__head {
+        border-bottom: 1px solid $color-border;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 22px;
+        line-height: 26px;
+    }
+
+    &__close {
+        width: 36px;
+        height: 36px;
+        font: inherit;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        padding: 24px clamp(16px, 5vw, 32px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    &__group,
+    &__choices {
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    &__legend {
+        padding: 0;
+        font-weight: 600;
+    }
+
+    &__group > &__legend {
+        margin-bottom: 12px;
+    }
+
+    &__prices {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    &__input {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        padding: 12px 16px;
+        font: inherit;
+        color: inherit;
+        background: $surface-0;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+    }
+
+    &__choice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 22px;
+        cursor: pointer;
+    }
+
+    &__check {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        appearance: none;
+        display: grid;
+        place-content: center;
+        flex: 0 0 auto;
+        border: 1px solid $color-text-placeholder;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:checked {
+            background: $goget-blue;
+            border-color: $goget-blue;
+        }
+
+        &:checked::after {
+            content: '';
+            width: 5px;
+            height: 10px;
+            margin-top: -3px;
+            border: solid $white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    }
+
+    &__actions {
+        flex-wrap: wrap;
+        border-top: 1px solid $color-border;
+    }
+}
+
+.filter-drawer__input[aria-invalid='true'] {
+    border-color: $color-status-error;
+    outline: 1px solid $color-status-error;
+}
+
+.filter-drawer__error {
+    margin: 0;
+    color: $color-status-error;
+    font-size: 14px;
 }
