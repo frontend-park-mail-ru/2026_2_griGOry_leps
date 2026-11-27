@@ -28,12 +28,16 @@ export class FilterDrawer extends Component<DrawerProps, { draft: SearchFilters 
         this.dialog = el as HTMLDialogElement | null;
     };
 
+    private closeOnHistoryChange = () => this.props.onClose();
+
     componentDidMount() {
         this.dialog?.showModal();
         document.body.classList.add('body--modal-open');
+        window.addEventListener('popstate', this.closeOnHistoryChange);
     }
 
     componentWillUnmount() {
+        window.removeEventListener('popstate', this.closeOnHistoryChange);
         this.dialog?.close();
         document.body.classList.remove('body--modal-open');
     }

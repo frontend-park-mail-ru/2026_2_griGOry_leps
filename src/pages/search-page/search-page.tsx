@@ -106,7 +106,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
         this.requestedFilters = JSON.stringify(filters);
 
-        if (this.state.status === 'error') {
+        if (this.state.status !== 'loading') {
             this.setState({ status: 'loading' });
         }
 

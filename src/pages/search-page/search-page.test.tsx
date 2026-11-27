@@ -184,3 +184,68 @@ it.each([
         filters: { city: 'Москва', ...prices },
     });
 });
+
+it('показывает загрузку вместо старой выдачи при смене фильтра', async () => {
+    search.mockResolvedValueOnce({
+        items: [{
+            id: 7,
+            title: 'Горный велосипед',
+            price: '15000.00',
+            image_url: null,
+            city: 'Москва',
+            has_delivery: false,
+            created_at: '2026-11-01T10:00:00Z',
+        }],
+        total: 25,
+        limit: 24,
+        offset: 0,
+    });
+    search.mockImplementationOnce(() => new Promise(() => {}));
+
+    history.replaceState(null, '', '/search?city=Москва');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('a[href="/listing/7"]')).not.toBeNull());
+
+    history.replaceState(null, '', '/search?city=Тула');
+    render(root, <SearchPage />);
+
+    await vi.waitFor(() => expect(root.querySelector('[role="status"]')).not.toBeNull());
+    expect(root.querySelector('a[href="/listing/7"]')).toBeNull();
+    expect(root.querySelector('.search-page__count')).toBeNull();
+    expect(root.querySelector('.search-page__pages')).toBeNull();
+    expect(search).toHaveBeenLastCalledWith({
+        q: '',
+        limit: 24,
+        offset: 0,
+        filters: { city: 'Тула' },
+    });
+});
+
+it('закрывает панель фильтров при переходе по истории браузера', async () => {
+    const dialog = HTMLDialogElement.prototype;
+    const { showModal, close } = dialog;
+    Object.assign(dialog, { showModal: vi.fn(), close: vi.fn() });
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+
+    try {
+        history.replaceState(null, '', '/search?city=Тула');
+        render(root, <SearchPage />);
+        root.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]')!.click();
+        await vi.waitFor(() => {
+            expect(root.querySelector<HTMLInputElement>('dialog input[name="city"]')?.value).toBe('Тула');
+        });
+
+        history.replaceState(null, '', '/search?city=Москва');
+        render(root, <SearchPage />);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+
+        await vi.waitFor(() => expect(root.querySelector('dialog')).toBeNull());
+        root.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]')!.click();
+        await vi.waitFor(() => {
+            expect(root.querySelector<HTMLInputElement>('dialog input[name="city"]')?.value).toBe('Москва');
+        });
+    } finally {
+        render(root, null);
+        Object.assign(dialog, { showModal, close });
+    }
+});
