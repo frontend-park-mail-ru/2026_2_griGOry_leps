@@ -12,6 +12,7 @@ import {
     type Scope,
 } from '../api';
 import { Editor } from '../editor';
+import { History } from '../history';
 import { formatValue, highlight } from '../format';
 import { hashFor, type HashFilter } from '../hash';
 import { readRule } from '../values';
@@ -33,6 +34,7 @@ interface EntriesSearchState {
     /** Название, по которому получен текущий список, — для подсветки */
     searched: string;
     editor: Entry | 'new' | null;
+    history: Entry | null;
     savedMessage: string;
 }
 
@@ -56,6 +58,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
         result: null,
         searched: '',
         editor: null,
+        history: null,
         savedMessage: '',
     };
 
@@ -122,6 +125,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
             loading: false,
             result: { status: status === 401 ? 'unauthenticated' : 'forbidden' },
             editor: null,
+            history: null,
             savedMessage: '',
         });
     };
@@ -189,9 +193,23 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                     </div>
                                 </div>
                             ) : <span>Неизвестный формат флага</span>}
-                            <Button text="Изменить" variant="outline"
-                                disabled={loading || (entry.kind === 'flag' && !rule)}
-                                onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+                            
+                            <div class="oc-entry-actions">
+                                <Button text="Изменить" variant="outline"
+                                    disabled={loading || (entry.kind === 'flag' && !rule)}
+                                    onClick={() => this.setState({
+                                        editor: entry,
+                                        savedMessage: '',
+                                    })} />
+
+                                <Button text="История" variant="outline"
+                                    disabled={loading}
+                                    onClick={() => this.setState({
+                                        history: entry,
+                                        savedMessage: '',
+                                    })} />
+                            </div>
+
                         </li>
                     );
                 })}
@@ -200,7 +218,15 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
     }
 
     render() {
-        const { name, scope, editor, loading, result, savedMessage } = this.state;
+        const {
+            name,
+            scope,
+            editor,
+            history,
+            loading,
+            result,
+            savedMessage,
+        } = this.state;
         const { kind } = this.props;
         const config = kind === 'config';
         const hasAccess = result?.status !== 'unauthenticated' && result?.status !== 'forbidden';
@@ -237,6 +263,16 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                         </nav>
                         {this.renderWorkspace(name, scope)}
                         {savedMessage && <p class="oc-saved" role="status">{savedMessage}</p>}
+
+                        {history && (
+                            <History
+                                key={history.id}
+                                entry={history}
+                                onClose={() => this.setState({ history: null })}
+                                onDenied={this.noAccess}
+                            />
+                        )}
+
                         {editor && (
                             <Editor kind={kind} scope={scope || 'frontend'}
                                 entry={editor === 'new' ? undefined : editor}
