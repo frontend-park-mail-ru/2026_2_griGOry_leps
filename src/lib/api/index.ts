@@ -9,6 +9,7 @@ export type { RequestOptions } from './utils';
 export * from './auth';
 export * from './profile';
 export * from './catalog';
+export * from './search';
 export * from './listings';
 export * from './sellers';
 export * from './cart';
