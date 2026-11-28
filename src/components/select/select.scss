@@ -114,7 +114,8 @@
     &--inline &__control:hover {
         width: auto;
         height: auto;
-        padding: 0;
+        min-height: 44px;
+        padding: 0 4px;
         font-weight: 500;
         background: none;
         border: none;
