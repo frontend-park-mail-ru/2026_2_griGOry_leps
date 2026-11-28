@@ -2,12 +2,6 @@ import { getSearchSettings, type SearchSettings } from '@/lib/api';
 import { logWarn } from '@/lib/core';
 import { getUser } from '@/lib/user';
 
-export const CAUTIOUS_SEARCH_SETTINGS: SearchSettings = {
-    max_query_length: null,
-    price_sort_enabled: false,
-    search_button_color: 'blue',
-};
-
 let current: SearchSettings | null = null;
 let inFlight: Promise<void> | null = null;
 const listeners = new Set<() => void>();
@@ -68,7 +62,6 @@ export function refreshSearchSettings(): Promise<void> {
             syncUser();
             if (requestGeneration !== generation) return;
             logWarn('Не удалось получить настройки поиска:', err);
-            if (current === null) update(CAUTIOUS_SEARCH_SETTINGS);
         })
         .finally(() => {
             if (requestGeneration === generation) inFlight = null;
