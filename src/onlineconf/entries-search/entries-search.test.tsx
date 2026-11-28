@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
 import { ApiError } from '@/lib/api';
-import { deleteEntry, saveEntry, searchEntries, type Entry, type Kind } from '../api';
+import { deleteEntry, getEntryHistory, saveEntry, searchEntries, type Entry, type Kind } from '../api';
 import { readHash } from '../hash';
 import { EntriesSearch } from './entries-search';
 
@@ -10,6 +10,7 @@ vi.mock('../api', async (importOriginal) => ({
     searchEntries: vi.fn(),
     saveEntry: vi.fn(),
     deleteEntry: vi.fn(),
+    getEntryHistory: vi.fn(),
 }));
 
 const search = vi.mocked(searchEntries);
@@ -47,6 +48,7 @@ beforeEach(() => {
     search.mockReset().mockResolvedValue([]);
     save.mockReset().mockResolvedValue(undefined);
     remove.mockReset().mockResolvedValue(undefined);
+    vi.mocked(getEntryHistory).mockReset().mockResolvedValue([]);
     history.replaceState({}, '', '/admin/');
     root = document.createElement('div');
     document.body.append(root);
@@ -257,6 +259,27 @@ it('не убирает список во время поиска и сообщ�
 });
 
 const clickButton = (label: string) => [...root.querySelectorAll('button')].find(button => button.textContent === label)!.click();
+
+it('оставляет историю доступной рядом с удалением записи', async () => {
+    HTMLDialogElement.prototype.showModal = vi.fn();
+    HTMLDialogElement.prototype.close = vi.fn();
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('История');
+    await flush();
+    expect(getEntryHistory).toHaveBeenCalledWith(priceSort.id);
+    expect(root.querySelector('.oc-history')?.textContent).toContain('Изменений пока нет');
+    clickButton('Закрыть');
+    await flush();
+    expect(root.querySelector('.oc-history')).toBeNull();
+
+    clickButton('Удалить');
+    await flush();
+    expect(root.querySelector('.modal__title')?.textContent).toBe('Удалить фича-флаг?');
+    expect(remove).not.toHaveBeenCalled();
+});
 
 it('удаляет конфиг после подтверждения и обновляет список', async () => {
     const config: Entry = { id: 5, scope: 'frontend', name: 'limit', kind: 'config', value: 24 };

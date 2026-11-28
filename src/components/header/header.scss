@@ -196,6 +196,7 @@
 }
 
 .search {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -207,6 +208,18 @@
 
     &--disabled {
         cursor: not-allowed;
+    }
+
+    &__error {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 16px;
+        margin: 0;
+        font-size: 13px;
+        line-height: 18px;
+        color: $color-status-error;
+        white-space: nowrap;
+        pointer-events: none;
     }
 
     &__input {
@@ -253,6 +266,15 @@
         &:disabled {
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        &--orange {
+            background-color: $goget-accent;
+
+            &:hover:not(:disabled) {
+                background-color: $goget-accent;
+                opacity: 0.85;
+            }
         }
     }
 

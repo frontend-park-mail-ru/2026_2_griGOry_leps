@@ -14,6 +14,7 @@ import {
     type Scope,
 } from '../api';
 import { Editor } from '../editor';
+import { History } from '../history';
 import { formatValue, highlight } from '../format';
 import { hashFor, type HashFilter } from '../hash';
 import { readRule } from '../values';
@@ -35,6 +36,7 @@ interface EntriesSearchState {
     /** Название, по которому получен текущий список, — для подсветки */
     searched: string;
     editor: Entry | 'new' | null;
+    history: Entry | null;
     removing: Entry | null;
     removeError: string;
     removePending: boolean;
@@ -61,6 +63,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
         result: null,
         searched: '',
         editor: null,
+        history: null,
         removing: null,
         removeError: '',
         removePending: false,
@@ -130,6 +133,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
             loading: false,
             result: { status: status === 401 ? 'unauthenticated' : 'forbidden' },
             editor: null,
+            history: null,
             removing: null,
             removePending: false,
             savedMessage: '',
@@ -241,6 +245,8 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                 <Button text="Изменить" variant="outline"
                                     disabled={loading || (entry.kind === 'flag' && !rule)}
                                     onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+                                <Button text="История" variant="outline" disabled={loading}
+                                    onClick={() => this.setState({ history: entry, savedMessage: '' })} />
                                 <Button text="Удалить" variant="outline" disabled={loading}
                                     onClick={() => this.askRemove(entry)} />
                             </div>
@@ -252,7 +258,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
     }
 
     render() {
-        const { name, scope, editor, removing, removeError, removePending, loading, result, savedMessage } = this.state;
+        const { name, scope, editor, history, removing, removeError, removePending, loading, result, savedMessage } = this.state;
         const { kind } = this.props;
         const config = kind === 'config';
         const hasAccess = result?.status !== 'unauthenticated' && result?.status !== 'forbidden';
@@ -289,6 +295,14 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                         </nav>
                         {this.renderWorkspace(name, scope)}
                         {savedMessage && <p class="oc-saved" role="status">{savedMessage}</p>}
+                        {history && (
+                            <History
+                                key={history.id}
+                                entry={history}
+                                onClose={() => this.setState({ history: null })}
+                                onDenied={this.noAccess}
+                            />
+                        )}
                         {removing && (
                             <ConfirmModal
                                 title={config ? 'Удалить конфиг?' : 'Удалить фича-флаг?'}

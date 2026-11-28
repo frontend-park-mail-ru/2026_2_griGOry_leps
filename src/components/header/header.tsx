@@ -1,7 +1,8 @@
 import { CartLink } from '@/components/cart-link/cart-link';
 import { Component } from 'goget-vdom';
 import { navigate } from 'goget-router';
-import type { User } from '@/lib/api';
+import type { SearchButtonColor, User } from '@/lib/api';
+import { queryLength } from '@/lib/search';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import './header.scss';
 
@@ -9,6 +10,8 @@ export interface HeaderProps {
     user: User | null;
     cartCount: number;
     onLogout: () => Promise<void>;
+    maxQueryLength: number | null;
+    searchButtonColor: SearchButtonColor;
 }
 
 export interface HeaderState {
@@ -64,6 +67,9 @@ export class Header extends Component<HeaderProps, HeaderState> {
     
     handleSearch = (event: Event) => {
         event.preventDefault();
+
+        const { maxQueryLength } = this.props;
+        if (maxQueryLength !== null && queryLength(this.state.searchText) > maxQueryLength) return;
 
         const form = event.currentTarget as HTMLFormElement;
         const q = String(new FormData(form).get('q') ?? '').trim();
@@ -137,7 +143,9 @@ export class Header extends Component<HeaderProps, HeaderState> {
     }
 
     render() {
-        const { user } = this.props;
+        const { user, maxQueryLength, searchButtonColor } = this.props;
+        const tooLong = maxQueryLength !== null && queryLength(this.state.searchText) > maxQueryLength;
+        const searchButtonClass = searchButtonColor === 'orange' ? 'search__btn search__btn--orange' : 'search__btn';
 
         return (
             <header class="header">
@@ -168,12 +176,14 @@ export class Header extends Component<HeaderProps, HeaderState> {
                             name="q"
                             placeholder="Поиск по объявлениям"
                             aria-label="Поиск по объявлениям"
+                            aria-invalid={tooLong ? 'true' : undefined}
+                            aria-describedby={tooLong ? 'header-search-error' : undefined}
                             autocomplete="off"
                             class="search__input"
                             value={this.state.searchText}
                             onInput={this.handleSearchInput}
                         />
-                        <button type="submit" class="search__btn" aria-label="Найти">
+                        <button type="submit" class={searchButtonClass} aria-label="Найти">
                             <img
                                 src="/img/search_icon.svg"
                                 alt=""
@@ -181,6 +191,11 @@ export class Header extends Component<HeaderProps, HeaderState> {
                                 aria-hidden="true"
                             />
                         </button>
+                        {tooLong && (
+                            <p class="search__error" id="header-search-error" role="alert">
+                                {`Сократите запрос до ${maxQueryLength} символов`}
+                            </p>
+                        )}
                     </form>
 
                     {user

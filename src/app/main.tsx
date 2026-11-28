@@ -20,6 +20,7 @@ import { clearUser, getUser, subscribe } from '@/lib/user';
 import { logError, logWarn, getToast, subscribeToast } from '@/lib/core';
 import { loadCurrentUser } from '@/app/loaders/user';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
+import { searchSettings, refreshSearchSettings, subscribeSearchSettings, watchSearchSettings } from '@/lib/search';
 import type { PageView, Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
 import { registerRoutes } from '@/app/routes';
@@ -42,8 +43,15 @@ function renderApp() {
     if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
         page.key ??= currentPage.name;
 
+    const settings = searchSettings();
     render(app, [
-        <Header user={getUser()} cartCount={getCartCount()} onLogout={handleLogout} />,
+        <Header
+            user={getUser()}
+            cartCount={getCartCount()}
+            onLogout={handleLogout}
+            maxQueryLength={settings?.max_query_length ?? null}
+            searchButtonColor={settings?.search_button_color ?? 'blue'}
+        />,
         <main id="page">{page}</main>,
         <Footer />,
         toastView(),
@@ -92,6 +100,10 @@ async function start() {
     subscribe((user) => void refreshCartCount(Boolean(user)));
     subscribeToast(renderApp);
     subscribeCartCount(renderApp);
+    subscribeSearchSettings(renderApp);
+    subscribe(() => void refreshSearchSettings());
+    void refreshSearchSettings();
+    watchSearchSettings();
     void refreshCartCount(Boolean(getUser()));
 
     onSessionExpired(() => {
