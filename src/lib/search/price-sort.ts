@@ -5,10 +5,9 @@ export function isPriceSort(sort: string | null | undefined): boolean {
 }
 
 export function resetPriceSort(): void {
-    const params = new URLSearchParams(location.search);
-    params.delete('sort');
-    params.delete('page');
-    const url = params.size ? `${location.pathname}?${params}` : location.pathname;
+    const url = new URL(location.href);
+    url.searchParams.delete('sort');
+    url.searchParams.delete('page');
     history.replaceState({ priceSortReset: true }, '', url);
     window.scrollTo(0, 0);
     void resolveRoute();

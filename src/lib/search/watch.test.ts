@@ -32,9 +32,17 @@ it('опрашивает раз в 30 с только видимую вклад�
     expect(refreshSearchSettings).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1);
     expect(refreshSearchSettings).toHaveBeenCalledTimes(1);
-    visibility = 'hidden';
     vi.advanceTimersByTime(30_000);
-    expect(refreshSearchSettings).toHaveBeenCalledTimes(1);
+    expect(refreshSearchSettings).toHaveBeenCalledTimes(2);
+    visibility = 'hidden';
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(30_000);
+    expect(refreshSearchSettings).toHaveBeenCalledTimes(2);
+    visibility = 'visible';
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(refreshSearchSettings).toHaveBeenCalledTimes(3);
+    vi.advanceTimersByTime(30_000);
+    expect(refreshSearchSettings).toHaveBeenCalledTimes(4);
     stop();
 });
 

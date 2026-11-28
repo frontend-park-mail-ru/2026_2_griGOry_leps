@@ -288,11 +288,15 @@ it('ссылка с price_desc при выключенном флаге сбра
     render(root, <SearchPage />);
     expect(root.querySelector('#search-sort')?.textContent).toContain('Сначала новые');
     expect(Object.fromEntries(new URLSearchParams(location.search))).toEqual({ q: 'велосипед', city: 'Тула' });
-    expect(search).not.toHaveBeenCalledWith(expect.objectContaining({
-        filters: expect.objectContaining({ sort: 'price_desc' }),
-    }));
+    expect(search).not.toHaveBeenCalled();
 
     render(root, <SearchPage />); // роутер перерисовал страницу по новому URL
+    await vi.waitFor(() => expect(search).toHaveBeenCalledTimes(1));
+    expect(search).toHaveBeenCalledWith(expect.objectContaining({
+        q: 'велосипед',
+        offset: 0,
+        filters: { city: 'Тула' },
+    }));
     expect(root.querySelector('.search-page__notice')?.textContent)
         .toBe('Сортировка по цене сейчас недоступна — показываем сначала новые.');
 });
@@ -348,6 +352,24 @@ it.each([
     await vi.waitFor(() => expect(root.querySelector('[role="alert"]')?.textContent).toBe(text));
     expect(root.querySelector('[role="alert"] button')).toBeNull();
     expect(refreshSearchSettings).toHaveBeenCalled();
+});
+
+it('после 400 q повторяет поиск, когда лимит вырос', async () => {
+    settings.mockReturnValue({ max_query_length: 5, price_sort_enabled: true });
+    search.mockRejectedValueOnce(new ApiError(400, { field: 'q', reason: 'search query too long' }));
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?q=очень+длинный');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('[role="alert"]')).not.toBeNull());
+
+    render(root, <SearchPage />);
+    expect(search).toHaveBeenCalledTimes(1);
+
+    settings.mockReturnValue({ max_query_length: 50, price_sort_enabled: true });
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(search).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(root.textContent).toContain('Ничего не найдено'));
+    expect(root.querySelector('[role="alert"]')).toBeNull();
 });
 
 it('первая загрузка настроек запретила цену — ждёт ответа, затем сбрасывает и ищет сначала новые', async () => {

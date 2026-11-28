@@ -90,6 +90,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
     private requestId = 0;
     private requestedFilters = '';
     private requestedPriceSort: boolean | undefined;
+    private requestedLimit: number | null = null;
 
     componentDidMount() {
         void this.load();
@@ -98,7 +99,9 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
     componentDidUpdate() {
         if (JSON.stringify(this.props.filters) !== this.requestedFilters
             || (isPriceSort(this.props.filters.sort)
-                && this.props.settings?.price_sort_enabled !== this.requestedPriceSort)) {
+                && this.props.settings?.price_sort_enabled !== this.requestedPriceSort)
+            || (this.state.status === 'too-long'
+                && (this.props.settings?.max_query_length ?? null) !== this.requestedLimit)) {
             void this.load();
         }
     }
@@ -115,6 +118,7 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
         this.requestedFilters = JSON.stringify(filters);
         this.requestedPriceSort = settings?.price_sort_enabled;
+        this.requestedLimit = settings?.max_query_length ?? null;
 
         if (this.state.status !== 'loading') {
             this.setState({ status: 'loading' });

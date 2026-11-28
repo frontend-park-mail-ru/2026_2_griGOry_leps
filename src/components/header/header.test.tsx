@@ -54,8 +54,12 @@ it('ровно N символов — без ошибки и с переходо
 it('пробелы по краям и эмодзи не превышают лимит', async () => {
     renderHeader(3);
     type('  🚲аб  ');
-    await Promise.resolve();
+    submit();
     expect(error()).toBeNull();
+    expect(navigate).toHaveBeenCalledTimes(1);
+
+    type('  🚲абв  ');
+    await vi.waitFor(() => expect(error()).not.toBeNull());
 });
 
 it('без лимита — прежнее поведение', () => {

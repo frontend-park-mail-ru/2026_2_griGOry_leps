@@ -35,3 +35,18 @@ it('после сброса обновляет маршрут', () => {
     expect(resolveRoute).toHaveBeenCalled();
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
 });
+
+it.each([
+    ['/search?q=desk&city=Tula&sort=price_desc&page=2#results', '/search?q=desk&city=Tula#results'],
+    ['/search?sort=price_asc&page=3#results', '/search#results'],
+])('сохраняет фрагмент ссылки при сбросе сортировки: %s', (source, expected) => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    history.replaceState(null, '', source);
+    const length = history.length;
+
+    resetPriceSort();
+
+    expect(location.pathname + location.search + location.hash).toBe(expected);
+    expect(history.length).toBe(length);
+    expect(wasPriceSortReset()).toBe(true);
+});
