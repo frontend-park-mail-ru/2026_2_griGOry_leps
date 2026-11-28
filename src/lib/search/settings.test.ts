@@ -41,23 +41,27 @@ it.each([
     [{ max_query_length: 1.5, price_sort_enabled: true }, { max_query_length: null, price_sort_enabled: true }],
     [{ max_query_length: '100', price_sort_enabled: true }, { max_query_length: null, price_sort_enabled: true }],
     [{ max_query_length: 100, price_sort_enabled: 'true' }, { max_query_length: 100, price_sort_enabled: false }],
-    [null, { max_query_length: null, price_sort_enabled: false }],
+    [null, null],
 ])('нормализует %j', async (raw, expected) => {
     api.getSearchSettings.mockResolvedValue(raw as never);
     await store.refreshSearchSettings();
     expect(store.searchSettings()).toEqual(expected);
 });
 
-it('первая ошибка — осторожные значения, повторная — прежнее значение', async () => {
+it('ошибка до первой загрузки оставляет настройки неизвестными, после — сохраняет прежние', async () => {
+    const listener = vi.fn();
+    store.subscribeSearchSettings(listener);
     api.getSearchSettings.mockRejectedValueOnce(new Error('network'));
     await expect(store.refreshSearchSettings()).resolves.toBeUndefined();
-    expect(store.searchSettings()).toEqual(store.CAUTIOUS_SEARCH_SETTINGS);
+    expect(store.searchSettings()).toBeNull();
+    expect(listener).not.toHaveBeenCalled();
 
     api.getSearchSettings.mockResolvedValueOnce({ max_query_length: 7, price_sort_enabled: true });
     await store.refreshSearchSettings();
     api.getSearchSettings.mockRejectedValueOnce(new Error('network'));
     await store.refreshSearchSettings();
     expect(store.searchSettings()).toEqual({ max_query_length: 7, price_sort_enabled: true });
+    expect(listener).toHaveBeenCalledTimes(1);
 });
 
 it('уведомляет подписчиков только при изменении', async () => {
