@@ -54,12 +54,15 @@ class Admin extends Component<Props, State> {
     };
 
     private revision = 0;
+    private active = true;
+    private url = location.href;
 
     componentDidMount() {
         void this.load();
     }
 
     componentWillUnmount() {
+        this.active = false;
         this.revision++;
     }
 
@@ -69,11 +72,14 @@ class Admin extends Component<Props, State> {
     };
 
     load = async (message = '') => {
+        // Сохранение может завершиться после ухода, в том числе до события hashchange.
+        if (!this.active || location.href !== this.url) return;
         const revision = ++this.revision;
         this.setState({ status: 'loading', editor: null, message: '' });
         // replaceState не вызывает hashchange: страница не пересоздаётся, а ссылкой можно поделиться.
         const { kind } = this.props;
         history.replaceState(history.state, '', location.pathname + location.search + hashFor(kind, this.state.scope, this.state.name));
+        this.url = location.href;
 
         try {
             const entries = await listEntries(this.props.kind, this.state.scope, this.state.name);
@@ -272,16 +278,19 @@ class Admin extends Component<Props, State> {
 let user: User | null = null;
 // Обновляется только при открытии и hashchange: свои replaceState страница не перечитывает.
 let filter = readHash(location.hash);
+let navigationId = 0;
 
 function showTab() {
     const { kind, scope, name } = filter;
     render(
         document.getElementById('app')!,
-        <Admin key={`${kind}|${scope}|${name}`} kind={kind} scope={scope} name={name} user={user} />,
+        <Admin key={navigationId} kind={kind} scope={scope} name={name} user={user} />,
     );
 }
 
 window.addEventListener('hashchange', () => {
+    // Возврат к исходному hash тоже должен сбросить изменённые локальные фильтры.
+    navigationId++;
     filter = readHash(location.hash);
     showTab();
 });
