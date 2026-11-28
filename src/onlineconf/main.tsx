@@ -3,11 +3,11 @@ import { Footer } from '@/components/footer/footer';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import '@/components/header/header.scss';
 import { getMe, type User } from '@/lib/api';
-import type { Kind } from './api';
 import { EntriesSearch } from './entries-search/entries-search';
+import { readHash, type HashFilter } from './hash';
 import './style.scss';
 
-function Admin({ kind, user }: { kind: Kind; user: User | null }) {
+function Admin({ filter, user }: { filter: HashFilter; user: User | null }) {
     return (
         <div class="oc-layout">
             <header class="header">
@@ -33,7 +33,7 @@ function Admin({ kind, user }: { kind: Kind; user: User | null }) {
             </header>
 
             <main class="oc-board">
-                <EntriesSearch key={kind} kind={kind} />
+                <EntriesSearch {...filter} />
             </main>
             <Footer />
         </div>
@@ -41,13 +41,18 @@ function Admin({ kind, user }: { kind: Kind; user: User | null }) {
 }
 
 let user: User | null = null;
+let filter = readHash(location.hash);
+let navigationId = 0;
 
 function showTab() {
-    const kind = location.hash === '#flags' ? 'flag' : 'config';
-    render(document.getElementById('app')!, <Admin kind={kind} user={user} />);
+    render(document.getElementById('app')!, <Admin key={navigationId} filter={filter} user={user} />);
 }
 
-window.addEventListener('hashchange', showTab);
+window.addEventListener('hashchange', () => {
+    navigationId++;
+    filter = readHash(location.hash);
+    showTab();
+});
 showTab();
 
 void getMe().then(me => {

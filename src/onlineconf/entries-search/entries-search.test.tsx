@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
 import { ApiError } from '@/lib/api';
-import { saveEntry, searchEntries, type Entry } from '../api';
+import { saveEntry, searchEntries, type Entry, type Kind } from '../api';
+import { readHash } from '../hash';
 import { EntriesSearch } from './entries-search';
 
 vi.mock('../api', async (importOriginal) => ({
@@ -15,6 +16,7 @@ const save = vi.mocked(saveEntry);
 const { showModal, close } = HTMLDialogElement.prototype;
 let root: HTMLElement;
 
+const mount = (kind: Kind) => render(root, <EntriesSearch key={kind} {...readHash(location.hash)} kind={kind} />);
 const flush = () => vi.advanceTimersByTimeAsync(0);
 const input = () => root.querySelector<HTMLInputElement>('input[name="name"]')!;
 const alert = () => root.querySelector('[role="alert"]');
@@ -42,7 +44,7 @@ beforeEach(() => {
     vi.useFakeTimers();
     search.mockReset().mockResolvedValue([]);
     save.mockReset().mockResolvedValue(undefined);
-    history.replaceState({}, '', '/onlineconf/configs');
+    history.replaceState({}, '', '/admin/');
     root = document.createElement('div');
     document.body.append(root);
 });
@@ -55,9 +57,9 @@ afterEach(() => {
 });
 
 it('берёт фильтр из URL и обновляет его без новой записи истории', async () => {
-    history.replaceState({}, '', '/onlineconf/configs?tab=1&name=max&scope=web');
+    history.replaceState({}, '', '/admin/?tab=1#configs?name=max&scope=web');
     const length = history.length;
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
 
     expect(search).toHaveBeenCalledWith({ kind: 'config', name: 'max' });
@@ -67,12 +69,13 @@ it('берёт фильтр из URL и обновляет его без нов�
     await chooseScope('search');
 
     expect(search).toHaveBeenLastCalledWith({ kind: 'config', name: 'max', scope: 'search' });
-    expect(location.search).toBe('?tab=1&name=max&scope=search');
+    expect(location.search).toBe('?tab=1');
+    expect(location.hash).toBe('#configs?scope=search&name=max');
     expect(history.length).toBe(length);
 });
 
 it('ищет через 300 мс после ввода', async () => {
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     search.mockClear();
 
@@ -88,7 +91,7 @@ it('ищет через 300 мс после ввода', async () => {
 });
 
 it('Enter ищет сразу и отменяет отложенный поиск', async () => {
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
     search.mockClear();
 
@@ -102,9 +105,9 @@ it('Enter ищет сразу и отменяет отложенный поис�
 });
 
 it('показывает найденные записи с подсветкой', async () => {
-    history.replaceState({}, '', '/onlineconf/flags?name=sort');
+    history.replaceState({}, '', '/admin/#flags?name=sort');
     search.mockResolvedValue([priceSort]);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
 
     expect(root.textContent).toContain('Найдено 1');
@@ -115,12 +118,12 @@ it('показывает найденные записи с подсветкой
 });
 
 it('различает пустой список и пустой результат', async () => {
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     expect(root.textContent).toContain('Пока нет конфигов');
 
     render(root, null);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
     expect(root.textContent).toContain('Пока нет флагов');
 
@@ -132,7 +135,7 @@ it('различает пустой список и пустой результ�
 
 it('показывает отсутствие прав и скрывает управление записями', async () => {
     search.mockRejectedValueOnce(new ApiError(403, { reason: 'forbidden' }));
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     expect(alert()?.textContent).toContain('Нет доступа к OnlineConf');
     expect(root.querySelector('form')).toBeNull();
@@ -140,7 +143,7 @@ it('показывает отсутствие прав и скрывает уп�
 
 it('предлагает войти, если сессия закончилась', async () => {
     search.mockRejectedValueOnce(new ApiError(401, { reason: 'not authenticated' }));
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     expect(alert()?.querySelector('a')?.getAttribute('href')).toBe('/login');
     expect(root.textContent).not.toContain('Попробовать ещё раз');
@@ -148,7 +151,7 @@ it('предлагает войти, если сессия закончилас�
 
 it('показывает некорректный фильтр', async () => {
     search.mockRejectedValueOnce(new ApiError(400, { reason: 'invalid filter' }));
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     expect(alert()?.textContent).toBe('Некорректный фильтр');
     expect(root.textContent).not.toContain('Попробовать ещё раз');
@@ -156,7 +159,7 @@ it('показывает некорректный фильтр', async () => {
 
 it('повторяет поиск после ошибки', async () => {
     search.mockRejectedValueOnce(new ApiError(0, { network: true }));
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
     expect(alert()?.textContent).toContain('Не удалось загрузить список');
 
@@ -172,7 +175,7 @@ it('не применяет устаревший ответ', async () => {
     let finishFirst!: (entries: Entry[]) => void;
     search.mockReturnValueOnce(new Promise(resolve => { finishFirst = resolve; }));
     search.mockResolvedValueOnce([{ ...priceSort, id: 2, name: 'b' }]);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
 
     enter('b');
@@ -185,7 +188,7 @@ it('не применяет устаревший ответ', async () => {
 });
 
 it('размонтирование отменяет отложенный поиск', async () => {
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
     enter('abc');
 
@@ -195,25 +198,13 @@ it('размонтирование отменяет отложенный пои�
     expect(search).toHaveBeenCalledTimes(1);
 });
 
-it('ищет заново, когда каркас меняет вкладку у того же компонента', async () => {
-    render(root, <div><EntriesSearch kind="config" /></div>);
-    await flush();
-    search.mockResolvedValueOnce([priceSort]);
-
-    render(root, <div><EntriesSearch kind="flag" /></div>);
-    await flush();
-
-    expect(search).toHaveBeenLastCalledWith({ kind: 'flag' });
-    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
-});
-
 it('при смене вкладки сразу убирает записи предыдущего типа', async () => {
     search.mockResolvedValueOnce([priceSort]);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
     search.mockReturnValueOnce(new Promise(() => {}));
 
-    render(root, <EntriesSearch kind="config" />);
+    mount('config');
     await flush();
 
     expect(search).toHaveBeenLastCalledWith({ kind: 'config' });
@@ -223,9 +214,9 @@ it('при смене вкладки сразу убирает записи пр
 
 it('редактирует найденный флаг и обновляет список с текущим фильтром', async () => {
     Object.assign(HTMLDialogElement.prototype, { showModal: vi.fn(), close: vi.fn() });
-    history.replaceState({}, '', '/admin/?name=sort&scope=search#flags');
+    history.replaceState({}, '', '/admin/#flags?scope=search&name=sort');
     search.mockResolvedValue([priceSort]);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
 
     root.querySelector<HTMLButtonElement>('.oc-list button')!.click();
@@ -247,7 +238,7 @@ it('редактирует найденный флаг и обновляет с�
 
 it('не убирает список во время поиска и сообщает итог в одном live-регионе', async () => {
     search.mockResolvedValueOnce([priceSort]);
-    render(root, <EntriesSearch kind="flag" />);
+    mount('flag');
     await flush();
     const status = root.querySelector('[role="status"]');
     expect(status?.textContent).toBe('Найдено 1');

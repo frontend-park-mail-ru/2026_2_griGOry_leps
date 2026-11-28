@@ -9,17 +9,13 @@ import {
     scopes,
     searchEntries,
     type Entry,
-    type Kind,
     type Scope,
 } from '../api';
 import { Editor } from '../editor';
 import { formatValue, highlight } from '../format';
+import { hashFor, type HashFilter } from '../hash';
 import { readRule } from '../values';
 import './entries-search.scss';
-
-interface EntriesSearchProps {
-    kind: Kind;
-}
 
 type SearchResult =
     | { status: 'ready'; items: Entry[]; filtered: boolean }
@@ -51,27 +47,11 @@ function isScope(value: string | null): value is Scope {
     return scopes.some(scope => scope === value);
 }
 
-/** Фильтр живёт в URL, чтобы поиском можно было поделиться; роутер каркаса не нужен. */
-function readFilter(): Pick<EntriesSearchState, 'name' | 'scope'> {
-    const params = new URLSearchParams(location.search);
-    const scope = params.get('scope');
-    return { name: params.get('name') ?? '', scope: isScope(scope) ? scope : '' };
-}
-
-function writeFilter(name: string, scope: string) {
-    const params = new URLSearchParams(location.search);
-    for (const [key, value] of [['name', name], ['scope', scope]]) {
-        if (value) params.set(key, value);
-        else params.delete(key);
-    }
-    const search = params.toString();
-    history.replaceState(history.state, '', location.pathname + (search ? `?${search}` : '') + location.hash);
-}
-
 /** Поиск по названию и фильтр по скоупу для вкладок «Конфиги» и «Фича-флаги». */
-export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchState> {
+export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
     state: EntriesSearchState = {
-        ...readFilter(),
+        name: this.props.name,
+        scope: this.props.scope,
         loading: true,
         result: null,
         searched: '',
@@ -81,21 +61,12 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
 
     private requestId = 0;
     private mounted = false;
-
-    /** vdom переиспользует экземпляр при смене вкладки и не передаёт прошлые пропсы. */
-    private searchedKind = this.props.kind;
+    private url = location.href;
 
     private scheduleSearch = debounce(() => void this.search(), SEARCH_DELAY_MS);
 
     componentDidMount() {
         this.mounted = true;
-        void this.search();
-    }
-
-    componentDidUpdate() {
-        if (this.props.kind === this.searchedKind) return;
-        this.searchedKind = this.props.kind;
-        this.setState({ result: null, searched: '', editor: null, savedMessage: '' });
         void this.search();
     }
 
@@ -106,24 +77,27 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
     }
 
     search = async () => {
-        if (!this.mounted) return;
+        // Запрос и сохранение могут завершиться между сменой адреса и hashchange.
+        if (!this.isCurrentPage()) return;
         this.scheduleSearch.cancel();
         const id = ++this.requestId;
         const name = this.state.name.trim();
         const { scope } = this.state;
-        writeFilter(name, scope);
+        const { kind } = this.props;
+        history.replaceState(history.state, '', location.pathname + location.search + hashFor(kind, scope, name));
+        this.url = location.href;
         this.setState({ loading: true });
 
         try {
             const items = await searchEntries({
-                kind: this.props.kind,
+                kind,
                 ...(name && { name }),
                 ...(scope && { scope }),
             });
-            if (id !== this.requestId) return;
+            if (id !== this.requestId || !this.isCurrentPage()) return;
             this.setState({ loading: false, result: { status: 'ready', items, filtered: Boolean(name || scope) }, searched: name });
         } catch (error) {
-            if (id !== this.requestId) return;
+            if (id !== this.requestId || !this.isCurrentPage()) return;
             const status = accessStatus(error);
             if (status) {
                 this.noAccess(status);
@@ -136,8 +110,12 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
         }
     };
 
+    private isCurrentPage(): boolean {
+        return this.mounted && location.href === this.url;
+    }
+
     noAccess = (status: 401 | 403) => {
-        if (!this.mounted) return;
+        if (!this.isCurrentPage()) return;
         this.scheduleSearch.cancel();
         this.requestId++;
         this.setState({
@@ -265,6 +243,7 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
                                 onClose={() => this.setState({ editor: null })}
                                 onDenied={this.noAccess}
                                 onSaved={() => {
+                                    if (!this.isCurrentPage()) return;
                                     this.setState({ editor: null, savedMessage: 'Изменения сохранены.' });
                                     void this.search();
                                 }} />
