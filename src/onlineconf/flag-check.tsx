@@ -29,17 +29,26 @@ export class FlagCheck extends Component<{ entryID: number; onDenied: (status: 4
     };
 
     render() {
-        if (!this.state.open) return <Button text="Проверить по ID" variant="outline" onClick={() => this.setState({ open: true })} />;
-        return <form onSubmit={this.submit}>
-            <label>ID пользователя
-                <input class="oc-control" value={this.state.id} onInput={(event: Event) => {
-                    this.revision++;
-                    this.setState({ id: (event.target as HTMLInputElement).value, status: '' });
-                }} />
-            </label>
-            <Button type="submit" text="Проверить" variant="secondary" />
-            <span role="status">{this.state.status}</span>
-            <small>Значение из базы; сервисы применяют его после обновления кэша.</small>
-        </form>;
+        if (!this.state.open) {
+            return (
+                <div class="oc-flag-check">
+                    <Button text="Проверить по ID" variant="outline" onClick={() => this.setState({ open: true })} />
+                </div>
+            );
+        }
+        return (
+            <form class="oc-flag-check" onSubmit={this.submit}>
+                <label class="oc-flag-check__field">
+                    <span>ID пользователя</span>
+                    <input class="oc-control" value={this.state.id} inputmode="numeric" onInput={(event: Event) => {
+                        this.revision++;
+                        this.setState({ id: (event.target as HTMLInputElement).value, status: '' });
+                    }} />
+                </label>
+                <Button type="submit" text="Проверить" variant="secondary" />
+                <span class="oc-flag-check__result" role="status">{this.state.status}</span>
+                <small class="oc-flag-check__hint">Значение из базы; сервисы применяют его после обновления кэша.</small>
+            </form>
+        );
     }
 }

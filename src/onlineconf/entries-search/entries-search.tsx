@@ -250,11 +250,11 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                     onClick={() => this.setState({ history: entry, savedMessage: '' })} />
                                 <Button text="Удалить" variant="outline" disabled={loading}
                                     onClick={() => this.askRemove(entry)} />
-                                {entry.kind === 'flag' && (
-                                    <FlagCheck key={JSON.stringify(entry)} entryID={entry.id}
-                                        onDenied={this.noAccess} />
-                                )}
                             </div>
+                            {entry.kind === 'flag' && (
+                                <FlagCheck key={JSON.stringify(entry)} entryID={entry.id}
+                                    onDenied={this.noAccess} />
+                            )}
                         </li>
                     );
                 })}
