@@ -194,7 +194,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                 disabled={loading || (entry.kind === 'flag' && !rule)}
                                 onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
 
-                            {entry.kind === 'flag' && <FlagCheck key={JSON.stringify(entry)} entryID={entry.id} />}
+                            {entry.kind === 'flag' && <FlagCheck key={JSON.stringify(entry)} entryID={entry.id} onDenied={this.noAccess} />}
                         </li>
                     );
                 })}

@@ -1,8 +1,8 @@
 import { Component } from 'goget-vdom';
 import { Button } from '@/components/button/button';
-import { checkFlag, errorText } from './api';
+import { accessStatus, checkFlag, errorText } from './api';
 
-export class FlagCheck extends Component<{ entryID: number }, { open: boolean; id: string; status: string }> {
+export class FlagCheck extends Component<{ entryID: number; onDenied: (status: 401 | 403) => void }, { open: boolean; id: string; status: string }> {
     state = { open: false, id: '', status: '' };
     private revision = 0;
 
@@ -21,7 +21,10 @@ export class FlagCheck extends Component<{ entryID: number }, { open: boolean; i
             const enabled = await checkFlag(this.props.entryID, id);
             if (revision === this.revision) this.setState({ status: enabled ? 'Включён' : 'Выключен' });
         } catch (error) {
-            if (revision === this.revision) this.setState({ status: errorText(error, 'Не удалось проверить флаг.') });
+            if (revision !== this.revision) return;
+            const status = accessStatus(error);
+            if (status) this.props.onDenied(status);
+            else this.setState({ status: errorText(error, 'Не удалось проверить флаг.') });
         }
     };
 
@@ -36,6 +39,7 @@ export class FlagCheck extends Component<{ entryID: number }, { open: boolean; i
             </label>
             <Button type="submit" text="Проверить" variant="secondary" />
             <span role="status">{this.state.status}</span>
+            <small>Значение из базы; сервисы применяют его после обновления кэша.</small>
         </form>;
     }
 }
