@@ -22,38 +22,14 @@ export interface HistoryEntry {
     changes: HistoryChange[];
 }
 
-export interface HistoryChange {
-    field: string;
-    old_value: unknown;
-    new_value: unknown;
-}
-
-export interface HistoryEntry {
-    id: number;
-    created_at: string;
-    author: {
-        id: number;
-        name: string;
-    };
-    action: 'create' | 'update' | 'delete';
-    changes: HistoryChange[];
-}
-
 interface HistoryRecord {
     id: number;
     entry_id: number;
     actor_id: number;
-    actor_name?: string;
     operation: 'create' | 'update' | 'delete';
     changed_at: string;
     before: Entry | null;
     after: Entry | null;
-}
-
-export interface EntriesFilter {
-    kind: Kind;
-    scope?: Scope;
-    name?: string;
 }
 
 export interface EntriesFilter {
@@ -200,8 +176,7 @@ function normalizeHistory(
         created_at: record.changed_at,
         author: {
             id: record.actor_id,
-            name: record.actor_name ||
-                `Пользователь #${record.actor_id}`,
+            name: `Пользователь #${record.actor_id}`,
         },
         action: record.operation,
         changes,
