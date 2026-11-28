@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ApiError, request } from '@/lib/api';
-import { searchEntries, type Entry } from './api';
+import { deleteEntry, searchEntries, type Entry } from './api';
 
 vi.mock('@/lib/api', async (importOriginal) => ({
     ...await importOriginal<typeof import('@/lib/api')>(),
@@ -46,4 +46,22 @@ it('сохраняет текст ошибки OnlineConf', async () => {
     const error = await searchEntries({ kind: 'config', name: 'x' }).catch((err: unknown) => err);
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ status: 400, reason: 'Недопустимые параметры запроса.' });
+});
+
+it('удаляет запись по id', async () => {
+    send.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+    await expect(deleteEntry(3)).resolves.toBeUndefined();
+    expect(send).toHaveBeenCalledWith('/onlineconf/admin/entries/3', { method: 'DELETE' });
+});
+
+it('отклоняется ApiError, если запись уже удалена', async () => {
+    send.mockResolvedValueOnce(new Response(
+        JSON.stringify({ error: { code: 'entry_not_found', message: 'Запись не найдена.' } }),
+        { status: 404 },
+    ));
+
+    const error = await deleteEntry(3).catch((err: unknown) => err);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 404, reason: 'Запись не найдена.' });
 });

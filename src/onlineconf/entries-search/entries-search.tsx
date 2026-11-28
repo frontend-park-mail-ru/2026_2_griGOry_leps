@@ -2,9 +2,11 @@ import { Component } from 'goget-vdom';
 import { debounce } from 'goget-debounce';
 import { ApiError } from '@/lib/api';
 import { Button } from '@/components/button/button';
+import { ConfirmModal } from '@/components/confirm-modal/confirm-modal';
 import { Select } from '@/components/select/select';
 import {
     accessStatus,
+    deleteEntry,
     errorText,
     scopes,
     searchEntries,
@@ -33,6 +35,9 @@ interface EntriesSearchState {
     /** Название, по которому получен текущий список, — для подсветки */
     searched: string;
     editor: Entry | 'new' | null;
+    removing: Entry | null;
+    removeError: string;
+    removePending: boolean;
     savedMessage: string;
 }
 
@@ -56,6 +61,9 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
         result: null,
         searched: '',
         editor: null,
+        removing: null,
+        removeError: '',
+        removePending: false,
         savedMessage: '',
     };
 
@@ -122,6 +130,8 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
             loading: false,
             result: { status: status === 401 ? 'unauthenticated' : 'forbidden' },
             editor: null,
+            removing: null,
+            removePending: false,
             savedMessage: '',
         });
     };
@@ -139,6 +149,44 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
 
     handleScope = (scope: string) => {
         this.setState({ scope: isScope(scope) ? scope : '', savedMessage: '' });
+        void this.search();
+    };
+
+    askRemove = (entry: Entry) => {
+        this.setState({ removing: entry, removeError: '', savedMessage: '' });
+    };
+
+    closeRemove = () => {
+        if (this.state.removePending) return;
+        this.setState({ removing: null, removeError: '' });
+    };
+
+    confirmRemove = async () => {
+        const { removing, removePending } = this.state;
+        if (!removing || removePending) return;
+        this.setState({ removePending: true, removeError: '' });
+
+        try {
+            await deleteEntry(removing.id);
+        } catch (error) {
+            if (!this.isCurrentPage()) return;
+            const status = accessStatus(error);
+            if (status) {
+                this.noAccess(status);
+            } else if (error instanceof ApiError && error.status === 404) {
+                this.setState({ removing: null, removePending: false });
+                void this.search();
+            } else {
+                this.setState({
+                    removePending: false,
+                    removeError: errorText(error, 'Не удалось удалить. Проверьте соединение и список записей.'),
+                });
+            }
+            return;
+        }
+
+        if (!this.isCurrentPage()) return;
+        this.setState({ removing: null, removePending: false, savedMessage: 'Запись удалена.' });
         void this.search();
     };
 
@@ -189,9 +237,13 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                     </div>
                                 </div>
                             ) : <span>Неизвестный формат флага</span>}
-                            <Button text="Изменить" variant="outline"
-                                disabled={loading || (entry.kind === 'flag' && !rule)}
-                                onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+                            <div class="oc-list__actions">
+                                <Button text="Изменить" variant="outline"
+                                    disabled={loading || (entry.kind === 'flag' && !rule)}
+                                    onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+                                <Button text="Удалить" variant="outline" disabled={loading}
+                                    onClick={() => this.askRemove(entry)} />
+                            </div>
                         </li>
                     );
                 })}
@@ -200,7 +252,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
     }
 
     render() {
-        const { name, scope, editor, loading, result, savedMessage } = this.state;
+        const { name, scope, editor, removing, removeError, removePending, loading, result, savedMessage } = this.state;
         const { kind } = this.props;
         const config = kind === 'config';
         const hasAccess = result?.status !== 'unauthenticated' && result?.status !== 'forbidden';
@@ -237,6 +289,17 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                         </nav>
                         {this.renderWorkspace(name, scope)}
                         {savedMessage && <p class="oc-saved" role="status">{savedMessage}</p>}
+                        {removing && (
+                            <ConfirmModal
+                                title={config ? 'Удалить конфиг?' : 'Удалить фича-флаг?'}
+                                description={`«${removing.name}» будет удалён навсегда. Восстановить его не получится.`}
+                                confirmLabel="Удалить"
+                                pending={removePending}
+                                error={removeError}
+                                onConfirm={() => void this.confirmRemove()}
+                                onClose={this.closeRemove}
+                            />
+                        )}
                         {editor && (
                             <Editor kind={kind} scope={scope || 'frontend'}
                                 entry={editor === 'new' ? undefined : editor}

@@ -370,6 +370,11 @@
         border-top: 1px solid $color-border;
     }
 
+    &__actions {
+        display: flex;
+        gap: 8px;
+    }
+
     &__identity {
         display: flex;
         flex-wrap: wrap;

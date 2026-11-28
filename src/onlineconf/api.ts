@@ -50,6 +50,10 @@ export async function saveEntry(kind: Kind, values: Values, id?: number): Promis
     }
 }
 
+export async function deleteEntry(id: number): Promise<void> {
+    await checked(await request(`${entriesPath}/${id}`, { method: 'DELETE' }));
+}
+
 export function accessStatus(error: unknown): 401 | 403 | null {
     if (error instanceof ApiError) {
         if (error.status === 401) return 401;
