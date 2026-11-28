@@ -14,6 +14,7 @@ import {
     type Scope,
 } from '../api';
 import { Editor } from '../editor';
+import { FlagCheck } from '../flag-check';
 import { History } from '../history';
 import { formatValue, highlight } from '../format';
 import { hashFor, type HashFilter } from '../hash';
@@ -241,7 +242,7 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                     </div>
                                 </div>
                             ) : <span>Неизвестный формат флага</span>}
-                            <div class="oc-list__actions">
+                            <div class="oc-entry-actions">
                                 <Button text="Изменить" variant="outline"
                                     disabled={loading || (entry.kind === 'flag' && !rule)}
                                     onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
@@ -249,6 +250,10 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                                     onClick={() => this.setState({ history: entry, savedMessage: '' })} />
                                 <Button text="Удалить" variant="outline" disabled={loading}
                                     onClick={() => this.askRemove(entry)} />
+                                {entry.kind === 'flag' && (
+                                    <FlagCheck key={JSON.stringify(entry)} entryID={entry.id}
+                                        onDenied={this.noAccess} />
+                                )}
                             </div>
                         </li>
                     );
