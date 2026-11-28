@@ -43,12 +43,14 @@ function renderApp() {
     if (currentPage && page && typeof page === 'object' && !Array.isArray(page))
         page.key ??= currentPage.name;
 
+    const settings = searchSettings();
     render(app, [
         <Header
             user={getUser()}
             cartCount={getCartCount()}
             onLogout={handleLogout}
-            maxQueryLength={searchSettings()?.max_query_length ?? null}
+            maxQueryLength={settings?.max_query_length ?? null}
+            searchButtonColor={settings?.search_button_color ?? 'blue'}
         />,
         <main id="page">{page}</main>,
         <Footer />,

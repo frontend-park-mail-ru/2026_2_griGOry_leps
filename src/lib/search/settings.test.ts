@@ -45,7 +45,7 @@ it.each([
 ])('нормализует %j', async (raw, expected) => {
     api.getSearchSettings.mockResolvedValue(raw as never);
     await store.refreshSearchSettings();
-    expect(store.searchSettings()).toEqual(expected);
+    expect(store.searchSettings()).toEqual(expected && { ...expected, search_button_color: 'blue' });
 });
 
 it('ошибка до первой загрузки оставляет настройки неизвестными, после — сохраняет прежние', async () => {
@@ -60,7 +60,7 @@ it('ошибка до первой загрузки оставляет наст�
     await store.refreshSearchSettings();
     api.getSearchSettings.mockRejectedValueOnce(new Error('network'));
     await store.refreshSearchSettings();
-    expect(store.searchSettings()).toEqual({ max_query_length: 7, price_sort_enabled: true });
+    expect(store.searchSettings()).toEqual({ max_query_length: 7, price_sort_enabled: true, search_button_color: 'blue' });
     expect(listener).toHaveBeenCalledTimes(1);
 });
 
@@ -71,6 +71,23 @@ it('уведомляет подписчиков только при измене
     await store.refreshSearchSettings();
     await store.refreshSearchSettings();
     expect(fn).toHaveBeenCalledTimes(1);
+});
+
+it('обновляет подписчиков, когда меняется только цвет кнопки', async () => {
+    const common = { max_query_length: 7, price_sort_enabled: true };
+    const listener = vi.fn();
+    store.subscribeSearchSettings(listener);
+    api.getSearchSettings.mockResolvedValueOnce(common)
+        .mockResolvedValueOnce({ ...common, search_button_color: 'orange' })
+        .mockResolvedValueOnce({ ...common, search_button_color: 'purple' });
+
+    await store.refreshSearchSettings();
+    expect(store.searchSettings()?.search_button_color).toBe('blue');
+    await store.refreshSearchSettings();
+    expect(store.searchSettings()?.search_button_color).toBe('orange');
+    await store.refreshSearchSettings();
+    expect(store.searchSettings()).toEqual({ ...common, search_button_color: 'blue' });
+    expect(listener).toHaveBeenCalledTimes(3);
 });
 
 it('queryLength считает кодовые точки после trim', () => {
@@ -93,7 +110,7 @@ it.each([null, [], 'broken', {}])('кривое тело %j сохраняет �
     await store.refreshSearchSettings();
     api.getSearchSettings.mockResolvedValueOnce(raw);
     await expect(store.refreshSearchSettings()).resolves.toBeUndefined();
-    expect(store.searchSettings()).toEqual({ max_query_length: 7, price_sort_enabled: true });
+    expect(store.searchSettings()).toEqual({ max_query_length: 7, price_sort_enabled: true, search_button_color: 'blue' });
     expect(logWarn).toHaveBeenCalled();
 });
 
@@ -119,7 +136,7 @@ it('смена пользователя сразу скрывает настро
     expect(store.searchSettings()).toBeNull();
     api.getSearchSettings.mockResolvedValueOnce({ max_query_length: 20, price_sort_enabled: true });
     await store.refreshSearchSettings();
-    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true });
+    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true, search_button_color: 'blue' });
 });
 
 it('запрос новой сессии не склеивается со старым и старый ответ не перезаписывает настройки', async () => {
@@ -140,7 +157,7 @@ it('запрос новой сессии не склеивается со ста
     expect(store.refreshSearchSettings()).toBe(newRequest);
     answerNew({ max_query_length: 20, price_sort_enabled: true });
     await newRequest;
-    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true });
+    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true, search_button_color: 'blue' });
 });
 
 it.each([false, true])('старый ответ после новых настроек (ошибка: %s) не меняет новую сессию', async fail => {
@@ -160,5 +177,5 @@ it.each([false, true])('старый ответ после новых настр
     if (fail) rejectOld(new Error('old network error'));
     else answerOld({ max_query_length: 5, price_sort_enabled: false });
     await oldRequest;
-    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true });
+    expect(store.searchSettings()).toEqual({ max_query_length: 20, price_sort_enabled: true, search_button_color: 'blue' });
 });
