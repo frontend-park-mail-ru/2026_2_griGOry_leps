@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
 import { ApiError } from '@/lib/api';
-import { saveEntry, searchEntries, type Entry, type Kind } from '../api';
+import { deleteEntry, getEntryHistory, saveEntry, searchEntries, type Entry, type Kind } from '../api';
 import { readHash } from '../hash';
 import { EntriesSearch } from './entries-search';
 
@@ -9,10 +9,13 @@ vi.mock('../api', async (importOriginal) => ({
     ...await importOriginal<typeof import('../api')>(),
     searchEntries: vi.fn(),
     saveEntry: vi.fn(),
+    deleteEntry: vi.fn(),
+    getEntryHistory: vi.fn(),
 }));
 
 const search = vi.mocked(searchEntries);
 const save = vi.mocked(saveEntry);
+const remove = vi.mocked(deleteEntry);
 const { showModal, close } = HTMLDialogElement.prototype;
 let root: HTMLElement;
 
@@ -44,6 +47,8 @@ beforeEach(() => {
     vi.useFakeTimers();
     search.mockReset().mockResolvedValue([]);
     save.mockReset().mockResolvedValue(undefined);
+    remove.mockReset().mockResolvedValue(undefined);
+    vi.mocked(getEntryHistory).mockReset().mockResolvedValue([]);
     history.replaceState({}, '', '/admin/');
     root = document.createElement('div');
     document.body.append(root);
@@ -251,4 +256,122 @@ it('не убирает список во время поиска и сообщ�
     expect(root.querySelector('[role="status"]')).toBe(status);
     expect(status?.textContent).toBe('Ищем…');
     expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
+
+const clickButton = (label: string) => [...root.querySelectorAll('button')].find(button => button.textContent === label)!.click();
+
+it('оставляет историю доступной рядом с удалением записи', async () => {
+    HTMLDialogElement.prototype.showModal = vi.fn();
+    HTMLDialogElement.prototype.close = vi.fn();
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('История');
+    await flush();
+    expect(getEntryHistory).toHaveBeenCalledWith(priceSort.id);
+    expect(root.querySelector('.oc-history')?.textContent).toContain('Изменений пока нет');
+    clickButton('Закрыть');
+    await flush();
+    expect(root.querySelector('.oc-history')).toBeNull();
+
+    clickButton('Удалить');
+    await flush();
+    expect(root.querySelector('.modal__title')?.textContent).toBe('Удалить фича-флаг?');
+    expect(remove).not.toHaveBeenCalled();
+});
+
+it('удаляет конфиг после подтверждения и обновляет список', async () => {
+    const config: Entry = { id: 5, scope: 'frontend', name: 'limit', kind: 'config', value: 24 };
+    search.mockResolvedValueOnce([config]);
+    mount('config');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+    expect(root.querySelector('.modal__title')?.textContent).toBe('Удалить конфиг?');
+    expect(root.querySelector('.modal__description')?.textContent).toContain('«limit»');
+    expect(remove).not.toHaveBeenCalled();
+
+    search.mockResolvedValueOnce([]);
+    root.querySelector<HTMLButtonElement>('.confirm-modal__confirm')!.click();
+    await flush();
+
+    expect(remove).toHaveBeenCalledWith(5);
+    expect(root.querySelector('.modal')).toBeNull();
+    expect(root.querySelector('li[data-entry-id="5"]')).toBeNull();
+    expect(root.querySelector('.oc-saved')?.textContent).toBe('Запись удалена.');
+    expect(search).toHaveBeenCalledTimes(2);
+});
+
+it('удаляет фича-флаг с вопросом про флаг', async () => {
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+
+    expect(root.querySelector('.modal__title')?.textContent).toBe('Удалить фича-флаг?');
+});
+
+it('отмена удаления ничего не удаляет', async () => {
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+    clickButton('Отмена');
+    await flush();
+
+    expect(remove).not.toHaveBeenCalled();
+    expect(root.querySelector('.modal')).toBeNull();
+    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
+
+it('показывает ошибку удаления и оставляет окно открытым', async () => {
+    remove.mockRejectedValueOnce(new ApiError(500, { reason: 'Не удалось выполнить операцию.' }));
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+    root.querySelector<HTMLButtonElement>('.confirm-modal__confirm')!.click();
+    await flush();
+
+    expect(root.querySelector('.confirm-modal__error')?.textContent).toBe('Не удалось выполнить операцию.');
+    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+    expect(search).toHaveBeenCalledTimes(1);
+});
+
+it('если запись уже удалена, закрывает окно и обновляет список', async () => {
+    remove.mockRejectedValueOnce(new ApiError(404, { reason: 'Запись не найдена.' }));
+    search.mockResolvedValueOnce([priceSort]).mockResolvedValueOnce([]);
+    mount('flag');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+    root.querySelector<HTMLButtonElement>('.confirm-modal__confirm')!.click();
+    await flush();
+
+    expect(root.querySelector('.modal')).toBeNull();
+    expect(root.querySelector('li[data-entry-id="3"]')).toBeNull();
+});
+
+it('при отказе в доступе во время удаления показывает «Нет доступа»', async () => {
+    remove.mockRejectedValueOnce(new ApiError(403, { reason: 'forbidden' }));
+    search.mockResolvedValueOnce([priceSort]);
+    mount('flag');
+    await flush();
+
+    clickButton('Удалить');
+    await flush();
+    root.querySelector<HTMLButtonElement>('.confirm-modal__confirm')!.click();
+    await flush();
+
+    expect(alert()?.textContent).toContain('Нет доступа к OnlineConf');
+    expect(root.querySelector('.modal')).toBeNull();
 });
