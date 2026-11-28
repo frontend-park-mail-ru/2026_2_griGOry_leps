@@ -420,3 +420,16 @@ it('смена флага на прежней странице во время �
     expect(location.pathname + location.search).toBe('/categories?sort=price_desc&page=2');
     expect(history.state).toBeNull();
 });
+
+it('флаг выключили на открытой странице с price_desc — сброс', async () => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?q=стол&sort=price_desc');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(search).toHaveBeenCalledTimes(1));
+
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: false });
+    render(root, <SearchPage />);
+    expect(location.search).toBe('?q=%D1%81%D1%82%D0%BE%D0%BB');
+    expect(history.state).toEqual({ priceSortReset: true });
+});

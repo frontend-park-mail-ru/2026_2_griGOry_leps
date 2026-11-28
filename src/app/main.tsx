@@ -20,7 +20,7 @@ import { clearUser, getUser, subscribe } from '@/lib/user';
 import { logError, logWarn, getToast, subscribeToast } from '@/lib/core';
 import { loadCurrentUser } from '@/app/loaders/user';
 import { getCartCount, refreshCartCount, subscribeCartCount } from '@/lib/cart';
-import { searchSettings, refreshSearchSettings, subscribeSearchSettings } from '@/lib/search';
+import { searchSettings, refreshSearchSettings, subscribeSearchSettings, watchSearchSettings } from '@/lib/search';
 import type { PageView, Page } from '@/app/page';
 import { handleLogout } from '@/app/auth';
 import { registerRoutes } from '@/app/routes';
@@ -101,6 +101,7 @@ async function start() {
     subscribeSearchSettings(renderApp);
     subscribe(() => void refreshSearchSettings());
     void refreshSearchSettings();
+    watchSearchSettings();
     void refreshCartCount(Boolean(getUser()));
 
     onSessionExpired(() => {
