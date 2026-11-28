@@ -1,6 +1,7 @@
 import { Component } from 'goget-vdom';
 import { ProductCard } from '@/components/product-card/product-card';
-import { searchListings, type AdCard, type SearchFilters } from '@/lib/api';
+import { ApiError, searchListings, type AdCard, type SearchFilters, type SearchSettings } from '@/lib/api';
+import { searchSettings, refreshSearchSettings, isPriceSort, resetPriceSort, wasPriceSortReset } from '@/lib/search';
 import './search-page.scss';
 import { SearchFilterForm } from './search-filter-form';
 import { Breadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
@@ -12,11 +13,13 @@ interface SearchPageProps {
     query: string;
     page: number;
     filters: SearchFilters;
+    settings: SearchSettings | null;
 }
 
 type SearchPageState =
     | { status: 'loading' }
     | { status: 'error' }
+    | { status: 'too-long' }
     | { status: 'ready'; items: AdCard[]; total: number };
 
 const pageSize = 24;
@@ -76,6 +79,7 @@ export function SearchPage() {
             query={query}
             page={page}
             filters={readSearchFilters(params)}
+            settings={searchSettings()}
         />
     );
 }
@@ -85,13 +89,16 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
     private requestId = 0;
     private requestedFilters = '';
+    private requestedPriceSort: boolean | undefined;
 
     componentDidMount() {
         void this.load();
     }
 
     componentDidUpdate() {
-        if (JSON.stringify(this.props.filters) !== this.requestedFilters) {
+        if (JSON.stringify(this.props.filters) !== this.requestedFilters
+            || (isPriceSort(this.props.filters.sort)
+                && this.props.settings?.price_sort_enabled !== this.requestedPriceSort)) {
             void this.load();
         }
     }
@@ -102,12 +109,23 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
 
     load = async () => {
         const id = ++this.requestId;
-        const { query, page, filters } = this.props;
+        if (location.pathname !== '/search') return;
+        const url = location.pathname + location.search;
+        const { query, page, filters, settings } = this.props;
 
         this.requestedFilters = JSON.stringify(filters);
+        this.requestedPriceSort = settings?.price_sort_enabled;
 
         if (this.state.status !== 'loading') {
             this.setState({ status: 'loading' });
+        }
+
+        if (isPriceSort(filters.sort)) {
+            if (settings === null) return;
+            if (!settings.price_sort_enabled) {
+                resetPriceSort();
+                return;
+            }
         }
 
         try {
@@ -118,15 +136,22 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                 filters,
             });
 
-            if (id === this.requestId) {
+            if (id === this.requestId && location.pathname + location.search === url) {
                 this.setState({
                     status: 'ready',
                     items: result.items,
                     total: result.total,
                 });
             }
-        } catch {
-            if (id === this.requestId) {
+        } catch (err) {
+            if (id !== this.requestId || location.pathname + location.search !== url) return;
+            if (err instanceof ApiError && err.status === 403 && err.reason === 'price sorting disabled') {
+                resetPriceSort();
+                void refreshSearchSettings();
+            } else if (err instanceof ApiError && err.status === 400 && err.field === 'q') {
+                this.setState({ status: 'too-long' });
+                void refreshSearchSettings();
+            } else {
                 this.setState({ status: 'error' });
             }
         }
@@ -146,8 +171,9 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
     }
 
     render() {
-        const { query, page } = this.props;
+        const { query, page, settings } = this.props;
         const state = this.state;
+        const maxQueryLength = settings?.max_query_length ?? null;
 
         return (
             <section class="search-page">
@@ -166,7 +192,16 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                         {this.props.filters.city && ` · ${this.props.filters.city}`}
                     </p>
                 )}
-                <SearchFilterForm query={query} filters={this.props.filters} />
+                {wasPriceSortReset() && (
+                    <p class="search-page__notice" role="status">
+                        Сортировка по цене сейчас недоступна — показываем сначала новые.
+                    </p>
+                )}
+                <SearchFilterForm
+                    query={query}
+                    filters={this.props.filters}
+                    priceSortEnabled={settings?.price_sort_enabled === true}
+                />
                 {state.status === 'loading' && (
                     <p role="status">Ищем объявления…</p>
                 )}
@@ -176,6 +211,14 @@ class SearchResults extends Component<SearchPageProps, SearchPageState> {
                         <p>Не удалось загрузить объявления.</p>
                         <Button variant="secondary" text="Попробовать ещё раз" onClick={this.load} />
                     </div>
+                )}
+
+                {state.status === 'too-long' && (
+                    <p role="alert">
+                        {maxQueryLength !== null
+                            ? `Запрос слишком длинный — сократите его до ${maxQueryLength} символов.`
+                            : 'Запрос слишком длинный — сократите его.'}
+                    </p>
                 )}
 
                 {state.status === 'ready' && (

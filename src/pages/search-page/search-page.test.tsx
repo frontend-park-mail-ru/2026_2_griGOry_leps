@@ -1,6 +1,7 @@
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
-import { searchListings } from '@/lib/api';
+import { ApiError, getCategoryTree, searchListings } from '@/lib/api';
+import { searchSettings, refreshSearchSettings } from '@/lib/search';
 import { SearchPage } from './search-page';
 
 vi.mock('@/lib/api', async (importOriginal) => {
@@ -12,11 +13,22 @@ vi.mock('@/lib/api', async (importOriginal) => {
     };
 });
 
+vi.mock('@/lib/search', async (orig) => ({
+    ...await orig<typeof import('@/lib/search')>(),
+    searchSettings: vi.fn(),
+    refreshSearchSettings: vi.fn(),
+}));
+const settings = vi.mocked(searchSettings);
+
 const search = vi.mocked(searchListings);
 let root: HTMLElement;
 
 beforeEach(() => {
     search.mockReset();
+    vi.mocked(getCategoryTree).mockResolvedValue([]);
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: true });
+    vi.mocked(refreshSearchSettings).mockReset().mockResolvedValue();
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     root = document.createElement('div');
 });
 
@@ -248,4 +260,163 @@ it('закрывает панель фильтров при переходе п�
         render(root, null);
         Object.assign(dialog, { showModal, close });
     }
+});
+
+afterEach(() => {
+    render(root, null);
+    vi.restoreAllMocks();
+});
+
+async function sortOptions() {
+    root.querySelector<HTMLButtonElement>('#search-sort')!.click();
+    await vi.waitFor(() => expect(root.querySelector('#search-sort-list')).not.toBeNull());
+    return [...root.querySelectorAll('#search-sort-list [role="option"]')].map(option => option.textContent);
+}
+
+it('флаг выключен — только «Сначала новые»', async () => {
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: false });
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?q=велосипед');
+    render(root, <SearchPage />);
+    expect(await sortOptions()).toEqual(['Сначала новые']);
+});
+
+it('ссылка с price_desc при выключенном флаге сбрасывается без запроса с сортировкой', async () => {
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: false });
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?q=велосипед&city=Тула&sort=price_desc&page=3');
+    render(root, <SearchPage />);
+    expect(root.querySelector('#search-sort')?.textContent).toContain('Сначала новые');
+    expect(Object.fromEntries(new URLSearchParams(location.search))).toEqual({ q: 'велосипед', city: 'Тула' });
+    expect(search).not.toHaveBeenCalledWith(expect.objectContaining({
+        filters: expect.objectContaining({ sort: 'price_desc' }),
+    }));
+
+    render(root, <SearchPage />); // роутер перерисовал страницу по новому URL
+    expect(root.querySelector('.search-page__notice')?.textContent)
+        .toBe('Сортировка по цене сейчас недоступна — показываем сначала новые.');
+});
+
+it('пока настроек нет, поиск с price_asc ждёт, затем выполняется', async () => {
+    settings.mockReturnValue(null);
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?sort=price_asc');
+    render(root, <SearchPage />);
+    expect(search).not.toHaveBeenCalled();
+    expect(root.querySelector('[role="status"]')?.textContent).toContain('Ищем объявления');
+
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: true });
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(search).toHaveBeenCalledWith(expect.objectContaining({
+        filters: { sort: 'price_asc' },
+    })));
+});
+
+it('флаг включён — price_asc уходит в API', async () => {
+    search.mockResolvedValueOnce({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?sort=price_asc');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(search).toHaveBeenCalledWith(expect.objectContaining({ filters: { sort: 'price_asc' } })));
+    expect(await sortOptions()).toEqual(['Сначала новые', 'Сначала дешевле', 'Сначала дороже']);
+});
+
+it('403 price sorting disabled — сброс и обновление настроек', async () => {
+    search.mockRejectedValueOnce(new ApiError(403, { reason: 'price sorting disabled' }));
+    history.replaceState(null, '', '/search?q=стол&sort=price_asc');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(location.search).toBe('?q=%D1%81%D1%82%D0%BE%D0%BB'));
+    expect(history.state).toEqual({ priceSortReset: true });
+    expect(refreshSearchSettings).toHaveBeenCalled();
+});
+
+it('403 с другой причиной — обычная ошибка с повтором, URL не меняется', async () => {
+    search.mockRejectedValueOnce(new ApiError(403, { reason: 'forbidden' }));
+    history.replaceState(null, '', '/search?sort=price_asc');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('[role="alert"] button')).not.toBeNull());
+    expect(location.search).toBe('?sort=price_asc');
+});
+
+it.each([
+    [5, 'Запрос слишком длинный — сократите его до 5 символов.'],
+    [null, 'Запрос слишком длинный — сократите его.'],
+])('400 q при лимите %s — сообщение без повтора', async (limit, text) => {
+    settings.mockReturnValue({ max_query_length: limit, price_sort_enabled: true });
+    search.mockRejectedValueOnce(new ApiError(400, { field: 'q', reason: 'search query too long' }));
+    history.replaceState(null, '', '/search?q=очень+длинный');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('[role="alert"]')?.textContent).toBe(text));
+    expect(root.querySelector('[role="alert"] button')).toBeNull();
+    expect(refreshSearchSettings).toHaveBeenCalled();
+});
+
+it('первая загрузка настроек запретила цену — ждёт ответа, затем сбрасывает и ищет сначала новые', async () => {
+    settings.mockReturnValue(null);
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?q=стол&city=Тула&sort=price_asc&page=3');
+    const length = history.length;
+    render(root, <SearchPage />);
+    expect(search).not.toHaveBeenCalled();
+
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: false });
+    render(root, <SearchPage />);
+    expect(history.length).toBe(length);
+    expect(history.state).toEqual({ priceSortReset: true });
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(search).toHaveBeenCalledTimes(1));
+    expect(search).toHaveBeenCalledWith({ q: 'стол', limit: 24, offset: 0, filters: { city: 'Тула' } });
+});
+
+it.each([
+    new ApiError(403, { reason: 'price sorting disabled' }),
+    new ApiError(400, { field: 'q', reason: 'search query too long' }),
+])('после ухода со страницы устаревшая ошибка %s не меняет URL и настройки', async error => {
+    let reject!: (error: unknown) => void;
+    search.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    history.replaceState(null, '', '/search?q=стол&sort=price_asc');
+    render(root, <SearchPage />);
+    render(root, null);
+    history.replaceState(null, '', '/categories');
+    reject(error);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(location.pathname).toBe('/categories');
+    expect(history.state).toBeNull();
+    expect(refreshSearchSettings).not.toHaveBeenCalled();
+});
+
+it('400 другого поля оставляет обычную ошибку с повтором', async () => {
+    search.mockRejectedValueOnce(new ApiError(400, { field: 'city', reason: 'invalid city' }));
+    history.replaceState(null, '', '/search?q=стол');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('[role="alert"] button')).not.toBeNull());
+    expect(refreshSearchSettings).not.toHaveBeenCalled();
+});
+
+it.each([
+    new ApiError(403, { reason: 'price sorting disabled' }),
+    new ApiError(400, { field: 'q', reason: 'search query too long' }),
+])('поздняя ошибка %s не влияет на новый URL до размонтирования поиска', async error => {
+    let reject!: (error: unknown) => void;
+    search.mockImplementationOnce(() => new Promise((_resolve, fail) => { reject = fail; }));
+    history.replaceState(null, '', '/search?q=стол&sort=price_asc');
+    render(root, <SearchPage />);
+    history.replaceState({ destination: true }, '', '/categories?sort=price_desc&page=2');
+    reject(error);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(location.pathname + location.search).toBe('/categories?sort=price_desc&page=2');
+    expect(history.state).toEqual({ destination: true });
+    expect(refreshSearchSettings).not.toHaveBeenCalled();
+    expect(root.querySelector('[role="alert"]')).toBeNull();
+});
+
+it('смена флага на прежней странице во время загрузки нового маршрута не меняет новый URL', async () => {
+    search.mockResolvedValue({ items: [], total: 0, limit: 24, offset: 0 });
+    history.replaceState(null, '', '/search?sort=price_asc');
+    render(root, <SearchPage />);
+    await vi.waitFor(() => expect(root.querySelector('.search-page__count')).not.toBeNull());
+    history.replaceState(null, '', '/categories?sort=price_desc&page=2');
+    settings.mockReturnValue({ max_query_length: null, price_sort_enabled: false });
+    render(root, <SearchPage />);
+    expect(location.pathname + location.search).toBe('/categories?sort=price_desc&page=2');
+    expect(history.state).toBeNull();
 });

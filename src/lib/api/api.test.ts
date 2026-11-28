@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
-    ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, login, logout,
+    ApiError, addToCart, assetUrl, checkResetToken, createOrder, deleteListing, getListing, getMe, getSearchSettings, login, logout,
     newIdempotencyKey, onSessionExpired, requestPasswordReset, resetCsrfToken, resetPassword, uploadListingPhoto,
 } from '.';
 
@@ -315,4 +315,15 @@ describe('протухшая сессия', () => {
 
         expect(listener).not.toHaveBeenCalled();
     });
+});
+
+it('getSearchSettings читает /search/settings', async () => {
+    replies.push(() => ({ body: { max_query_length: 100, price_sort_enabled: true } }));
+    expect(await getSearchSettings()).toEqual({ max_query_length: 100, price_sort_enabled: true });
+    expect(calls[0]).toMatchObject({ url: '/search/settings', method: 'GET' });
+});
+
+it('getSearchSettings бросает ApiError на 503', async () => {
+    replies.push(() => ({ status: 503, body: { error: 'auth unavailable' } }));
+    await expect(getSearchSettings()).rejects.toMatchObject({ status: 503 });
 });
