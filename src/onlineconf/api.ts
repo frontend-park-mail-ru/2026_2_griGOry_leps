@@ -13,6 +13,13 @@ export interface EntriesFilter {
 
 const entriesPath = '/onlineconf/admin/entries';
 
+export async function checkFlag(id: number, userID: number): Promise<boolean> {
+    const response = await checked(await request(`${entriesPath}/${id}/check?user_id=${userID}`, { cache: 'no-store' }));
+    const result = await response.json();
+    if (typeof result?.enabled !== 'boolean') throw new Error('Некорректный ответ сервиса.');
+    return result.enabled;
+}
+
 async function checked(response: Response) {
     if (response.ok) return response;
     const body = await response.json().catch(() => null);

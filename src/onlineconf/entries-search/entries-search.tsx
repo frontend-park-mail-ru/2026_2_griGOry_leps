@@ -12,6 +12,7 @@ import {
     type Scope,
 } from '../api';
 import { Editor } from '../editor';
+import { FlagCheck } from '../flag-check';
 import { formatValue, highlight } from '../format';
 import { hashFor, type HashFilter } from '../hash';
 import { readRule } from '../values';
@@ -192,6 +193,8 @@ export class EntriesSearch extends Component<HashFilter, EntriesSearchState> {
                             <Button text="Изменить" variant="outline"
                                 disabled={loading || (entry.kind === 'flag' && !rule)}
                                 onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+
+                            {entry.kind === 'flag' && <FlagCheck key={JSON.stringify(entry)} entryID={entry.id} />}
                         </li>
                     );
                 })}
