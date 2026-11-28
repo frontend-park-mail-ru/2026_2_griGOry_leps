@@ -1,5 +1,5 @@
 import { ApiError, type CloseReason, type Condition, type Listing, type ListingStatus } from '@/lib/api';
-import { formatPrice } from '@/lib/core';
+import { formatPrice, plural } from '@/lib/core';
 
 export const CONDITION_LABELS: Record<Condition, string> = {
     new: 'Новое',
@@ -22,6 +22,10 @@ export const CLOSE_REASON_LABELS: Record<CloseReason, string> = {
     changed_mind: 'Передумал продавать',
     other: 'Другая причина',
 };
+
+export function formatViews(count: number): string {
+    return `${count.toLocaleString('ru-RU')} ${plural(count, ['просмотр', 'просмотра', 'просмотров'])}`;
+}
 
 export function statusNotice(listing: Listing): string {
     if (listing.is_owner) {

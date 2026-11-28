@@ -7,6 +7,7 @@ import { DeleteBlockedModal } from '@/components/delete-blocked-modal/delete-blo
 import { DeleteListingModal } from '@/components/delete-listing-modal/delete-listing-modal';
 import { ListingCard } from '@/components/listing-card/listing-card';
 import { ListingGallery } from '@/components/listing-gallery/listing-gallery';
+import { ListingViewsCard } from '@/components/listing-views/listing-views';
 import { ListingPriceCard } from '@/components/listing-price-card/listing-price-card';
 import { ListingSellerCard } from '@/components/listing-seller-card/listing-seller-card';
 import { ProductCard } from '@/components/product-card/product-card';
@@ -15,7 +16,10 @@ import {
     type AdCard, type CloseReason, type Listing, type User,
 } from '@/lib/api';
 import { formatDay, logWarn, showToast } from '@/lib/core';
-import { CONDITION_LABELS, UNPAID_ORDER_TEXT, hasUnpaidOrder, pickupLocation, statusNotice } from '@/lib/listings';
+import {
+    CONDITION_LABELS, UNPAID_ORDER_TEXT, formatViews, hasUnpaidOrder, pickupLocation,
+    statusNotice,
+} from '@/lib/listings';
 import { setCartCount } from '@/lib/cart';
 import { goToLogin, navigate } from 'goget-router';
 
@@ -187,6 +191,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                 )}
 
                 <h1 class="listing-page__title">{title}</h1>
+                <p class="listing-page__meta">{formatViews(listing.views_count)}</p>
 
                 <div class="listing-page__layout">
                     <div class="listing-page__main">
@@ -226,6 +231,7 @@ export class ListingPage extends Component<ListingPageProps, ListingPageState> {
                             onClose={() => this.openDialog('close')}
                             onDelete={() => this.openDialog('delete')}
                         />
+                        {listing.is_owner && <ListingViewsCard total={listing.views_count} days={listing.views_by_day} />}
                         {!listing.is_owner && <ListingSellerCard seller={listing.seller} />}
                         {!listing.is_owner && (
                             <ListingCard title="Безопасная сделка" accent>

@@ -33,6 +33,7 @@ const profile: Profile = {
 function ad(id: number, status: MyAdCard['status']): MyAdCard {
     return {
         id,
+        views_count: 0,
         title: `Объявление ${id}`,
         price: '1500.00',
         image_url: null,
