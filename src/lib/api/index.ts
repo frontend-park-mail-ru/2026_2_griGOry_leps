@@ -3,7 +3,7 @@ export { ApiError, isEmailNotVerified, type ApiErrorOptions } from './errors';
 export { resetCsrfToken } from './csrf';
 export { request } from './request';
 export { onSessionExpired } from './session';
-export { assetUrl } from './utils';
+export { assetUrl, query } from './utils';
 export type { RequestOptions } from './utils';
 
 export * from './auth';

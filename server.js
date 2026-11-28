@@ -7,6 +7,9 @@ const dist = path.join(import.meta.dirname, 'dist');
 const app = express();
 
 app.use(express.static(dist));
+app.use('/admin', (_req, res) => {
+    res.sendStatus(404);
+});
 app.use((_req, res) => {
     res.sendFile(path.join(dist, 'index.html'));
 });

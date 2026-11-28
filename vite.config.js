@@ -13,6 +13,11 @@ export default defineConfig({
             '@': path.resolve(__dirname, './src/'),
         },
     },
+    build: {
+        rollupOptions: {
+            input: { shop: 'index.html', onlineconf: 'admin/index.html' },
+        },
+    },
     server: {
         port: 5173,
     },
