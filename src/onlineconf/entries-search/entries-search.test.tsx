@@ -1,15 +1,18 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
 import { ApiError } from '@/lib/api';
-import { searchEntries, type OnlineconfEntry } from '../api';
+import { saveEntry, searchEntries, type Entry } from '../api';
 import { EntriesSearch } from './entries-search';
 
 vi.mock('../api', async (importOriginal) => ({
     ...await importOriginal<typeof import('../api')>(),
     searchEntries: vi.fn(),
+    saveEntry: vi.fn(),
 }));
 
 const search = vi.mocked(searchEntries);
+const save = vi.mocked(saveEntry);
+const { showModal, close } = HTMLDialogElement.prototype;
 let root: HTMLElement;
 
 const flush = () => vi.advanceTimersByTimeAsync(0);
@@ -27,7 +30,7 @@ const chooseScope = async (label: string) => {
     await flush();
 };
 
-const priceSort: OnlineconfEntry = {
+const priceSort: Entry = {
     id: 3,
     scope: 'search',
     name: 'price_sort',
@@ -38,6 +41,7 @@ const priceSort: OnlineconfEntry = {
 beforeEach(() => {
     vi.useFakeTimers();
     search.mockReset().mockResolvedValue([]);
+    save.mockReset().mockResolvedValue(undefined);
     history.replaceState({}, '', '/onlineconf/configs');
     root = document.createElement('div');
     document.body.append(root);
@@ -46,6 +50,7 @@ beforeEach(() => {
 afterEach(() => {
     render(root, null);
     root.remove();
+    Object.assign(HTMLDialogElement.prototype, { showModal, close });
     vi.useRealTimers();
 });
 
@@ -125,14 +130,25 @@ it('различает пустой список и пустой результ�
     expect(root.textContent).toContain('Ничего не найдено');
 });
 
-it('показывает отсутствие доступа и некорректный фильтр', async () => {
+it('показывает отсутствие прав и скрывает управление записями', async () => {
     search.mockRejectedValueOnce(new ApiError(403, { reason: 'forbidden' }));
     render(root, <EntriesSearch kind="config" />);
     await flush();
-    expect(alert()?.textContent).toBe('Нет доступа к OnlineConf');
+    expect(alert()?.textContent).toContain('Нет доступа к OnlineConf');
+    expect(root.querySelector('form')).toBeNull();
+});
 
+it('предлагает войти, если сессия закончилась', async () => {
+    search.mockRejectedValueOnce(new ApiError(401, { reason: 'not authenticated' }));
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+    expect(alert()?.querySelector('a')?.getAttribute('href')).toBe('/login');
+    expect(root.textContent).not.toContain('Попробовать ещё раз');
+});
+
+it('показывает некорректный фильтр', async () => {
     search.mockRejectedValueOnce(new ApiError(400, { reason: 'invalid filter' }));
-    submit();
+    render(root, <EntriesSearch kind="config" />);
     await flush();
     expect(alert()?.textContent).toBe('Некорректный фильтр');
     expect(root.textContent).not.toContain('Попробовать ещё раз');
@@ -153,7 +169,7 @@ it('повторяет поиск после ошибки', async () => {
 });
 
 it('не применяет устаревший ответ', async () => {
-    let finishFirst!: (entries: OnlineconfEntry[]) => void;
+    let finishFirst!: (entries: Entry[]) => void;
     search.mockReturnValueOnce(new Promise(resolve => { finishFirst = resolve; }));
     search.mockResolvedValueOnce([{ ...priceSort, id: 2, name: 'b' }]);
     render(root, <EntriesSearch kind="flag" />);
@@ -189,6 +205,44 @@ it('ищет заново, когда каркас меняет вкладку �
 
     expect(search).toHaveBeenLastCalledWith({ kind: 'flag' });
     expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
+
+it('при смене вкладки сразу убирает записи предыдущего типа', async () => {
+    search.mockResolvedValueOnce([priceSort]);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+    search.mockReturnValueOnce(new Promise(() => {}));
+
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+
+    expect(search).toHaveBeenLastCalledWith({ kind: 'config' });
+    expect(root.querySelector('li[data-entry-id="3"]')).toBeNull();
+    expect(root.querySelector('[role="status"]')?.textContent).toBe('Ищем…');
+});
+
+it('редактирует найденный флаг и обновляет список с текущим фильтром', async () => {
+    Object.assign(HTMLDialogElement.prototype, { showModal: vi.fn(), close: vi.fn() });
+    history.replaceState({}, '', '/admin/?name=sort&scope=search#flags');
+    search.mockResolvedValue([priceSort]);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+
+    root.querySelector<HTMLButtonElement>('.oc-list button')!.click();
+    await flush();
+    const percent = root.querySelector<HTMLInputElement>('#oc-percent')!;
+    expect(percent.value).toBe('25');
+    percent.value = '70';
+    percent.dispatchEvent(new Event('input', { bubbles: true }));
+    root.querySelector('dialog form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    await flush();
+
+    expect(save).toHaveBeenCalledWith('flag', {
+        scope: 'search', name: 'price_sort',
+        value: { rollout_percent: 70, included_user_ids: [4], excluded_user_ids: [] },
+    }, 3);
+    expect(root.querySelector('dialog')).toBeNull();
+    expect(search).toHaveBeenLastCalledWith({ kind: 'flag', scope: 'search', name: 'sort' });
 });
 
 it('не убирает список во время поиска и сообщает итог в одном live-регионе', async () => {

@@ -1,0 +1,449 @@
+@use '@/app/styles/reset';
+@use '@/app/styles/base';
+@use '@/shared/styles/variables' as *;
+
+.oc-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: $surface-1;
+
+    .oc-topbar {
+        gap: clamp(10px, 1.4vw, 24px);
+        padding-inline: clamp(16px, 4vw, 64px);
+    }
+
+    .oc-topbar .search {
+        min-width: 0;
+    }
+}
+
+.oc-card {
+    width: min(760px, calc(100% - 32px));
+    margin: clamp(24px, 5vw, 72px) auto;
+    padding: clamp(20px, 3vw, 40px);
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    &:has(.oc-notice):not(:has(.oc-panel)) {
+        max-width: 640px;
+    }
+
+    &__title {
+        margin: 0 0 18px;
+        color: $color-text-strong;
+        font-size: clamp(24px, 2.2vw, 32px);
+        line-height: 1.2;
+        text-align: center;
+    }
+}
+
+.oc-tabs {
+    width: min(320px, 100%);
+    margin: 0 auto 24px;
+}
+
+.oc-panel {
+    overflow: hidden;
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+}
+
+.oc-toolbar {
+    padding: 12px 16px;
+    border-bottom: 1px solid $color-border;
+}
+
+.oc-scope-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: $color-text-secondary;
+}
+
+.oc-control {
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 14px;
+    color: $color-text-strong;
+    background-color: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+}
+
+.oc-notice {
+    margin: 0;
+    padding: 24px 12px;
+    color: $color-text-secondary;
+    text-align: center;
+}
+
+.oc-link {
+    color: $goget-blue;
+}
+
+.oc-saved {
+    margin: 12px 16px;
+    padding: 8px 12px;
+    color: $color-status-success;
+    background: #e8f7ed;
+    border-radius: $radius-sm;
+}
+
+.oc-table-wrap {
+    overflow-x: auto;
+}
+
+.oc-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    &__heading, &__cell {
+        padding: 14px 20px;
+    }
+
+    &__heading {
+        color: $color-text-secondary;
+        background: $gray-50;
+        font-size: 14px;
+    }
+
+    &__cell {
+        border-top: 1px solid $color-border;
+        overflow-wrap: anywhere;
+    }
+
+    &__cell:first-child {
+        font-weight: 600;
+    }
+
+    &__cell:last-child {
+        text-align: right;
+    }
+
+    &__value {
+        display: block;
+        max-width: 38ch;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.oc-scope {
+    padding: 4px 10px;
+    background: $surface-1;
+    border-radius: $radius-pill;
+}
+
+.oc-editor {
+    width: min(520px, calc(100% - 24px));
+    max-height: calc(100dvh - 32px);
+    padding: 24px;
+    color: $color-text-strong;
+    background: $surface-0;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    &::backdrop {
+        background: rgb(20 20 23 / 46%);
+    }
+
+    &__title {
+        margin: 0 0 20px;
+        line-height: 1.2;
+    }
+}
+
+.oc-fields {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    .oc-field {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .oc-json {
+        resize: vertical;
+        font: 15px/1.5 monospace;
+    }
+}
+
+.oc-error {
+    color: $color-status-error;
+    overflow-wrap: anywhere;
+}
+
+.oc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+@media (width <= 920px) {
+    .oc-layout .footer {
+        padding-inline: 20px;
+    }
+
+    .oc-layout .footer__top,
+    .oc-layout .footer__cols,
+    .oc-layout .footer__bottom,
+    .oc-layout .footer__legal {
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .oc-layout .footer__tagline {
+        max-width: 100%;
+    }
+}
+
+@media (width <= 640px) {
+    .oc-layout .oc-topbar {
+        height: auto;
+        flex-wrap: wrap;
+        padding-block: 12px;
+    }
+
+    .oc-layout .header__logo-img {
+        width: 66px;
+        height: auto;
+    }
+
+    .oc-layout .header__category,
+    .oc-layout .header__post {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    .oc-layout .header__search {
+        flex-basis: 100%;
+        order: 1;
+    }
+
+    .oc-card {
+        width: calc(100% - 24px);
+        padding: 20px 12px;
+    }
+
+    .oc-table__head {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .oc-table__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px 12px;
+        padding: 16px;
+        border-top: 1px solid $color-border;
+
+        .oc-table__cell {
+            padding: 0;
+            border: 0;
+        }
+
+        .oc-table__cell:nth-child(3) {
+            grid-column: 1;
+        }
+    }
+}
+
+.oc-bar, .oc-brand, .oc-bar__actions, .oc-account__toggle, .oc-nav, .oc-rollout__line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.oc-bar {
+    width: min(1440px, 100%);
+    min-height: 76px;
+    margin-inline: auto;
+    padding: 12px clamp(16px, 4vw, 64px);
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    &__actions {
+        margin-left: auto;
+    }
+}
+
+.oc-brand__name {
+    padding-left: 14px;
+    border-left: 1px solid $color-border;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.oc-account {
+    position: relative;
+
+    &__toggle {
+        cursor: pointer;
+        list-style: none;
+        gap: 4px;
+    }
+
+    &__menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        display: grid;
+        gap: 10px;
+        width: 220px;
+        padding: 16px;
+        background: $white;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+        box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
+        overflow-wrap: anywhere;
+    }
+}
+
+.oc-board {
+    width: min(1280px, calc(100% - 48px));
+    margin: clamp(20px, 4vw, 56px) auto;
+    padding: clamp(18px, 3vw, 40px);
+    background: $white;
+    border: 1px solid $color-border;
+    border-radius: $radius-xl;
+
+    &__title {
+        margin: 0 0 16px;
+        font-size: clamp(26px, 3vw, 36px);
+        line-height: 1.2;
+    }
+
+    .oc-scope-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+.oc-nav {
+    gap: 4px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid $color-border;
+
+    &__link {
+        padding: 8px 16px;
+        color: $color-text-secondary;
+        border-radius: $radius-sm;
+        font-weight: 600;
+    }
+
+    &__link[aria-current='page'] {
+        background: $goget-blue;
+        color: $white;
+    }
+}
+
+.oc-list {
+    padding: 0;
+    margin: 16px 0 0;
+
+    &__row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto;
+        align-items: center;
+        gap: 24px;
+        padding: 18px 0;
+        border-top: 1px solid $color-border;
+    }
+
+    &__identity {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    &__json {
+        padding: 6px 10px;
+        background: $gray-50;
+        border-radius: $radius-sm;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .button--outline {
+        color: $goget-blue-hover;
+        border-color: $goget-blue;
+    }
+
+    .button--outline:disabled {
+        color: $color-text-muted;
+        border-color: $color-border;
+    }
+}
+
+.oc-rollout {
+    display: grid;
+    gap: 5px;
+    color: $color-text-secondary;
+
+    &__bar {
+        width: min(120px, 35%);
+        height: 8px;
+        accent-color: $goget-blue;
+    }
+}
+
+@media (width <= 640px) {
+    .oc-board {
+        width: calc(100% - 24px);
+    }
+
+    .oc-list__row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+
+    .oc-list__identity {
+        grid-column: 1 / -1;
+    }
+
+    .oc-bar__actions {
+        gap: 8px;
+    }
+}
+
+.oc-board__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    .oc-board__title {
+        margin: 0;
+    }
+}
+
+.oc-board__heading .button:disabled {
+    color: $white;
+    background-color: $goget-blue;
+    cursor: not-allowed;
+}

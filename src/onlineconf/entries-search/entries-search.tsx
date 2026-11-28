@@ -4,44 +4,51 @@ import { ApiError } from '@/lib/api';
 import { Button } from '@/components/button/button';
 import { Select } from '@/components/select/select';
 import {
-    ONLINECONF_SCOPES,
+    accessStatus,
+    errorText,
+    scopes,
     searchEntries,
-    type OnlineconfEntry,
-    type OnlineconfKind,
-    type OnlineconfScope,
+    type Entry,
+    type Kind,
+    type Scope,
 } from '../api';
+import { Editor } from '../editor';
 import { formatValue, highlight } from '../format';
+import { readRule } from '../values';
 import './entries-search.scss';
 
 interface EntriesSearchProps {
-    kind: OnlineconfKind;
+    kind: Kind;
 }
 
 type SearchResult =
-    | { status: 'ready'; items: OnlineconfEntry[]; filtered: boolean }
+    | { status: 'ready'; items: Entry[]; filtered: boolean }
+    | { status: 'unauthenticated' }
     | { status: 'forbidden' }
     | { status: 'invalid' }
-    | { status: 'error' };
+    | { status: 'error'; message: string };
 
 interface EntriesSearchState {
     name: string;
-    scope: OnlineconfScope | '';
+    scope: Scope | '';
     /** Пока идёт новый поиск, прошлый список остаётся на экране */
     loading: boolean;
     result: SearchResult | null;
     /** Название, по которому получен текущий список, — для подсветки */
     searched: string;
+    editor: Entry | 'new' | null;
+    savedMessage: string;
 }
 
 const SEARCH_DELAY_MS = 300;
 
 const scopeOptions = [
     { value: '', label: 'Все скоупы' },
-    ...ONLINECONF_SCOPES.map(scope => ({ value: scope, label: scope })),
+    ...scopes.map(scope => ({ value: scope, label: scope })),
 ];
 
-function isScope(value: string | null): value is OnlineconfScope {
-    return ONLINECONF_SCOPES.includes(value as OnlineconfScope);
+function isScope(value: string | null): value is Scope {
+    return scopes.some(scope => scope === value);
 }
 
 /** Фильтр живёт в URL, чтобы поиском можно было поделиться; роутер каркаса не нужен. */
@@ -63,9 +70,17 @@ function writeFilter(name: string, scope: string) {
 
 /** Поиск по названию и фильтр по скоупу для вкладок «Конфиги» и «Фича-флаги». */
 export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchState> {
-    state: EntriesSearchState = { ...readFilter(), loading: true, result: null, searched: '' };
+    state: EntriesSearchState = {
+        ...readFilter(),
+        loading: true,
+        result: null,
+        searched: '',
+        editor: null,
+        savedMessage: '',
+    };
 
     private requestId = 0;
+    private mounted = false;
 
     /** vdom переиспользует экземпляр при смене вкладки и не передаёт прошлые пропсы. */
     private searchedKind = this.props.kind;
@@ -73,21 +88,25 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
     private scheduleSearch = debounce(() => void this.search(), SEARCH_DELAY_MS);
 
     componentDidMount() {
+        this.mounted = true;
         void this.search();
     }
 
     componentDidUpdate() {
         if (this.props.kind === this.searchedKind) return;
         this.searchedKind = this.props.kind;
+        this.setState({ result: null, searched: '', editor: null, savedMessage: '' });
         void this.search();
     }
 
     componentWillUnmount() {
+        this.mounted = false;
         this.scheduleSearch.cancel();
         this.requestId++;
     }
 
     search = async () => {
+        if (!this.mounted) return;
         this.scheduleSearch.cancel();
         const id = ++this.requestId;
         const name = this.state.name.trim();
@@ -105,15 +124,33 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
             this.setState({ loading: false, result: { status: 'ready', items, filtered: Boolean(name || scope) }, searched: name });
         } catch (error) {
             if (id !== this.requestId) return;
-            const status = error instanceof ApiError ? error.status : 0;
-            if (status === 403) this.setState({ loading: false, result: { status: 'forbidden' } });
-            else if (status === 400) this.setState({ loading: false, result: { status: 'invalid' } });
-            else this.setState({ loading: false, result: { status: 'error' } });
+            const status = accessStatus(error);
+            if (status) {
+                this.noAccess(status);
+            } else {
+                const result: SearchResult = error instanceof ApiError && error.status === 400
+                    ? { status: 'invalid' }
+                    : { status: 'error', message: errorText(error, 'Не удалось загрузить список') };
+                this.setState({ loading: false, result });
+            }
         }
     };
 
+    noAccess = (status: 401 | 403) => {
+        if (!this.mounted) return;
+        this.scheduleSearch.cancel();
+        this.requestId++;
+        this.setState({
+            loading: false,
+            result: { status: status === 401 ? 'unauthenticated' : 'forbidden' },
+            editor: null,
+            savedMessage: '',
+        });
+    };
+
     handleInput = (event: Event) => {
-        this.setState({ name: (event.currentTarget as HTMLInputElement).value });
+        this.requestId++;
+        this.setState({ name: (event.currentTarget as HTMLInputElement).value, savedMessage: '' });
         this.scheduleSearch();
     };
 
@@ -123,7 +160,7 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
     };
 
     handleScope = (scope: string) => {
-        this.setState({ scope: isScope(scope) ? scope : '' });
+        this.setState({ scope: isScope(scope) ? scope : '', savedMessage: '' });
         void this.search();
     };
 
@@ -140,16 +177,13 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
     renderResult() {
         const { loading, result, searched } = this.state;
 
-        if (!loading && result?.status === 'forbidden') {
-            return <p class="entries-search__alert" role="alert">Нет доступа к OnlineConf</p>;
-        }
         if (!loading && result?.status === 'invalid') {
             return <p class="entries-search__alert" role="alert">Некорректный фильтр</p>;
         }
         if (!loading && result?.status === 'error') {
             return (
                 <div class="entries-search__alert" role="alert">
-                    <p>Не удалось загрузить список</p>
+                    <p>{result.message}</p>
                     <Button variant="secondary" text="Попробовать ещё раз" onClick={() => void this.search()} />
                 </div>
             );
@@ -157,23 +191,93 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
         if (result?.status !== 'ready' || !result.items.length) return null;
 
         return (
-            <ul class="entries-search__list">
-                {result.items.map(entry => (
-                    <li key={entry.id} class="entries-search__item" data-entry-id={String(entry.id)}>
-                        <span class="entries-search__name">{highlight(entry.name, searched)}</span>
-                        <span class="entries-search__scope">{entry.scope}</span>
-                        <span class="entries-search__value">{formatValue(entry)}</span>
-                    </li>
-                ))}
+            <ul class="oc-list">
+                {result.items.map(entry => {
+                    const rule = entry.kind === 'flag' ? readRule(entry.value) : null;
+                    return (
+                        <li key={entry.id} class="oc-list__row" data-entry-id={String(entry.id)}>
+                            <div class="oc-list__identity">
+                                <strong>{highlight(entry.name, searched)}</strong>
+                                <span class="oc-scope">{entry.scope}</span>
+                            </div>
+                            {entry.kind === 'config' ? (
+                                <code class="oc-list__json" title={JSON.stringify(entry.value)}>{formatValue(entry)}</code>
+                            ) : rule ? (
+                                <div class="oc-rollout">
+                                    <div class="oc-rollout__line">
+                                        <span>{formatValue(entry)}</span>
+                                        <progress class="oc-rollout__bar" max={100} value={rule.rollout_percent}
+                                            aria-label="Процент раскатки" />
+                                    </div>
+                                </div>
+                            ) : <span>Неизвестный формат флага</span>}
+                            <Button text="Изменить" variant="outline"
+                                disabled={loading || (entry.kind === 'flag' && !rule)}
+                                onClick={() => this.setState({ editor: entry, savedMessage: '' })} />
+                        </li>
+                    );
+                })}
             </ul>
         );
     }
 
     render() {
-        const { name, scope } = this.state;
+        const { name, scope, editor, loading, result, savedMessage } = this.state;
+        const { kind } = this.props;
+        const config = kind === 'config';
+        const hasAccess = result?.status !== 'unauthenticated' && result?.status !== 'forbidden';
 
         return (
-            <section class="entries-search">
+            <div>
+                <div class="oc-board__heading">
+                    <h1 class="oc-board__title">{config ? 'Параметры' : 'Фича-флаги'}</h1>
+                    {hasAccess && (
+                        <Button text={config ? '+ Создать конфиг' : '+ Создать фича-флаг'}
+                            disabled={loading || result?.status !== 'ready'}
+                            onClick={() => this.setState({ editor: 'new', savedMessage: '' })} />
+                    )}
+                </div>
+                {!hasAccess ? (
+                    <section class="oc-notice" role="alert">
+                        {result?.status === 'unauthenticated' ? (
+                            <>
+                                <p>Войдите в GoGet, чтобы открыть OnlineConf.</p>
+                                <a class="oc-link" href="/login">Войти</a>
+                            </>
+                        ) : (
+                            <>
+                                <h2>Нет доступа к OnlineConf</h2>
+                                <p>Для управления настройками нужен аккаунт администратора GoGet.</p>
+                            </>
+                        )}
+                    </section>
+                ) : (
+                    <>
+                        <nav class="oc-nav" aria-label="Разделы OnlineConf">
+                            <a class="oc-nav__link" href="#configs" aria-current={config ? 'page' : undefined}>Параметры</a>
+                            <a class="oc-nav__link" href="#flags" aria-current={config ? undefined : 'page'}>Фича-флаги</a>
+                        </nav>
+                        {this.renderWorkspace(name, scope)}
+                        {savedMessage && <p class="oc-saved" role="status">{savedMessage}</p>}
+                        {editor && (
+                            <Editor kind={kind} scope={scope || 'frontend'}
+                                entry={editor === 'new' ? undefined : editor}
+                                onClose={() => this.setState({ editor: null })}
+                                onDenied={this.noAccess}
+                                onSaved={() => {
+                                    this.setState({ editor: null, savedMessage: 'Изменения сохранены.' });
+                                    void this.search();
+                                }} />
+                        )}
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    renderWorkspace(name: string, scope: Scope | '') {
+        return (
+            <section class="entries-search" aria-label={this.props.kind === 'config' ? 'Список конфигов' : 'Список фича-флагов'}>
                 <form class="entries-search__form" role="search" onSubmit={this.handleSubmit}>
                     <label class="entries-search__field">
                         <span>Название</span>
@@ -181,6 +285,9 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
                             type="search"
                             name="name"
                             autocomplete="off"
+                            class="oc-control"
+                            maxLength={255}
+                            placeholder="Поиск по названию"
                             value={name}
                             onInput={this.handleInput}
                         />
@@ -193,6 +300,7 @@ export class EntriesSearch extends Component<EntriesSearchProps, EntriesSearchSt
                         value={scope}
                         onChange={this.handleScope}
                     />
+                    <Button type="submit" text="Найти" variant="secondary" />
                 </form>
                 <p class="entries-search__status" role="status">{this.statusText()}</p>
                 {this.renderResult()}

@@ -30,39 +30,6 @@
         color: $color-status-error;
     }
 
-    &__list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        border: 1px solid $color-border;
-        border-radius: $radius-md;
-    }
-
-    &__item {
-        display: grid;
-        grid-template-columns: minmax(0, 2fr) minmax(80px, 1fr) minmax(0, 3fr);
-        gap: 12px;
-        padding: 12px 16px;
-
-        & + & {
-            border-top: 1px solid $color-border;
-        }
-    }
-
-    &__name {
-        color: $color-text-strong;
-        overflow-wrap: anywhere;
-    }
-
-    &__scope {
-        color: $color-text-secondary;
-    }
-
-    &__value {
-        font-family: monospace;
-        overflow-wrap: anywhere;
-    }
-
     &__mark {
         padding: 0;
         background: $goget-accent;

@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 import { render } from 'goget-vdom';
-import type { OnlineconfEntry } from './api';
+import type { Entry } from './api';
 import { formatValue, highlight } from './format';
 
-const config = (value: unknown): OnlineconfEntry => ({ id: 1, scope: 'search', name: 'limit', kind: 'config', value });
-const flag = (value: unknown): OnlineconfEntry => ({ id: 2, scope: 'search', name: 'price_sort', kind: 'flag', value });
+const config = (value: unknown): Entry => ({ id: 1, scope: 'search', name: 'limit', kind: 'config', value });
+const flag = (value: unknown): Entry => ({ id: 2, scope: 'search', name: 'price_sort', kind: 'flag', value });
 
 it('показывает значение конфига одной строкой JSON', () => {
     expect(formatValue(config(100))).toBe('100');

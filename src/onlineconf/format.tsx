@@ -1,5 +1,5 @@
 import type { Child } from 'goget-vdom';
-import type { OnlineconfEntry } from './api';
+import type { Entry } from './api';
 
 const MAX_VALUE_LENGTH = 80;
 
@@ -22,7 +22,7 @@ function shorten(text: string): string {
 }
 
 /** Краткое значение для строки списка: JSON конфига или правило флага по-русски. */
-export function formatValue({ kind, value }: OnlineconfEntry): string {
+export function formatValue({ kind, value }: Entry): string {
     if (kind === 'flag') {
         if (value === true) return 'Включён';
         if (value === false) return 'Выключен';
