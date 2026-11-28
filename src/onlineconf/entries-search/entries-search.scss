@@ -1,0 +1,38 @@
+@use '@/shared/styles/variables' as *;
+
+.entries-search {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &__form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    &__field {
+        display: flex;
+        flex: 1 1 240px;
+        flex-direction: column;
+        gap: 4px;
+        color: $color-text-secondary;
+    }
+
+    &__status {
+        margin: 0;
+        color: $color-text-secondary;
+    }
+
+    &__alert {
+        margin: 0;
+        color: $color-status-error;
+    }
+
+    &__mark {
+        padding: 0;
+        background: $goget-accent;
+        color: inherit;
+    }
+}

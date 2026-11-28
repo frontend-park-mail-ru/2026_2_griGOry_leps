@@ -5,13 +5,19 @@ export type Scope = typeof scopes[number];
 export type Kind = 'config' | 'flag';
 export type Entry = { id: number; name: string; scope: Scope; kind: Kind; value: unknown };
 export type Values = Pick<Entry, 'scope' | 'name' | 'value'>;
+export interface EntriesFilter {
+    kind: Kind;
+    scope?: Scope;
+    name?: string;
+}
 
 const entriesPath = '/onlineconf/admin/entries';
 
 async function checked(response: Response) {
     if (response.ok) return response;
     const body = await response.json().catch(() => null);
-    const reason = typeof body?.error?.message === 'string' ? body.error.message : '';
+    const reason = typeof body?.error === 'string' ? body.error
+        : typeof body?.error?.message === 'string' ? body.error.message : '';
     throw new ApiError(response.status, { reason });
 }
 
@@ -22,8 +28,8 @@ function isEntry(row: unknown, kind: Kind): row is Entry {
         && entry.kind === kind && scopes.some(scope => scope === entry.scope) && Object.hasOwn(entry, 'value');
 }
 
-export async function listEntries(kind: Kind, scope: Scope | '', name: string): Promise<Entry[]> {
-    const response = await checked(await request(entriesPath + query({ kind, scope, name: name.trim() }), { cache: 'no-store' }));
+export async function searchEntries({ kind, scope, name }: EntriesFilter): Promise<Entry[]> {
+    const response = await checked(await request(entriesPath + query({ kind, scope, name: name?.trim() }), { cache: 'no-store' }));
     const rows: unknown = await response.json();
     if (rows === null) return [];
     if (!Array.isArray(rows) || !rows.every(row => isEntry(row, kind))) {
@@ -44,8 +50,12 @@ export async function saveEntry(kind: Kind, values: Values, id?: number): Promis
     }
 }
 
-export function denied(error: unknown): boolean {
-    return error instanceof ApiError && (error.status === 401 || error.status === 403);
+export function accessStatus(error: unknown): 401 | 403 | null {
+    if (error instanceof ApiError) {
+        if (error.status === 401) return 401;
+        if (error.status === 403 && error.reason === 'forbidden') return 403;
+    }
+    return null;
 }
 
 export function errorText(error: unknown, fallback: string): string {

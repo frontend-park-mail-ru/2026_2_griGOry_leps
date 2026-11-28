@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
-import { listEntries, saveEntry } from './api';
+import { searchEntries, saveEntry } from './api';
 
 vi.mock('./api', async (importOriginal) => ({
     ...await importOriginal<typeof import('./api')>(),
-    listEntries: vi.fn().mockResolvedValue([]),
+    searchEntries: vi.fn().mockResolvedValue([]),
     saveEntry: vi.fn(),
 }));
 vi.mock('@/lib/api', async (importOriginal) => ({
@@ -12,9 +12,17 @@ vi.mock('@/lib/api', async (importOriginal) => ({
     getMe: vi.fn().mockRejectedValue(new Error('нет сессии')),
 }));
 
-const list = vi.mocked(listEntries);
-const select = () => document.querySelector<HTMLSelectElement>('.oc-filters select')!;
-const input = () => document.querySelector<HTMLInputElement>('.oc-filters input[type="search"]')!;
+const list = vi.mocked(searchEntries);
+const scopeButton = () => document.querySelector<HTMLButtonElement>('#onlineconf-scope')!;
+const input = () => document.querySelector<HTMLInputElement>('.entries-search input[type="search"]')!;
+async function selectScope(scope: string) {
+    scopeButton().click();
+    await vi.waitFor(() => {
+        expect(document.querySelector('[role="listbox"]')).not.toBeNull();
+    });
+    Array.from(document.querySelectorAll<HTMLElement>('[role="option"]'))
+        .find(option => option.textContent?.trim() === scope)!.click();
+}
 const listen = vi.spyOn(window, 'addEventListener');
 
 beforeEach(() => {
@@ -37,20 +45,20 @@ it('держит вкладку и фильтры в решётке', async () =
     const length = history.length;
     await import('./main');
 
-    await vi.waitFor(() => expect(list).toHaveBeenCalledWith('flag', 'search', 'sort'));
+    await vi.waitFor(() => expect(list).toHaveBeenCalledWith({ kind: 'flag', scope: 'search', name: 'sort' }));
     expect(document.querySelector('h1')?.textContent).toBe('Фича-флаги');
-    expect(select().value).toBe('search');
+    expect(scopeButton().textContent).toContain('search');
     expect(input().value).toBe('sort');
 
     input().value = 'price';
     input().dispatchEvent(new Event('input', { bubbles: true }));
-    document.querySelector('.oc-filters')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith('flag', 'search', 'price'));
+    document.querySelector('.entries-search__form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith({ kind: 'flag', scope: 'search', name: 'price' }));
     expect(location.pathname + location.hash).toBe('/admin/#flags?scope=search&name=price');
     expect(history.length).toBe(length);
 
     location.hash = '#configs?name=limit';
-    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith('config', '', 'limit'));
+    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith({ kind: 'config', name: 'limit' }));
     expect(document.querySelector('h1')?.textContent).toBe('Параметры');
     expect(input().value).toBe('limit');
 });
@@ -61,21 +69,20 @@ it.each([
 ])('сбрасывает фильтры при нажатии на активную вкладку %s', async (tab, kind, title) => {
     history.replaceState(null, '', `/admin/#${tab}`);
     await import('./main');
-    await vi.waitFor(() => expect(list).toHaveBeenCalledWith(kind, '', ''));
+    await vi.waitFor(() => expect(list).toHaveBeenCalledWith({ kind }));
 
     input().value = 'price';
     input().dispatchEvent(new Event('input', { bubbles: true }));
-    select().value = 'search';
-    select().dispatchEvent(new Event('change', { bubbles: true }));
-    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith(kind, 'search', 'price'));
+    await selectScope('search');
+    await vi.waitFor(() => expect(list).toHaveBeenLastCalledWith({ kind, scope: 'search', name: 'price' }));
     const calls = list.mock.calls.length;
     document.querySelector<HTMLAnchorElement>(`.oc-nav__link[href="#${tab}"]`)!.click();
 
     await vi.waitFor(() => {
         expect(list).toHaveBeenCalledTimes(calls + 1);
-        expect(list).toHaveBeenLastCalledWith(kind, '', '');
+        expect(list).toHaveBeenLastCalledWith({ kind });
         expect(input().value).toBe('');
-        expect(select().value).toBe('');
+        expect(scopeButton().textContent).toContain('Все скоупы');
     });
     expect(location.hash).toBe(`#${tab}`);
     expect(document.querySelector('h1')?.textContent).toBe(title);
@@ -91,7 +98,7 @@ it.each([true, false])('не меняет URL после сохранения н
     try {
         history.replaceState(null, '', '/admin/#configs');
         await import('./main');
-        await vi.waitFor(() => expect(list).toHaveBeenCalledWith('config', '', ''));
+        await vi.waitFor(() => expect(list).toHaveBeenCalledWith({ kind: 'config' }));
         document.querySelector<HTMLAnchorElement>('.oc-nav__link[href="#flags"]')!.click();
         await vi.waitFor(() => expect(document.querySelector('.oc-board__heading button')?.textContent)
             .toBe('+ Создать фича-флаг'));

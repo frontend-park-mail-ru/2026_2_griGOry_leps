@@ -1,7 +1,7 @@
 import { Component } from 'goget-vdom';
 import { Button } from '@/components/button/button';
 import { FormField } from '@/components/form-field/form-field';
-import { denied, errorText, saveEntry, scopes, type Kind, type Scope, type Entry } from './api';
+import { accessStatus, errorText, saveEntry, scopes, type Kind, type Scope, type Entry } from './api';
 import { makeDraft, parseDraft } from './values';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
     entry?: Entry;
     onClose: () => void;
     onSaved: () => void;
-    onDenied: () => void;
+    onDenied: (status: 401 | 403) => void;
 }
 
 type Draft = ReturnType<typeof makeDraft>;
@@ -46,7 +46,8 @@ export class Editor extends Component<Props, { draft: Draft; error: string; savi
             await saveEntry(kind, values, entry?.id);
             onSaved();
         } catch (error) {
-            if (denied(error)) onDenied();
+            const status = accessStatus(error);
+            if (status) onDenied(status);
             else this.setState({
                 saving: false,
                 error: errorText(error, 'Сохранение не подтверждено. Проверьте соединение и список записей.'),
