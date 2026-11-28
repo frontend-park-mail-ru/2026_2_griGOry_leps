@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { render } from 'goget-vdom';
 import { navigate } from 'goget-router';
+import type { SearchButtonColor } from '@/lib/api';
 import { Header } from './header';
 
 vi.mock('goget-router', async (orig) => ({
@@ -16,8 +17,9 @@ beforeEach(() => {
 });
 afterEach(() => render(root, null));
 
-function renderHeader(maxQueryLength: number | null) {
-    render(root, <Header user={null} cartCount={0} onLogout={async () => {}} maxQueryLength={maxQueryLength} />);
+function renderHeader(maxQueryLength: number | null, searchButtonColor: SearchButtonColor = 'blue') {
+    render(root, <Header user={null} cartCount={0} onLogout={async () => {}}
+        maxQueryLength={maxQueryLength} searchButtonColor={searchButtonColor} />);
 }
 function type(text: string) {
     input().value = text;
@@ -29,6 +31,22 @@ function submit() {
 
 const error = () => root.querySelector('#header-search-error');
 const input = () => root.querySelector<HTMLInputElement>('input[name="q"]')!;
+
+it('меняет цвет существующей кнопки и сохраняет введённый запрос', async () => {
+    renderHeader(null);
+    const button = root.querySelector('button[aria-label="Найти"]')!;
+    type('телефон');
+    await vi.waitFor(() => expect(input().value).toBe('телефон'));
+    expect(button.classList.contains('search__btn--orange')).toBe(false);
+
+    renderHeader(null, 'orange');
+    expect(root.querySelector('button[aria-label="Найти"]')).toBe(button);
+    expect(button.classList.contains('search__btn--orange')).toBe(true);
+    expect(input().value).toBe('телефон');
+
+    renderHeader(null);
+    expect(button.classList.contains('search__btn--orange')).toBe(false);
+});
 
 it('ровно N символов — без ошибки и с переходом, N + 1 — ошибка без перехода', async () => {
     renderHeader(3);

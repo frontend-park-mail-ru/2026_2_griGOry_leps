@@ -5,6 +5,7 @@ import { getUser } from '@/lib/user';
 export const CAUTIOUS_SEARCH_SETTINGS: SearchSettings = {
     max_query_length: null,
     price_sort_enabled: false,
+    search_button_color: 'blue',
 };
 
 let current: SearchSettings | null = null;
@@ -32,12 +33,14 @@ function normalize(raw: unknown): SearchSettings {
     return {
         max_query_length: typeof limit === 'number' && Number.isInteger(limit) && limit > 0 ? limit : null,
         price_sort_enabled: raw.price_sort_enabled === true,
+        search_button_color: 'search_button_color' in raw && raw.search_button_color === 'orange' ? 'orange' : 'blue',
     };
 }
 
 function update(value: SearchSettings): void {
     if (current?.max_query_length === value.max_query_length
-        && current?.price_sort_enabled === value.price_sort_enabled) return;
+        && current?.price_sort_enabled === value.price_sort_enabled
+        && current?.search_button_color === value.search_button_color) return;
     current = value;
     listeners.forEach(fn => fn());
 }
