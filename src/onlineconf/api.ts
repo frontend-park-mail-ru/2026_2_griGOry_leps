@@ -1,4 +1,4 @@
-import { ApiError, request } from '@/lib/api';
+import { ApiError, query, request } from '@/lib/api';
 
 export const scopes = ['frontend', 'auth', 'ads', 'search'] as const;
 export type Scope = typeof scopes[number];
@@ -6,8 +6,7 @@ export type Kind = 'config' | 'flag';
 export type Entry = { id: number; name: string; scope: Scope; kind: Kind; value: unknown };
 export type Values = Pick<Entry, 'scope' | 'name' | 'value'>;
 
-// Путь через gateway, относительно VITE_API_URL. Сервис слушает /v1/entries.
-const entriesPath = import.meta.env.VITE_ONLINECONF_ENTRIES_PATH ?? '/admin/onlineconf/v1/entries';
+const entriesPath = '/onlineconf/admin/entries';
 
 async function checked(response: Response) {
     if (response.ok) return response;
@@ -23,8 +22,8 @@ function isEntry(row: unknown, kind: Kind): row is Entry {
         && entry.kind === kind && scopes.some(scope => scope === entry.scope) && Object.hasOwn(entry, 'value');
 }
 
-export async function listEntries(kind: Kind): Promise<Entry[]> {
-    const response = await checked(await request(`${entriesPath}?kind=${kind}`, { cache: 'no-store' }));
+export async function listEntries(kind: Kind, scope: Scope | '', name: string): Promise<Entry[]> {
+    const response = await checked(await request(entriesPath + query({ kind, scope, name: name.trim() }), { cache: 'no-store' }));
     const rows: unknown = await response.json();
     if (rows === null) return [];
     if (!Array.isArray(rows) || !rows.every(row => isEntry(row, kind))) {

@@ -15,6 +15,7 @@ interface State {
     status: 'loading' | 'ready' | 'denied' | 'error';
     entries: Entry[];
     scope: Scope | '';
+    name: string;
     editor: Entry | 'new' | null;
     message: string;
 }
@@ -26,16 +27,16 @@ function FlagSummary({ value }: { value: unknown }) {
     return (
         <div class="oc-rollout">
             <div class="oc-rollout__line">
-                <span>Раскатка <strong>{rule.percent}%</strong></span>
+                <span>Раскатка <strong>{rule.rollout_percent}%</strong></span>
                 <progress
                     class="oc-rollout__bar"
                     max={100}
-                    value={rule.percent}
+                    value={rule.rollout_percent}
                     aria-label="Процент раскатки"
                 />
             </div>
             <small>
-                В списке включения: {rule.includeUserIDs.length} · В списке исключения: {rule.excludeUserIDs.length}
+                В списке включения: {rule.included_user_ids.length} · В списке исключения: {rule.excluded_user_ids.length}
             </small>
         </div>
     );
@@ -46,6 +47,7 @@ class Admin extends Component<Props, State> {
         status: 'loading',
         entries: [],
         scope: '',
+        name: '',
         editor: null,
         message: '',
     };
@@ -70,7 +72,7 @@ class Admin extends Component<Props, State> {
         this.setState({ status: 'loading', editor: null, message: '' });
 
         try {
-            const entries = await listEntries(this.props.kind);
+            const entries = await listEntries(this.props.kind, this.state.scope, this.state.name);
             if (revision === this.revision) {
                 this.setState({ status: 'ready', entries, message });
             }
@@ -119,7 +121,7 @@ class Admin extends Component<Props, State> {
 
     renderWorkspace() {
         const { kind } = this.props;
-        const { status, scope, entries, editor, message } = this.state;
+        const { status, scope, name } = this.state;
 
         if (status === 'denied') {
             return (
@@ -130,12 +132,49 @@ class Admin extends Component<Props, State> {
             );
         }
 
+        return (
+            <section aria-label={kind === 'config' ? 'Список конфигов' : 'Список фича-флагов'}>
+                <form class="oc-filters" role="search" onSubmit={(event: Event) => {
+                    event.preventDefault();
+                    void this.load();
+                }}>
+                    <label class="oc-scope-label">
+                        Скоуп
+                        <select class="oc-control" onChange={(event: Event) => {
+                            const select = event.currentTarget as HTMLSelectElement;
+                            this.setState({ scope: select.value as Scope | '' });
+                            void this.load();
+                        }}>
+                            <option value="" selected={!scope}>Все скоупы</option>
+                            {scopes.map(s => (
+                                <option key={s} value={s} selected={scope === s}>{s}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label class="oc-scope-label">
+                        Название
+                        <input class="oc-control" type="search" value={name} placeholder="Поиск по названию"
+                            maxLength={255} onInput={(event: Event) => {
+                                this.setState({ name: (event.currentTarget as HTMLInputElement).value });
+                            }} />
+                    </label>
+                    <Button type="submit" text="Найти" variant="secondary" />
+                </form>
+                {this.renderEntries()}
+            </section>
+        );
+    }
+
+    renderEntries() {
+        const { kind } = this.props;
+        const { status, scope, name, entries, editor, message } = this.state;
+
         if (status === 'error') {
             return (
-                <section class="oc-notice" role="alert">
+                <div class="oc-notice" role="alert">
                     <p>{message}</p>
                     <Button text="Повторить" onClick={() => void this.load()} />
-                </section>
+                </div>
             );
         }
 
@@ -143,32 +182,13 @@ class Admin extends Component<Props, State> {
             return <p class="oc-notice" role="status">Загружаем записи…</p>;
         }
 
-        const visible = entries.filter(entry => !scope || entry.scope === scope);
-
         return (
-            <section aria-label={kind === 'config' ? 'Список конфигов' : 'Список фича-флагов'}>
-                <label class="oc-scope-label">
-                    Скоуп
-                    <select
-                        class="oc-control"
-                        aria-label="Фильтр по скоупу"
-                        onChange={(event: Event) => {
-                            const select = event.currentTarget as HTMLSelectElement;
-                            this.setState({ scope: select.value as Scope | '' });
-                        }}
-                    >
-                        <option value="" selected={!scope}>Все скоупы</option>
-                        {scopes.map(s => (
-                            <option key={s} value={s} selected={scope === s}>{s}</option>
-                        ))}
-                    </select>
-                </label>
-
+            <>
                 {message && <p class="oc-saved" role="status">{message}</p>}
 
-                {visible.length ? (
+                {entries.length ? (
                     <ul class="oc-list">
-                        {visible.map(entry => (
+                        {entries.map(entry => (
                             <li key={entry.id} class="oc-list__row">
                                 <div class="oc-list__identity">
                                     <strong>{entry.name}</strong>
@@ -190,7 +210,7 @@ class Admin extends Component<Props, State> {
                     </ul>
                 ) : (
                     <p class="oc-notice">
-                        {scope ? 'В выбранном скоупе пока нет записей.' : 'Здесь пока нет записей.'}
+                        {scope || name.trim() ? 'По заданным фильтрам записей нет.' : 'Здесь пока нет записей.'}
                     </p>
                 )}
 
@@ -204,7 +224,7 @@ class Admin extends Component<Props, State> {
                         onSaved={() => void this.load('Изменения сохранены.')}
                     />
                 )}
-            </section>
+            </>
         );
     }
 
@@ -231,6 +251,12 @@ class Admin extends Component<Props, State> {
                         )}
                     </div>
 
+                    {this.state.status !== 'denied' && (
+                        <nav class="oc-nav" aria-label="Разделы OnlineConf">
+                            <a class="oc-nav__link" href="#configs" aria-current={config ? 'page' : undefined}>Параметры</a>
+                            <a class="oc-nav__link" href="#flags" aria-current={config ? undefined : 'page'}>Фича-флаги</a>
+                        </nav>
+                    )}
                     {this.renderWorkspace()}
                 </main>
                 <Footer />

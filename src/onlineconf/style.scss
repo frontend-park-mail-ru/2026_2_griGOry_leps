@@ -63,6 +63,13 @@
     color: $color-text-secondary;
 }
 
+.oc-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 .oc-control {
     min-width: 0;
     min-height: 44px;

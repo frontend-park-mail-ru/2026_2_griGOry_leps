@@ -1,22 +1,23 @@
 import type { Entry, Kind, Scope, Values } from './api';
 
 interface Rule {
-    percent: number;
-    includeUserIDs: number[];
-    excludeUserIDs: number[];
+    rollout_percent: number;
+    included_user_ids: number[];
+    excluded_user_ids: number[];
 }
 
 export function readRule(value: unknown): Rule | null {
     if (typeof value === 'boolean') {
-        return { percent: value ? 100 : 0, includeUserIDs: [], excludeUserIDs: [] };
+        return { rollout_percent: value ? 100 : 0, included_user_ids: [], excluded_user_ids: [] };
     }
     if (!value || typeof value !== 'object') return null;
 
     const rule = value as Partial<Rule>;
-    if (typeof rule.percent !== 'number' || !Number.isInteger(rule.percent) || rule.percent < 0 || rule.percent > 100) {
+    const percent = rule.rollout_percent;
+    if (typeof percent !== 'number' || !Number.isInteger(percent) || percent < 0 || percent > 100) {
         return null;
     }
-    if (![rule.includeUserIDs, rule.excludeUserIDs].every(ids => Array.isArray(ids) && ids.every(validID))) {
+    if (![rule.included_user_ids, rule.excluded_user_ids].every(ids => Array.isArray(ids) && ids.every(validID))) {
         return null;
     }
     return rule as Rule;
@@ -42,9 +43,9 @@ export function makeDraft(kind: Kind, entry?: Entry, scope: Scope = 'frontend') 
         name: entry?.name ?? '',
         scope: entry?.scope ?? scope,
         json: entry && kind === 'config' ? JSON.stringify(entry.value, null, 2) : '',
-        percent: String(rule?.percent ?? 0),
-        include: rule?.includeUserIDs.join(', ') ?? '',
-        exclude: rule?.excludeUserIDs.join(', ') ?? '',
+        percent: String(rule?.rollout_percent ?? 0),
+        include: rule?.included_user_ids.join(', ') ?? '',
+        exclude: rule?.excluded_user_ids.join(', ') ?? '',
     };
 }
 
@@ -67,10 +68,10 @@ export function parseDraft(kind: Kind, draft: ReturnType<typeof makeDraft>): Val
             throw new Error('Введите целый процент от 0 до 100.');
         }
         value = {
-            percent,
-            includeUserIDs: parseIDs(draft.include, 'Всегда включён для'),
-            excludeUserIDs: parseIDs(draft.exclude, 'Всегда выключен для'),
-        };
+            rollout_percent: percent,
+            included_user_ids: parseIDs(draft.include, 'Всегда включён для'),
+            excluded_user_ids: parseIDs(draft.exclude, 'Всегда выключен для'),
+        } satisfies Rule;
     }
 
     return { name, scope: draft.scope, value };
