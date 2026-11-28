@@ -197,7 +197,7 @@ export class History extends Component<Props, State> {
                                         </div>
                                     </div>
 
-                                    <time dateTime={item.created_at}>
+                                    <time class="oc-history__time" dateTime={item.created_at}>
                                         {new Date(
                                             item.created_at
                                         ).toLocaleString('ru-RU')}

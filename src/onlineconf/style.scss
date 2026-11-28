@@ -477,9 +477,9 @@
         gap: 8px;
         margin-bottom: 14px;
 
-        time {
-            color: $color-text-secondary;
-            font-size: 13px;
+        .oc-history__time {
+        color: $color-text-secondary;
+        font-size: 13px;
         }
     }
 
