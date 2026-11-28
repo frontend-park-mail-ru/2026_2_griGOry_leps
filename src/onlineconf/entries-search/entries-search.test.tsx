@@ -1,0 +1,209 @@
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { render } from 'goget-vdom';
+import { ApiError } from '@/lib/api';
+import { searchEntries, type OnlineconfEntry } from '../api';
+import { EntriesSearch } from './entries-search';
+
+vi.mock('../api', async (importOriginal) => ({
+    ...await importOriginal<typeof import('../api')>(),
+    searchEntries: vi.fn(),
+}));
+
+const search = vi.mocked(searchEntries);
+let root: HTMLElement;
+
+const flush = () => vi.advanceTimersByTimeAsync(0);
+const input = () => root.querySelector<HTMLInputElement>('input[name="name"]')!;
+const alert = () => root.querySelector('[role="alert"]');
+const enter = (value: string) => {
+    input().value = value;
+    input().dispatchEvent(new Event('input', { bubbles: true }));
+};
+const submit = () => root.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+const chooseScope = async (label: string) => {
+    root.querySelector<HTMLButtonElement>('#onlineconf-scope')!.click();
+    await flush();
+    [...root.querySelectorAll<HTMLElement>('[role="option"]')].find(option => option.textContent === label)!.click();
+    await flush();
+};
+
+const priceSort: OnlineconfEntry = {
+    id: 3,
+    scope: 'search',
+    name: 'price_sort',
+    kind: 'flag',
+    value: { rollout_percent: 25, included_user_ids: [4], excluded_user_ids: [] },
+};
+
+beforeEach(() => {
+    vi.useFakeTimers();
+    search.mockReset().mockResolvedValue([]);
+    history.replaceState({}, '', '/onlineconf/configs');
+    root = document.createElement('div');
+    document.body.append(root);
+});
+
+afterEach(() => {
+    render(root, null);
+    root.remove();
+    vi.useRealTimers();
+});
+
+it('берёт фильтр из URL и обновляет его без новой записи истории', async () => {
+    history.replaceState({}, '', '/onlineconf/configs?tab=1&name=max&scope=web');
+    const length = history.length;
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+
+    expect(search).toHaveBeenCalledWith({ kind: 'config', name: 'max' });
+    expect(input().value).toBe('max');
+    expect(root.querySelector('#onlineconf-scope')?.textContent).toContain('Все скоупы');
+
+    await chooseScope('search');
+
+    expect(search).toHaveBeenLastCalledWith({ kind: 'config', name: 'max', scope: 'search' });
+    expect(location.search).toBe('?tab=1&name=max&scope=search');
+    expect(history.length).toBe(length);
+});
+
+it('ищет через 300 мс после ввода', async () => {
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+    search.mockClear();
+
+    enter('a');
+    enter('ab');
+    enter('abc');
+    await vi.advanceTimersByTimeAsync(299);
+    expect(search).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(search).toHaveBeenCalledWith({ kind: 'config', name: 'abc' });
+});
+
+it('Enter ищет сразу и отменяет отложенный поиск', async () => {
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+    search.mockClear();
+
+    enter('  sort ');
+    submit();
+    await flush();
+    expect(search).toHaveBeenCalledWith({ kind: 'flag', name: 'sort' });
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(search).toHaveBeenCalledTimes(1);
+});
+
+it('показывает найденные записи с подсветкой', async () => {
+    history.replaceState({}, '', '/onlineconf/flags?name=sort');
+    search.mockResolvedValue([priceSort]);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+
+    expect(root.textContent).toContain('Найдено 1');
+    const row = root.querySelector('li[data-entry-id="3"]')!;
+    expect(row.textContent).toContain('search');
+    expect(row.textContent).toContain('25% · вкл. 1');
+    expect(row.querySelector('mark')?.textContent).toBe('sort');
+});
+
+it('различает пустой список и пустой результат', async () => {
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+    expect(root.textContent).toContain('Пока нет конфигов');
+
+    render(root, null);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+    expect(root.textContent).toContain('Пока нет флагов');
+
+    enter('nope');
+    submit();
+    await flush();
+    expect(root.textContent).toContain('Ничего не найдено');
+});
+
+it('показывает отсутствие доступа и некорректный фильтр', async () => {
+    search.mockRejectedValueOnce(new ApiError(403, { reason: 'forbidden' }));
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+    expect(alert()?.textContent).toBe('Нет доступа к OnlineConf');
+
+    search.mockRejectedValueOnce(new ApiError(400, { reason: 'invalid filter' }));
+    submit();
+    await flush();
+    expect(alert()?.textContent).toBe('Некорректный фильтр');
+    expect(root.textContent).not.toContain('Попробовать ещё раз');
+});
+
+it('повторяет поиск после ошибки', async () => {
+    search.mockRejectedValueOnce(new ApiError(0, { network: true }));
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+    expect(alert()?.textContent).toContain('Не удалось загрузить список');
+
+    search.mockResolvedValueOnce([priceSort]);
+    [...root.querySelectorAll('button')].find(button => button.textContent === 'Попробовать ещё раз')!.click();
+    await flush();
+
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
+
+it('не применяет устаревший ответ', async () => {
+    let finishFirst!: (entries: OnlineconfEntry[]) => void;
+    search.mockReturnValueOnce(new Promise(resolve => { finishFirst = resolve; }));
+    search.mockResolvedValueOnce([{ ...priceSort, id: 2, name: 'b' }]);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+
+    enter('b');
+    await vi.advanceTimersByTimeAsync(300);
+    finishFirst([{ ...priceSort, id: 1, name: 'a' }]);
+    await flush();
+
+    expect(root.querySelector('li[data-entry-id="2"]')).not.toBeNull();
+    expect(root.querySelector('li[data-entry-id="1"]')).toBeNull();
+});
+
+it('размонтирование отменяет отложенный поиск', async () => {
+    render(root, <EntriesSearch kind="config" />);
+    await flush();
+    enter('abc');
+
+    render(root, <div />);
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(search).toHaveBeenCalledTimes(1);
+});
+
+it('ищет заново, когда каркас меняет вкладку у того же компонента', async () => {
+    render(root, <div><EntriesSearch kind="config" /></div>);
+    await flush();
+    search.mockResolvedValueOnce([priceSort]);
+
+    render(root, <div><EntriesSearch kind="flag" /></div>);
+    await flush();
+
+    expect(search).toHaveBeenLastCalledWith({ kind: 'flag' });
+    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
+
+it('не убирает список во время поиска и сообщает итог в одном live-регионе', async () => {
+    search.mockResolvedValueOnce([priceSort]);
+    render(root, <EntriesSearch kind="flag" />);
+    await flush();
+    const status = root.querySelector('[role="status"]');
+    expect(status?.textContent).toBe('Найдено 1');
+
+    search.mockReturnValueOnce(new Promise(() => {}));
+    enter('price');
+    submit();
+    await flush();
+
+    expect(root.querySelector('[role="status"]')).toBe(status);
+    expect(status?.textContent).toBe('Ищем…');
+    expect(root.querySelector('li[data-entry-id="3"]')).not.toBeNull();
+});
