@@ -532,6 +532,33 @@
     gap: 8px;
 }
 
+.oc-flag-check {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: 8px 12px;
+
+    &__field {
+        display: grid;
+        gap: 4px;
+        color: $color-text-secondary;
+        font-size: 14px;
+    }
+
+    &__result {
+        align-self: center;
+        font-weight: 600;
+    }
+
+    &__hint {
+        flex-basis: 100%;
+        color: $color-text-secondary;
+        text-align: right;
+    }
+}
+
 .oc-history__operation {
     margin-top: 4px;
     color: $color-text-secondary;
