@@ -548,7 +548,10 @@
     }
 
     &__result {
-        align-self: center;
+        display: flex;
+        align-items: center;
+        align-self: flex-end;
+        min-height: 44px;
         font-weight: 600;
     }
 
