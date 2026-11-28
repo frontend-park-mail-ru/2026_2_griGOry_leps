@@ -4,12 +4,13 @@ import { Footer } from '@/components/footer/footer';
 import { UserAvatar } from '@/components/user-avatar/user-avatar';
 import '@/components/header/header.scss';
 import { getMe, type User } from '@/lib/api';
-import { denied, errorText, listEntries, scopes, type Entry, type Kind, type Scope } from './api';
+import { denied, errorText, listEntries, scopes, type Entry, type Scope } from './api';
 import { Editor } from './editor';
+import { hashFor, readHash, type HashFilter } from './hash';
 import { readRule } from './values';
 import './style.scss';
 
-type Props = { kind: Kind; user: User | null };
+type Props = HashFilter & { user: User | null };
 
 interface State {
     status: 'loading' | 'ready' | 'denied' | 'error';
@@ -46,8 +47,8 @@ class Admin extends Component<Props, State> {
     state: State = {
         status: 'loading',
         entries: [],
-        scope: '',
-        name: '',
+        scope: this.props.scope,
+        name: this.props.name,
         editor: null,
         message: '',
     };
@@ -70,6 +71,9 @@ class Admin extends Component<Props, State> {
     load = async (message = '') => {
         const revision = ++this.revision;
         this.setState({ status: 'loading', editor: null, message: '' });
+        // replaceState не вызывает hashchange: страница не пересоздаётся, а ссылкой можно поделиться.
+        const { kind } = this.props;
+        history.replaceState(history.state, '', location.pathname + location.search + hashFor(kind, this.state.scope, this.state.name));
 
         try {
             const entries = await listEntries(this.props.kind, this.state.scope, this.state.name);
@@ -266,13 +270,21 @@ class Admin extends Component<Props, State> {
 }
 
 let user: User | null = null;
+// Обновляется только при открытии и hashchange: свои replaceState страница не перечитывает.
+let filter = readHash(location.hash);
 
 function showTab() {
-    const kind = location.hash === '#flags' ? 'flag' : 'config';
-    render(document.getElementById('app')!, <Admin key={kind} kind={kind} user={user} />);
+    const { kind, scope, name } = filter;
+    render(
+        document.getElementById('app')!,
+        <Admin key={`${kind}|${scope}|${name}`} kind={kind} scope={scope} name={name} user={user} />,
+    );
 }
 
-window.addEventListener('hashchange', showTab);
+window.addEventListener('hashchange', () => {
+    filter = readHash(location.hash);
+    showTab();
+});
 showTab();
 
 void getMe().then(me => {
