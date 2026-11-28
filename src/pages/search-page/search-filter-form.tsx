@@ -10,6 +10,7 @@ import { FilterDrawer } from './filter-drawer';
 interface FilterFormProps {
     query: string;
     filters: SearchFilters;
+    priceSortEnabled: boolean;
 }
 
 interface ToolbarState {
@@ -91,7 +92,7 @@ export class SearchFilterForm extends Component<FilterFormProps, ToolbarState> {
 
     render() {
         const { categories, open, status } = this.state;
-        const { filters } = this.props;
+        const { filters, priceSortEnabled } = this.props;
         const chips = activeFilters(filters, categories);
         const selected = categoryPath(categories, filters.category_id ?? 0)[0];
         const quick = categories.slice(0, 3);
@@ -120,8 +121,8 @@ export class SearchFilterForm extends Component<FilterFormProps, ToolbarState> {
                         inline
                         id="search-sort"
                         label="Сортировка"
-                        options={sortOptions}
-                        value={filters.sort ?? 'newest'}
+                        options={priceSortEnabled ? sortOptions : sortOptions.slice(0, 1)}
+                        value={priceSortEnabled ? (filters.sort ?? 'newest') : 'newest'}
                         onChange={sort => this.apply({ ...filters, sort: sort as Sort })}
                     />
                 </div>
